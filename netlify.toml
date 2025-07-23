@@ -4,8 +4,8 @@
   # Base directory for the frontend
   base = "frontend"
   
-  # Build command for Next.js
-  command = "npm install && npm run build"
+  # Build command for Next.js with legacy peer deps
+  command = "npm install --legacy-peer-deps && npm run build"
   
   # Next.js requires a different publish directory
   publish = ".next"
@@ -16,6 +16,8 @@
   NEXT_TELEMETRY_DISABLED = "1"
   # Set Node version to LTS
   NODE_VERSION = "18"
+  # Install devDependencies during build
+  NODE_ENV = "development"
 
 # Headers for security and performance
 [[headers]]
