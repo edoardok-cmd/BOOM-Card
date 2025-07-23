@@ -1,0 +1,261 @@
+common:
+  app_name: ['BOOM Card Platform']
+  license_key: '${NEW_RELIC_LICENSE_KEY}'
+  logging:
+    level: info
+    filepath: stdout
+  allow_all_headers: true
+  attributes:
+    exclude:
+      - request.headers.cookie
+      - request.headers.authorization
+      - request.headers.proxyAuthorization
+      - request.headers.setCookie*
+      - request.headers.x*
+      - response.headers.cookie
+      - response.headers.authorization
+      - response.headers.proxyAuthorization
+      - response.headers.setCookie*
+      - response.headers.x*
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: apdex_f
+    record_sql: obfuscated
+    explain_threshold: 500
+  error_collector:
+    enabled: true
+    ignore_errors:
+      - 'Error: Request aborted'
+      - 'Error: socket hang up'
+      - 'Error: ECONNRESET'
+    ignore_status_codes:
+      - 401
+      - 404
+      - 410
+  browser_monitoring:
+    enable: true
+    auto_instrument: true
+  distributed_tracing:
+    enabled: true
+  slow_sql:
+    enabled: true
+  custom_insights_events:
+    enabled: true
+    max_samples_stored: 10000
+  
+development:
+  app_name: ['BOOM Card Platform - Development']
+  monitor_mode: false
+  logging:
+    level: debug
+  developer_mode: true
+  
+test:
+  app_name: ['BOOM Card Platform - Test']
+  monitor_mode: false
+  logging:
+    level: warn
+    
+staging:
+  app_name: ['BOOM Card Platform - Staging']
+  monitor_mode: true
+  logging:
+    level: info
+  apdex_t: 0.5
+  capture_params: true
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: 0.5
+    stack_trace_threshold: 0.5
+  error_collector:
+    capture_source: true
+    
+production:
+  app_name: ['BOOM Card Platform - Production']
+  monitor_mode: true
+  logging:
+    level: warn
+    filepath: '/var/log/newrelic/newrelic_agent.log'
+  apdex_t: 0.3
+  capture_params: false
+  high_security: true
+  proxy_host: '${NEW_RELIC_PROXY_HOST}'
+  proxy_port: '${NEW_RELIC_PROXY_PORT}'
+  proxy_user: '${NEW_RELIC_PROXY_USER}'
+  proxy_pass: '${NEW_RELIC_PROXY_PASS}'
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: 0.3
+    stack_trace_threshold: 0.3
+    explain_enabled: true
+    explain_threshold: 200
+    collect_traces: true
+    gc_report_threshold: 0.1
+  error_collector:
+    enabled: true
+    capture_source: false
+    max_event_samples_stored: 100
+  analytics_events:
+    enabled: true
+    max_samples_stored: 50000
+  custom_parameters:
+    - subscription_tier
+    - partner_category
+    - transaction_type
+    - discount_percentage
+    - payment_method
+    - user_locale
+    - app_version
+    - platform
+  labels:
+    environment: production
+    region: '${DEPLOYMENT_REGION}'
+    service: boom-card
+    team: platform
+  utilization:
+    detect_docker: true
+    detect_kubernetes: true
+  infinite_tracing:
+    trace_observer:
+      host: '${NEW_RELIC_TRACE_OBSERVER_HOST}'
+      port: '${NEW_RELIC_TRACE_OBSERVER_PORT}'
+  ai_monitoring:
+    enabled: true
+    record_content:
+      enabled: false
+  application_logging:
+    enabled: true
+    forwarding:
+      enabled: true
+      max_samples_stored: 10000
+    metrics:
+      enabled: true
+    local_decorating:
+      enabled: false
+
+# Custom instrumentation rules
+rules:
+  - name: "API Gateway Monitoring"
+    pattern: "/api/*"
+    enabled: true
+    transaction_name: "API/{method}/{path}"
+    
+  - name: "Partner Dashboard Monitoring"
+    pattern: "/partner/*"
+    enabled: true
+    transaction_name: "Partner/{action}"
+    
+  - name: "Admin Panel Monitoring"
+    pattern: "/admin/*"
+    enabled: true
+    transaction_name: "Admin/{action}"
+    
+  - name: "Payment Processing"
+    pattern: "/payments/*"
+    enabled: true
+    transaction_name: "Payment/{type}"
+    priority: high
+    
+  - name: "QR Code Transactions"
+    pattern: "/qr/*"
+    enabled: true
+    transaction_name: "QR/{action}"
+    
+  - name: "Search Operations"
+    pattern: "/search/*"
+    enabled: true
+    transaction_name: "Search/{type}"
+
+# Database monitoring
+datastores:
+  - name: "PostgreSQL Main"
+    enabled: true
+    instance_reporting:
+      enabled: true
+    database_name_reporting:
+      enabled: true
+      
+  - name: "Redis Cache"
+    enabled: true
+    instance_reporting:
+      enabled: true
+
+# External service monitoring
+external_services:
+  - name: "Payment Gateway"
+    enabled: true
+    
+  - name: "SMS Provider"
+    enabled: true
+    
+  - name: "Email Service"
+    enabled: true
+    
+  - name: "Map Service"
+    enabled: true
+    
+  - name: "POS Integration"
+    enabled: true
+
+# Custom events
+custom_events:
+  - event_type: "DiscountRedemption"
+    attributes:
+      - partner_id
+      - user_id
+      - discount_amount
+      - original_amount
+      - saved_amount
+      - location
+      - timestamp
+      
+  - event_type: "SubscriptionChange"
+    attributes:
+      - user_id
+      - old_tier
+      - new_tier
+      - change_type
+      - payment_method
+      - timestamp
+      
+  - event_type: "PartnerOnboarding"
+    attributes:
+      - partner_id
+      - category
+      - location
+      - discount_offered
+      - timestamp
+      
+  - event_type: "QRCodeScan"
+    attributes:
+      - user_id
+      - partner_id
+      - scan_location
+      - device_type
+      - timestamp
+
+# Performance thresholds
+thresholds:
+  api_response_time: 200
+  database_query_time: 100
+  cache_response_time: 10
+  external_service_timeout: 5000
+  
+# Alert conditions
+alerts:
+  - name: "High Error Rate"
+    condition: "error_rate > 5%"
+    duration: "5 minutes"
+    
+  - name: "Slow API Response"
+    condition: "average_response_time > 500ms"
+    duration: "3 minutes"
+    
+  - name: "Database Connection Issues"
+    condition: "database_errors > 10"
+    duration: "2 minutes"
+    
+  - name: "Payment Processing Failures"
+    condition: "payment_error_rate > 1%"
+    duration: "1 minute"
+    priority: "critical"

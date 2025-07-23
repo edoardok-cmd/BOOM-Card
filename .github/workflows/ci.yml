@@ -1,0 +1,346 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18.x'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run Prettier check
+        run: npm run format:check
+      
+      - name: TypeScript type checking
+        run: npm run type-check
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: boomcard_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+        run: npm run db:migrate:test
+      
+      - name: Run unit tests
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+        run: npm run test:unit -- --coverage
+      
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+        run: npm run test:integration -- --coverage
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        run: npm audit --production
+        continue-on-error: true
+      
+      - name: Run OWASP dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'boom-card'
+          path: '.'
+          format: 'HTML'
+      
+      - name: Upload dependency check results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports/
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [lint, test, security]
+    strategy:
+      matrix:
+        app: [web, api, admin, partner-dashboard]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build ${{ matrix.app }}
+        run: npm run build:${{ matrix.app }}
+        env:
+          NODE_ENV: production
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.app }}-build
+          path: |
+            apps/${{ matrix.app }}/.next/
+            apps/${{ matrix.app }}/dist/
+          retention-days: 5
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: e2euser
+          POSTGRES_PASSWORD: e2epass
+          POSTGRES_DB: boomcard_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: web-build
+          path: apps/web/.next/
+      
+      - name: Run E2E tests
+        env:
+          DATABASE_URL: postgresql://e2euser:e2epass@localhost:5432/boomcard_e2e
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          E2E_BASE_URL: http://localhost:3000
+        run: npm run test:e2e
+      
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
+
+  lighthouse:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: web-build
+          path: apps/web/.next/
+      
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000
+            http://localhost:3000/food-drink
+            http://localhost:3000/entertainment
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, e2e]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://staging.boomcard.bg
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Build and push Docker images
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/boomcard-web:$IMAGE_TAG -f apps/web/Dockerfile .
+          docker build -t $ECR_REGISTRY/boomcard-api:$IMAGE_TAG -f apps/api/Dockerfile .
+          docker build -t $ECR_REGISTRY/boomcard-admin:$IMAGE_TAG -f apps/admin/Dockerfile .
+          docker build -t $ECR_REGISTRY/boomcard-partner:$IMAGE_TAG -f apps/partner-dashboard/Dockerfile .
+          
+          docker push $ECR_REGISTRY/boomcard-web:$IMAGE_TAG
+          docker push $ECR_REGISTRY/boomcard-api:$IMAGE_TAG
+          docker push $ECR_REGISTRY/boomcard-admin:$IMAGE_TAG
+          docker push $ECR_REGISTRY/boomcard-partner:$IMAGE_TAG
+      
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service --cluster boomcard-staging --service web-service --force-new-deployment
+          aws ecs update-service --cluster boomcard-staging --service api-service --force-new-deployment
+          aws ecs update-service --cluster boomcard-staging --service admin-service --force-new-deployment
+          aws ecs update-service --cluster boomcard-staging --service partner-service --force-new-deployment
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://boomcard.bg
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Build and push Docker images
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/boomcard-web:$IMAGE_TAG -f apps/web/Dockerfile .
+          docker build -t $ECR_REGISTRY/boomcard-api:$IMAGE_TAG -f apps/api/Dockerfile .
+          docker build -t $ECR_REGISTRY/boomcard-admin:$IMAGE_TAG -f apps/admin/Dockerfile .
+          docker build -t $ECR_REGISTRY/boomcard-partner:$IMAGE_TAG -f apps/partne

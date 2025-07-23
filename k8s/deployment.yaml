@@ -1,0 +1,389 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom-card-api
+  namespace: boom-card
+  labels:
+    app: boom-card-api
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: boom-card-api
+  template:
+    metadata:
+      labels:
+        app: boom-card-api
+        version: v1
+    spec:
+      serviceAccountName: boom-card-api
+      containers:
+      - name: api
+        image: boom-card/api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: jwt-secret
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: stripe-secret-key
+        - name: STRIPE_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: stripe-webhook-secret
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: aws-secret-access-key
+        - name: AWS_REGION
+          value: "eu-central-1"
+        - name: S3_BUCKET_NAME
+          value: "boom-card-assets"
+        - name: SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: smtp-host
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: smtp-user
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: smtp-password
+        - name: EMAIL_FROM
+          value: "noreply@boomcard.bg"
+        - name: FRONTEND_URL
+          value: "https://boomcard.bg"
+        - name: API_URL
+          value: "https://api.boomcard.bg"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: ENABLE_SWAGGER
+          value: "false"
+        - name: RATE_LIMIT_WINDOW_MS
+          value: "900000"
+        - name: RATE_LIMIT_MAX_REQUESTS
+          value: "100"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: boom-card-api-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom-card-frontend
+  namespace: boom-card
+  labels:
+    app: boom-card-frontend
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: boom-card-frontend
+  template:
+    metadata:
+      labels:
+        app: boom-card-frontend
+        version: v1
+    spec:
+      containers:
+      - name: frontend
+        image: boom-card/frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: NEXT_PUBLIC_API_URL
+          value: "https://api.boomcard.bg"
+        - name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: stripe-publishable-key
+        - name: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: google-maps-api-key
+        - name: NEXT_PUBLIC_GA_MEASUREMENT_ID
+          value: "G-XXXXXXXXXX"
+        - name: NEXT_PUBLIC_SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: sentry-dsn-frontend
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom-card-admin
+  namespace: boom-card
+  labels:
+    app: boom-card-admin
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: boom-card-admin
+  template:
+    metadata:
+      labels:
+        app: boom-card-admin
+        version: v1
+    spec:
+      containers:
+      - name: admin
+        image: boom-card/admin:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: NEXT_PUBLIC_API_URL
+          value: "https://api.boomcard.bg"
+        - name: NEXT_PUBLIC_ADMIN_URL
+          value: "https://admin.boomcard.bg"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boom-card-worker
+  namespace: boom-card
+  labels:
+    app: boom-card-worker
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: boom-card-worker
+  template:
+    metadata:
+      labels:
+        app: boom-card-worker
+        version: v1
+    spec:
+      serviceAccountName: boom-card-worker
+      containers:
+      - name: worker
+        image: boom-card/worker:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: redis-url
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: aws-secret-access-key
+        - name: AWS_REGION
+          value: "eu-central-1"
+        - name: S3_BUCKET_NAME
+          value: "boom-card-assets"
+        - name: SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: smtp-host
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: smtp-user
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: boom-card-secrets
+              key: smtp-password
+        - name: EMAIL_FROM
+          value: "noreply@boomcard.bg"
+        - name: WORKER_CONCURRENCY
+          value: "10"
+        - name: WORKER_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-daily-reports
+  namespace: boom-card
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: daily-reports
+            image: boom-card/worker:latest
+            command: ["node", "dist/jobs/daily-reports.js"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: redis-url
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-host
+            - name: SMTP_PORT
+              value:

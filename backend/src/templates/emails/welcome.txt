@@ -1,0 +1,70 @@
+Welcome to BOOM Card - Your Gateway to Amazing Discounts!
+
+Dear {{userName}},
+
+Thank you for joining BOOM Card! Your journey to exclusive savings starts now.
+
+YOUR ACCOUNT DETAILS
+--------------------
+Email: {{userEmail}}
+Membership Type: {{membershipType}}
+Card Number: {{cardNumber}}
+Valid Until: {{expirationDate}}
+
+WHAT'S NEXT?
+------------
+1. Download the BOOM Card app:
+   - iOS: {{iosAppLink}}
+   - Android: {{androidAppLink}}
+
+2. Explore thousands of partners offering exclusive discounts:
+   - Restaurants & Cafés
+   - Hotels & Accommodation
+   - Entertainment & Nightlife
+   - Wellness & Spa
+   - And much more!
+
+3. Start saving immediately by showing your digital card at any partner location.
+
+HOW IT WORKS
+------------
+1. Find a partner venue through our app or website
+2. Show your digital BOOM Card at checkout
+3. Enjoy instant discounts up to 30% off
+4. Track your savings in real-time
+
+QUICK TIPS
+----------
+- Enable location services for nearby partner recommendations
+- Set up notifications for new partners and special offers
+- Check the "Trending Now" section for popular deals
+- Use filters to find exactly what you're looking for
+
+NEED HELP?
+----------
+Our support team is here for you:
+- Email: support@boomcard.bg
+- Phone: {{supportPhone}}
+- Live Chat: Available on our website and app
+
+CONNECT WITH US
+---------------
+Website: {{websiteUrl}}
+Facebook: {{facebookUrl}}
+Instagram: {{instagramUrl}}
+
+Thank you for choosing BOOM Card. We're excited to help you discover amazing experiences while saving money!
+
+Best regards,
+The BOOM Card Team
+
+P.S. Share BOOM Card with friends and earn rewards! Visit {{referralUrl}} to learn more.
+
+----
+This email was sent to {{userEmail}}. If you didn't create a BOOM Card account, please contact us immediately.
+
+To unsubscribe from promotional emails: {{unsubscribeUrl}}
+View our Privacy Policy: {{privacyUrl}}
+Terms of Service: {{termsUrl}}
+
+© {{currentYear}} BOOM Card. All rights reserved.

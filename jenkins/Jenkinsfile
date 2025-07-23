@@ -1,0 +1,423 @@
+pipeline {
+    // Agent definition: Use a Docker container with Node.js and Docker CLI capabilities.
+    // This ensures a consistent build environment across all runs and allows Docker operations.
+    agent {
+        docker {
+            image 'node:18-alpine' // Base image for Node.js applications
+            // Mount the Docker socket from the host into the container.
+            // This enables `docker` commands inside the container to interact with the host's Docker daemon.
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+
+    // Environment variables accessible throughout the pipeline.
+    // Sensitive information like Docker registry credentials should be managed via Jenkins "Secret Text" credentials.
+    environment {
+        // The Docker registry URL where application images will be pushed.
+        DOCKER_REGISTRY = 'your.docker.registry.com' // e.g., 'registry.gitlab.com' or '123456789012.dkr.ecr.eu-central-1.amazonaws.com'
+        // The Jenkins Credential ID for authenticating with the Docker registry.
+        // This should be a "Username with password" credential type in Jenkins.
+        DOCKER_REGISTRY_CREDENTIAL_ID = 'boomcard-docker-registry-credentials' // **REPLACE WITH YOUR ACTUAL JENKINS CREDENTIAL ID**
+
+        // Base URLs for different deployment environments.
+        DEV_SERVER_URL = 'https://dev.boomcard.com'
+        STAGING_SERVER_URL = 'https://staging.boomcard.com'
+        PROD_SERVER_URL = 'https://app.boomcard.com'
+
+        // Optional: Define a specific Node.js version for consistency, if not already baked into the Docker image.
+        NODE_VERSION = '18'
+    }
+
+    // Pipeline options for controlling build behavior.
+    options {
+        // Add timestamps to the console output for better readability and debugging.
+        timestamps()
+        // Skip the default SCM checkout operation as we explicitly perform it in the 'Checkout Source Code' stage.
+        skipDefaultCheckout()
+        // Ensure that only one build of this pipeline runs at a time to prevent resource conflicts or race conditions.
+        disableConcurrentBuilds()
+        // Configure build history retention: keep logs/artifacts for 5 days or 10 successful builds, whichever comes first.
+        buildDiscarder(logRotator(daysToKeepStr: '5', numToKeepStr: '10'))
+    }
+
+    // Define the sequential stages of the CI/CD pipeline.
+    stages {
+        // Stage 1: Checkout Source Code
+        // Retrieves the latest code from the configured Source Code Management (SCM) repository.
+        stage('Checkout Source Code') {
+            steps {
+                echo "Checking out source code..."
+                // Perform a clean checkout of the repository as configured in the Jenkins job.
+                checkout scm
+                // Ensure npm is up-to-date and suppress funding messages for cleaner logs.
+                sh "npm config set fund false"
+                sh "npm install -g npm@latest"
+            }
+        }
+
+        // Stage 2: Linting and Static Analysis
+        // Runs code quality checks (linting) and security audits for all individual components in parallel.
+        stage('Lint & Static Analysis') {
+            parallel {
+                // API Gateway (Node.js/Express)
+                stage('API Gateway Lint') {
+                    steps {
+                        dir('services/api-gateway') { // Navigate into the service's directory
+                            echo "Running lint and audit for API Gateway..."
+                            // Install dependencies for linting (can omit dev dependencies if not needed for linting itself).
+                            sh 'npm install --prefer-offline --no-audit --ignore-scripts' // Optimized install for linting
+                            sh 'npm run lint' // Assumes a 'lint' script is defined in package.json
+                            sh 'npm audit --audit-level=critical' // Check for critical vulnerabilities
+                        }
+                    }
+                }
+                // Consumer Web Application (React/Next.js)
+                stage('Consumer Web Lint') {
+                    steps {
+                        dir('services/consumer-web') {
+                            echo "Running lint and audit for Consumer Web..."
+                            sh 'npm install --prefer-offline --no-audit --ignore-scripts'
+                            sh 'npm run lint'
+                            sh 'npm audit --audit-level=critical'
+                        }
+                    }
+                }
+                // Partner Dashboard (React/Next.js)
+                stage('Partner Dashboard Lint') {
+                    steps {
+                        dir('services/partner-dashboard') {
+                            echo "Running lint and audit for Partner Dashboard..."
+                            sh 'npm install --prefer-offline --no-audit --ignore-scripts'
+                            sh 'npm run lint'
+                            sh 'npm audit --audit-level=critical'
+                        }
+                    }
+                }
+                // Admin Panel (React/Next.js)
+                stage('Admin Panel Lint') {
+                    steps {
+                        dir('services/admin-panel') {
+                            echo "Running lint and audit for Admin Panel..."
+                            sh 'npm install --prefer-offline --no-audit --ignore-scripts'
+                            sh 'npm run lint'
+                            sh 'npm audit --audit-level=critical'
+                        }
+                    }
+                }
+                // Payment Processing Service (Node.js/Express)
+                stage('Payment Processing Lint') {
+                    steps {
+                        dir('services/payment-processing') {
+                            echo "Running lint and audit for Payment Processing..."
+                            sh 'npm install --prefer-offline --no-audit --ignore-scripts'
+                            sh 'npm run lint'
+                            sh 'npm audit --audit-level=critical'
+                        }
+                    }
+                }
+                // Analytics Engine Service (Node.js/Express)
+                stage('Analytics Engine Lint') {
+                    steps {
+                        dir('services/analytics-engine') {
+                            echo "Running lint and audit for Analytics Engine..."
+                            sh 'npm install --prefer-offline --no-audit --ignore-scripts'
+                            sh 'npm run lint'
+                            sh 'npm audit --audit-level=critical'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Stage 3: Build Applications
+        // Compiles TypeScript code, bundles assets, and prepares all components for deployment.
+        // This runs in parallel for efficiency.
+        stage('Build Applications') {
+            parallel {
+                // API Gateway
+                stage('Build API Gateway') {
+                    steps {
+                        dir('services/api-gateway') {
+                            echo "Building API Gateway..."
+                            // Clean install dependencies based on package-lock.json for reproducible builds.
+                            sh 'npm ci --prefer-offline'
+                            sh 'npm run build' // Assumes this script compiles TypeScript to JavaScript (e.g., 'tsc')
+                        }
+                    }
+                }
+                // Consumer Web
+                stage('Build Consumer Web') {
+                    steps {
+                        dir('services/consumer-web') {
+                            echo "Building Consumer Web..."
+                            sh 'npm ci --prefer-offline'
+                            sh 'npm run build' // Next.js build command
+                        }
+                    }
+                }
+                // Partner Dashboard
+                stage('Build Partner Dashboard') {
+                    steps {
+                        dir('services/partner-dashboard') {
+                            echo "Building Partner Dashboard..."
+                            sh 'npm ci --prefer-offline'
+                            sh 'npm run build'
+                        }
+                    }
+                }
+                // Admin Panel
+                stage('Build Admin Panel') {
+                    steps {
+                        dir('services/admin-panel') {
+                            echo "Building Admin Panel..."
+                            sh 'npm ci --prefer-offline'
+                            sh 'npm run build'
+                        }
+                    }
+                }
+                // Payment Processing Service
+                stage('Build Payment Processing') {
+                    steps {
+                        dir('services/payment-processing') {
+                            echo "Building Payment Processing..."
+                            sh 'npm ci --prefer-offline'
+                            sh 'npm run build'
+                        }
+                    }
+                }
+                // Analytics Engine Service
+                stage('Build Analytics Engine') {
+                    steps {
+                        dir('services/analytics-engine') {
+                            echo "Building Analytics Engine..."
+                            sh 'npm ci --prefer-offline'
+                            sh 'npm run build'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Stage 4: Run Tests
+        // Executes unit and integration tests for each component in parallel.
+        stage('Run Tests') {
+            parallel {
+                // API Gateway
+                stage('Test API Gateway') {
+                    steps {
+                        dir('services/api-gateway') {
+                            echo "Running tests for API Gateway..."
+                            sh 'npm test' // Assumes a 'test' script in package.json
+                        }
+                    }
+                }
+                // Consumer Web
+                stage('Test Consumer Web') {
+                    steps {
+                        dir('services/consumer-web') {
+                            echo "Running tests for Consumer Web..."
+                            sh 'npm test'
+                        }
+                    }
+                }
+                // Partner Dashboard
+                stage('Test Partner Dashboard') {
+                    steps {
+                        dir('services/partner-dashboard') {
+                            echo "Running tests for Partner Dashboard..."
+                            sh 'npm test'
+                        }
+                    }
+                }
+                // Admin Panel
+                stage('Test Admin Panel') {
+                    steps {
+                        dir('services/admin-panel') {
+                            echo "Running tests for Admin Panel..."
+                            sh 'npm test'
+                        }
+                    }
+                }
+                // Payment Processing Service
+                stage('Test Payment Processing') {
+                    steps {
+                        dir('services/payment-processing') {
+                            echo "Running tests for Payment Processing..."
+                            sh 'npm test'
+                        }
+                    }
+                }
+                // Analytics Engine Service
+                stage('Test Analytics Engine') {
+                    steps {
+                        dir('services/analytics-engine') {
+                            echo "Running tests for Analytics Engine..."
+                            sh 'npm test'
+                        }
+                    }
+                }
+            }
+        }
+
+        // Stage 5: Build & Push Docker Images
+        // Creates Docker images for each service and pushes them to the configured registry.
+        // This stage is conditional, typically running for 'main' or 'release' branches.
+        stage('Build & Push Docker Images') {
+            when {
+                // Only execute this stage if the current branch is 'main' or matches a 'release/*' pattern.
+                anyOf {
+                    branch 'main'
+                    branch 'release/*' // For example, 'release/v1.0.0'
+                }
+            }
+            steps {
+                script {
+                    echo "Building and pushing Docker images to ${DOCKER_REGISTRY}..."
+                    // Get a short Git commit hash to use as part of the image tag for traceability.
+                    def gitCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    // Use the Jenkins build number as another unique identifier for the image tag.
+                    def buildNumber = env.BUILD_NUMBER
+
+                    // Authenticate to the Docker registry using the Jenkins credential defined earlier.
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_REGISTRY_CREDENTIAL_ID}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        // Log in to the Docker registry using the retrieved credentials.
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin ${DOCKER_REGISTRY}"
+
+                        // Define all services, their base names, and their respective paths in the repository.
+                        def components = [
+                            'api-gateway': 'services/api-gateway',
+                            'consumer-web': 'services/consumer-web',
+                            'partner-dashboard': 'services/partner-dashboard',
+                            'admin-panel': 'services/admin-panel',
+                            'payment-processing': 'services/payment-processing',
+                            'analytics-engine': 'services/analytics-engine'
+                        ]
+
+                        // Iterate through each component to build and push its Docker image.
+                        components.each { serviceName, servicePath ->
+                            // Construct the full image tags: one with a unique build identifier, one as 'latest'.
+                            def imageTag = "${DOCKER_REGISTRY}/boomcard/${serviceName}:${gitCommit}-${buildNumber}"
+                            def latestTag = "${DOCKER_REGISTRY}/boomcard/${serviceName}:latest"
+
+                            echo "Building Docker image for ${serviceName}. Tags: ${imageTag}, ${latestTag}. Context: ${servicePath}"
+                            // Build the Docker image. Assumes a `Dockerfile` exists in each `servicePath`.
+                            sh "docker build -t ${imageTag} -t ${latestTag} ${servicePath}"
+                            // Push both the uniquely tagged image and the 'latest' tagged image to the registry.
+                            sh "docker push ${imageTag}"
+                            sh "docker push ${latestTag}"
+                            echo "Successfully pushed Docker images for ${serviceName}."
+                        }
+                        // Logout from the Docker registry for security, preventing lingering sessions.
+                        sh "docker logout ${DOCKER_REGISTRY}"
+                    }
+                }
+            }
+        }
+
+        // Stage 6: Deploy to Environments
+        // This stage manages deployments to Development, Staging, and Production environments.
+        // It uses conditional `when` clauses for automatic deployments and `input` for manual approvals.
+        stage('Deploy to Environment') {
+            stages {
+                // Sub-stage: Deploy to Development
+                // Typically deployed automatically on every successful build of any branch.
+                stage('Deploy to Development') {
+                    // No 'when' condition means it runs for any branch if previous stages succeed.
+                    steps {
+                        script {
+                            echo "Initiating deployment to Development environment..."
+                            def gitCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                            def buildNumber = env.BUILD_NUMBER
+                            def imageVersion = "${gitCommit}-${buildNumber}"
+                            // Call a dedicated deployment script (`scripts/deploy.sh`).
+                            // This script will contain the environment-specific logic (e.g., `kubectl apply`, `helm upgrade`, SSH commands).
+                            // The script receives the target environment ('dev') and the image version to deploy.
+                            sh "bash scripts/deploy.sh dev ${imageVersion}"
+                            echo "Deployment to Development completed. Access at: ${DEV_SERVER_URL}"
+                        }
+                    }
+                }
+
+                // Sub-stage: Deploy to Staging
+                // Deployed automatically upon a successful build from the 'main' branch.
+                stage('Deploy to Staging') {
+                    when {
+                        branch 'main' // Only deploy to staging if changes are on the 'main' branch.
+                    }
+                    steps {
+                        script {
+                            echo "Initiating deployment to Staging environment..."
+                            def gitCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                            def buildNumber = env.BUILD_NUMBER
+                            def imageVersion = "${gitCommit}-${buildNumber}"
+                            sh "bash scripts/deploy.sh staging ${imageVersion}"
+                            echo "Deployment to Staging completed. Access at: ${STAGING_SERVER_URL}"
+                        }
+                    }
+                }
+
+                // Sub-stage: Deploy to Production
+                // Requires explicit manual approval and runs only for 'main' or 'release/*' branches.
+                // This gate prevents accidental production deployments.
+                stage('Deploy to Production') {
+                    when {
+                        anyOf {
+                            branch 'main'
+                            branch 'release/*'
+                        }
+                    }
+                    steps {
+                        // Jenkins 'input' step pauses the pipeline and waits for manual approval.
+                        input {
+                            message "Are you sure you want to proceed with BOOM Card Production Deployment? This action is irreversible."
+                            ok "Deploy to Production" // Text displayed on the approval button.
+                            // Optional: Restrict who can approve production deployments (e.g., 'admin, devops-team').
+                            // submitter 'admin-role'
+                        }
+                        script {
+                            echo "Initiating deployment to Production environment..."
+                            def gitCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                            def buildNumber = env.BUILD_NUMBER
+                            def imageVersion = "${gitCommit}-${buildNumber}"
+                            sh "bash scripts/deploy.sh prod ${imageVersion}"
+                            echo "Deployment to Production completed. Access at: ${PROD_SERVER_URL}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Post-build actions: executed after all stages have completed, regardless of their outcome.
+    post {
+        // 'always' block: Executes regardless of pipeline success or failure.
+        always {
+            script {
+                // Optional: Clean up the workspace to free up disk space after the build.
+                // Be cautious if downstream jobs or manual inspection of artifacts is needed.
+                // cleanWs()
+                echo "BOOM Card Pipeline execution finished."
+            }
+        }
+        // 'success' block: Executes only if all stages completed successfully.
+        success {
+            echo 'BOOM Card Pipeline: Build and Deployment SUCCESS!'
+            // Example: Send a Slack notification for successful builds.
+            // slackSend channel: '#boomcard-devops', message: "SUCCESS: BOOM Card Build #${env.BUILD_NUMBER} (${env.BRANCH_NAME}) completed. URL: ${env.PROD_SERVER_URL}", color: 'good'
+        }
+        // 'failure' block: Executes if any stage failed.
+        failure {
+            echo 'BOOM Card Pipeline: Build or Deployment FAILED!'
+            // Example: Send a Slack notification for failed builds.
+            // slackSend channel: '#boomcard-devops', message: "FAILURE: BOOM Card Build #${env.BUILD_NUMBER} (${env.BRANCH_NAME}) failed. Check logs: ${env.BUILD_URL}", color: 'danger'
+        }
+        // 'unstable' block: Executes if the pipeline is marked as unstable (e.g., some tests passed, others failed).
+        unstable {
+            echo 'BOOM Card Pipeline: Build UNSTABLE!'
+        }
+        // 'aborted' block: Executes if the pipeline was manually aborted by a user.
+        aborted {
+            echo 'BOOM Card Pipeline: Build ABORTED!'
+        }
+    }
+}

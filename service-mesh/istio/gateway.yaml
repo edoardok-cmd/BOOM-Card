@@ -1,0 +1,316 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: boom-gateway
+  namespace: boom-platform
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*.boomcard.bg"
+    - "boomcard.bg"
+    - "*.boomcard.com"
+    - "boomcard.com"
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: boom-tls-cert
+    hosts:
+    - "*.boomcard.bg"
+    - "boomcard.bg"
+    - "*.boomcard.com"
+    - "boomcard.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-routing
+  namespace: boom-platform
+spec:
+  hosts:
+  - "*.boomcard.bg"
+  - "boomcard.bg"
+  - "*.boomcard.com"
+  - "boomcard.com"
+  gateways:
+  - boom-gateway
+  http:
+  # API Gateway Routes
+  - match:
+    - uri:
+        prefix: "/api/v1/"
+    - headers:
+        host:
+          regex: "^api\.(boomcard\.(bg|com))$"
+    route:
+    - destination:
+        host: api-gateway-service
+        port:
+          number: 3000
+      weight: 100
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: gateway-error,connect-failure,refused-stream
+    corsPolicy:
+      allowOrigins:
+      - regex: "https?://.*\.boomcard\.(bg|com)"
+      - exact: "http://localhost:3000"
+      - exact: "http://localhost:3001"
+      allowMethods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+      - PATCH
+      allowHeaders:
+      - authorization
+      - content-type
+      - x-api-key
+      - x-request-id
+      - x-user-id
+      - x-session-id
+      - accept-language
+      exposeHeaders:
+      - x-request-id
+      - x-ratelimit-limit
+      - x-ratelimit-remaining
+      - x-ratelimit-reset
+      maxAge: "86400"
+      allowCredentials: true
+  # Partner Dashboard Routes
+  - match:
+    - uri:
+        prefix: "/partner"
+    - headers:
+        host:
+          regex: "^partner\.(boomcard\.(bg|com))$"
+    route:
+    - destination:
+        host: partner-dashboard-service
+        port:
+          number: 3001
+      weight: 100
+    headers:
+      request:
+        set:
+          x-forwarded-prefix: "/partner"
+  # Admin Panel Routes
+  - match:
+    - uri:
+        prefix: "/admin"
+    - headers:
+        host:
+          regex: "^admin\.(boomcard\.(bg|com))$"
+    route:
+    - destination:
+        host: admin-panel-service
+        port:
+          number: 3002
+      weight: 100
+    headers:
+      request:
+        set:
+          x-forwarded-prefix: "/admin"
+  # POS Integration Routes
+  - match:
+    - uri:
+        prefix: "/pos/v1/"
+    - headers:
+        host:
+          regex: "^pos\.(boomcard\.(bg|com))$"
+    route:
+    - destination:
+        host: pos-integration-service
+        port:
+          number: 3003
+      weight: 100
+    timeout: 60s
+    retries:
+      attempts: 5
+      perTryTimeout: 15s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+  # Payment Webhook Routes
+  - match:
+    - uri:
+        prefix: "/webhooks/payment/"
+    route:
+    - destination:
+        host: payment-service
+        port:
+          number: 3004
+      weight: 100
+    timeout: 10s
+  # Analytics Service Routes
+  - match:
+    - uri:
+        prefix: "/analytics/"
+    - headers:
+        host:
+          regex: "^analytics\.(boomcard\.(bg|com))$"
+    route:
+    - destination:
+        host: analytics-service
+        port:
+          number: 3005
+      weight: 100
+  # Static Assets and CDN
+  - match:
+    - uri:
+        prefix: "/static/"
+    - uri:
+        prefix: "/assets/"
+    - uri:
+        prefix: "/images/"
+    - headers:
+        host:
+          regex: "^cdn\.(boomcard\.(bg|com))$"
+    route:
+    - destination:
+        host: static-assets-service
+        port:
+          number: 3006
+      weight: 100
+    headers:
+      response:
+        set:
+          cache-control: "public, max-age=31536000, immutable"
+  # Health Check Routes
+  - match:
+    - uri:
+        exact: "/health"
+    - uri:
+        exact: "/healthz"
+    - uri:
+        exact: "/ready"
+    - uri:
+        exact: "/readyz"
+    route:
+    - destination:
+        host: health-check-service
+        port:
+          number: 3007
+      weight: 100
+    timeout: 5s
+  # WebSocket Routes for Real-time Updates
+  - match:
+    - uri:
+        prefix: "/ws/"
+    - headers:
+        upgrade:
+          exact: websocket
+    route:
+    - destination:
+        host: websocket-service
+        port:
+          number: 3008
+      weight: 100
+    websocketUpgrade: true
+    timeout: 3600s
+  # Default Route - Consumer Web App
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: consumer-web-service
+        port:
+          number: 3000
+      weight: 100
+    headers:
+      response:
+        set:
+          x-frame-options: "DENY"
+          x-content-type-options: "nosniff"
+          x-xss-protection: "1; mode=block"
+          referrer-policy: "strict-origin-when-cross-origin"
+          content-security-policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.boomcard.bg https://api.boomcard.com wss://ws.boomcard.bg wss://ws.boomcard.com; frame-src 'none'; object-src 'none'; base-uri 'self';"
+          permissions-policy: "accelerometer=(), camera=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: boom-circuit-breaker
+  namespace: boom-platform
+spec:
+  host: "*.boom-platform.svc.cluster.local"
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 50
+      splitExternalLocalOriginErrors: true
+    loadBalancer:
+      consistentHash:
+        httpCookie:
+          name: "boom-session"
+          ttl: 3600s
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: boom-peer-auth
+  namespace: boom-platform
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: boom-auth-policy
+  namespace: boom-platform
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        namespaces: ["boom-platform", "istio-system"]
+  - to:
+    - operation:
+        methods: ["GET", "OPTIONS"]
+        paths: ["/health", "/healthz", "/ready", "/readyz"]
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: boom-external-services
+  namespace: boom-platform
+spec:
+  hosts:
+  - "*.googleapis.com"
+  - "*.stripe.com"
+  - "*.paypal.com"
+  - "*.cloudflare.com"
+  - "*.sentry.io"
+  - "*.datadog.com"
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  - number: 80
+    name: http
+    protocol: HTTP
+  location: MESH_EXTERNAL
+  resolution: DNS

@@ -1,0 +1,272 @@
+{
+  "monitors": [
+    {
+      "name": "BOOM Card - API Gateway Health Check",
+      "type": "service check",
+      "query": "\"http.can_connect\".over(\"host:api.boomcard.bg\").by(\"host\").last(5).count_by_status()",
+      "message": "API Gateway is down! @pagerduty-boom-card-critical @slack-boom-card-alerts",
+      "tags": ["service:api-gateway", "env:production", "team:backend"],
+      "options": {
+        "thresholds": {
+          "critical": 3,
+          "warning": 1
+        },
+        "notify_no_data": true,
+        "no_data_timeframe": 10
+      }
+    },
+    {
+      "name": "BOOM Card - High API Response Time",
+      "type": "metric alert",
+      "query": "avg(last_5m):avg:trace.express.request{env:production,service:api-gateway} > 1000",
+      "message": "API response time is above 1s for 5 minutes @slack-boom-card-alerts",
+      "tags": ["service:api-gateway", "env:production", "slo:response-time"],
+      "options": {
+        "thresholds": {
+          "critical": 1000,
+          "warning": 500
+        },
+        "notify_audit": false,
+        "include_tags": true
+      }
+    },
+    {
+      "name": "BOOM Card - Database Connection Pool Exhaustion",
+      "type": "metric alert",
+      "query": "avg(last_5m):avg:postgresql.connections.active{env:production} / avg:postgresql.connections.max{env:production} > 0.9",
+      "message": "PostgreSQL connection pool usage above 90% @pagerduty-boom-card-critical",
+      "tags": ["service:postgresql", "env:production", "team:backend"],
+      "options": {
+        "thresholds": {
+          "critical": 0.9,
+          "warning": 0.8
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Redis Memory Usage",
+      "type": "metric alert",
+      "query": "avg(last_10m):avg:redis.mem.used{env:production} / avg:redis.mem.maxmemory{env:production} > 0.85",
+      "message": "Redis memory usage above 85% @slack-boom-card-alerts",
+      "tags": ["service:redis", "env:production", "cache:sessions"],
+      "options": {
+        "thresholds": {
+          "critical": 0.85,
+          "warning": 0.75
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Payment Processing Failure Rate",
+      "type": "metric alert",
+      "query": "sum(last_5m):sum:payment.transaction.failed{env:production}.as_count() / sum:payment.transaction.total{env:production}.as_count() > 0.05",
+      "message": "Payment failure rate above 5% @pagerduty-boom-card-critical @slack-boom-card-payments",
+      "tags": ["service:payment-gateway", "env:production", "business:critical"],
+      "options": {
+        "thresholds": {
+          "critical": 0.05,
+          "warning": 0.02
+        },
+        "evaluation_delay": 60
+      }
+    },
+    {
+      "name": "BOOM Card - QR Code Scan Failure Rate",
+      "type": "metric alert",
+      "query": "sum(last_10m):sum:qr.scan.failed{env:production}.as_count() / sum:qr.scan.total{env:production}.as_count() > 0.1",
+      "message": "QR code scan failure rate above 10% @slack-boom-card-alerts",
+      "tags": ["feature:qr-scanner", "env:production", "user-facing:true"],
+      "options": {
+        "thresholds": {
+          "critical": 0.1,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Partner Dashboard Error Rate",
+      "type": "log alert",
+      "query": "logs(\"status:error service:partner-dashboard\").index(\"*\").rollup(\"count\").last(\"5m\") > 50",
+      "message": "High error rate in Partner Dashboard @slack-boom-card-partner-support",
+      "tags": ["service:partner-dashboard", "env:production"],
+      "options": {
+        "thresholds": {
+          "critical": 50,
+          "warning": 25
+        },
+        "aggregation": "count"
+      }
+    },
+    {
+      "name": "BOOM Card - User Registration Success Rate",
+      "type": "metric alert",
+      "query": "avg(last_30m):sum:user.registration.success{env:production}.as_count() / sum:user.registration.attempt{env:production}.as_count() < 0.8",
+      "message": "User registration success rate below 80% @slack-boom-card-growth",
+      "tags": ["feature:registration", "env:production", "funnel:conversion"],
+      "options": {
+        "thresholds": {
+          "critical": 0.8,
+          "warning": 0.9
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - POS Integration API Latency",
+      "type": "metric alert",
+      "query": "avg(last_5m):p95:trace.pos.integration.request{env:production} > 2000",
+      "message": "POS integration API p95 latency above 2s @slack-boom-card-integrations",
+      "tags": ["integration:pos", "env:production", "slo:latency"],
+      "options": {
+        "thresholds": {
+          "critical": 2000,
+          "warning": 1500
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Subscription Renewal Failure",
+      "type": "metric alert",
+      "query": "sum(last_1h):sum:subscription.renewal.failed{env:production}.as_count() > 10",
+      "message": "More than 10 subscription renewal failures in the last hour @pagerduty-boom-card-billing",
+      "tags": ["service:billing", "env:production", "revenue:impact"],
+      "options": {
+        "thresholds": {
+          "critical": 10,
+          "warning": 5
+        },
+        "notify_no_data": false
+      }
+    },
+    {
+      "name": "BOOM Card - Search Service Performance",
+      "type": "metric alert",
+      "query": "avg(last_5m):avg:search.query.duration{env:production} > 500",
+      "message": "Search query duration above 500ms @slack-boom-card-search",
+      "tags": ["service:search", "env:production", "user-experience:critical"],
+      "options": {
+        "thresholds": {
+          "critical": 500,
+          "warning": 300
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Mobile App Crash Rate",
+      "type": "metric alert",
+      "query": "avg(last_1h):sum:mobile.crash.count{env:production}.as_count() / sum:mobile.session.count{env:production}.as_count() > 0.02",
+      "message": "Mobile app crash rate above 2% @slack-boom-card-mobile",
+      "tags": ["platform:mobile", "env:production", "stability:critical"],
+      "options": {
+        "thresholds": {
+          "critical": 0.02,
+          "warning": 0.01
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Email Service Queue Backlog",
+      "type": "metric alert",
+      "query": "avg(last_10m):avg:email.queue.size{env:production} > 1000",
+      "message": "Email queue backlog above 1000 messages @slack-boom-card-notifications",
+      "tags": ["service:email", "env:production"],
+      "options": {
+        "thresholds": {
+          "critical": 1000,
+          "warning": 500
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Analytics Processing Delay",
+      "type": "metric alert",
+      "query": "avg(last_15m):avg:analytics.processing.delay{env:production} > 300000",
+      "message": "Analytics processing delayed by more than 5 minutes @slack-boom-card-data",
+      "tags": ["service:analytics", "env:production"],
+      "options": {
+        "thresholds": {
+          "critical": 300000,
+          "warning": 180000
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - CDN Cache Hit Rate",
+      "type": "metric alert",
+      "query": "avg(last_30m):avg:cdn.cache.hit_rate{env:production} < 0.8",
+      "message": "CDN cache hit rate below 80% @slack-boom-card-infrastructure",
+      "tags": ["service:cdn", "env:production", "performance:impact"],
+      "options": {
+        "thresholds": {
+          "critical": 0.8,
+          "warning": 0.85
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Partner API Rate Limit Exceeded",
+      "type": "log alert",
+      "query": "logs(\"@http.status_code:429 service:partner-api\").index(\"*\").rollup(\"count\").by(\"@partner_id\").last(\"5m\") > 100",
+      "message": "Partner API rate limit exceeded for partner {{partner_id.name}} @slack-boom-card-partner-support",
+      "tags": ["service:partner-api", "env:production", "security:rate-limit"],
+      "options": {
+        "thresholds": {
+          "critical": 100,
+          "warning": 50
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Fraud Detection Alert",
+      "type": "metric alert",
+      "query": "sum(last_15m):sum:fraud.detection.suspicious{env:production}.as_count() > 5",
+      "message": "Multiple suspicious transactions detected @pagerduty-boom-card-security @slack-boom-card-fraud",
+      "tags": ["security:fraud", "env:production", "priority:high"],
+      "options": {
+        "thresholds": {
+          "critical": 5,
+          "warning": 3
+        },
+        "escalation_message": "Fraud detection still triggering, immediate investigation required"
+      }
+    },
+    {
+      "name": "BOOM Card - Location Service Availability",
+      "type": "service check",
+      "query": "\"location.service.up\".over(\"env:production\").by(\"region\").last(3).count_by_status()",
+      "message": "Location service down in region {{region.name}} @slack-boom-card-location",
+      "tags": ["service:location", "env:production"],
+      "options": {
+        "thresholds": {
+          "critical": 3
+        },
+        "new_group_delay": 60
+      }
+    },
+    {
+      "name": "BOOM Card - Notification Delivery Rate",
+      "type": "metric alert",
+      "query": "avg(last_1h):sum:notification.delivered{env:production}.as_count() / sum:notification.sent{env:production}.as_count() < 0.95",
+      "message": "Notification delivery rate below 95% @slack-boom-card-notifications",
+      "tags": ["service:notifications", "env:production"],
+      "options": {
+        "thresholds": {
+          "critical": 0.95,
+          "warning": 0.97
+        }
+      }
+    },
+    {
+      "name": "BOOM Card - Admin Panel Security Alert",
+      "type": "log alert",
+      "query": "logs(\"@evt.name:failed_login service:admin-panel\").index(\"*\").rollup(\"count\").by(\"@usr.id\").last(\"10m\") > 5",
+      "message": "Multiple failed admin login attempts from user {{usr.id.name}} @pagerduty-boom-card-security",
+      "tags": ["service:admin-panel", "security:authentication", "env:production"],
+      "options": {
+        "thresholds": {
+          "critical": 5,
+          "warning": 3
+        }
+      }
+    }
+  ]
+}

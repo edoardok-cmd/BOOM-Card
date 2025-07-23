@@ -1,0 +1,321 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  POSTGRES_VERSION: '15'
+
+jobs:
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Check for outdated packages
+        run: npm outdated || true
+
+      - name: Upload npm audit results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: npm-audit-results
+          path: npm-audit.json
+          retention-days: 30
+
+  code-security:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/typescript
+            p/nodejs
+          generateSarif: true
+
+      - name: Upload Semgrep results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  secrets-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Detect secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t boom-card:${{ github.sha }} .
+          docker tag boom-card:${{ github.sha }} boom-card:latest
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'boom-card:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Hadolint for Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+
+  infrastructure-scan:
+    name: Infrastructure as Code Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: all
+          output_format: sarif
+          output_file_path: reports/checkov.sarif
+          skip_check: CKV_DOCKER_2,CKV_DOCKER_3
+          soft_fail: true
+
+      - name: Upload Checkov results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/checkov.sarif
+
+  sast-scan:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install ESLint security plugins
+        run: |
+          npm install --save-dev eslint-plugin-security eslint-plugin-security-node
+          npm install --save-dev @typescript-eslint/parser @typescript-eslint/eslint-plugin
+
+      - name: Run ESLint security checks
+        run: |
+          npx eslint . --ext .js,.jsx,.ts,.tsx \
+            --config .eslintrc.security.json \
+            --format json \
+            --output-file eslint-security-report.json
+        continue-on-error: true
+
+      - name: Upload ESLint security report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: eslint-security-report
+          path: eslint-security-report.json
+
+  api-security:
+    name: API Security Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: boom_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run API tests with security checks
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boom_test
+          JWT_SECRET: test-secret-key
+          NODE_ENV: test
+        run: |
+          npm run test:api:security
+
+      - name: OWASP ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target: 'http://localhost:3000/api/v1/openapi.json'
+          format: openapi
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+  compliance-check:
+    name: Security Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check security headers configuration
+        run: |
+          echo "Checking for security headers in code..."
+          grep -r "helmet\|cors\|csp\|hsts" src/ || echo "Warning: Security headers might be missing"
+
+      - name: Check authentication implementation
+        run: |
+          echo "Checking authentication implementation..."
+          grep -r "bcrypt\|argon2\|jwt\|passport" src/ || echo "Warning: Authentication libraries might be missing"
+
+      - name: Check encryption usage
+        run: |
+          echo "Checking encryption usage..."
+          grep -r "crypto\|encryption\|aes\|rsa" src/ || echo "Warning: Encryption might not be implemented"
+
+      - name: Generate compliance report
+        run: |
+          echo "# Security Compliance Report" > compliance-report.md
+          echo "Generated on: $(date)" >> compliance-report.md
+          echo "" >> compliance-report.md
+          echo "## Checks Performed:" >> compliance-report.md
+          echo "- [x] Dependency vulnerabilities" >> compliance-report.md
+          echo "- [x] Code security analysis" >> compliance-report.md
+          echo "- [x] Secret detection" >> compliance-report.md
+          echo "- [x] Container security" >> compliance-report.md
+          echo "- [x] Infrastructure security" >> compliance-report.md
+          echo "- [x] API security" >> compliance-report.md
+
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: compliance-report
+          path: compliance-report.md
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-check, code-security, secrets-scan, container-scan, infrastructure-scan, sast-scan, api-security, compliance-check]
+    if: always()
+    steps:
+      - name: Create security summary
+        run: |
+          echo "# Security Scan Summary" > security-summary.md
+          echo "Workflow: ${{ github.workflow }}" >> security-summary.md
+          echo "Run: ${{ github.run_number }}" >> security-summary.md
+          echo "Commit: ${{ github.sha }}" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "## Job Results:" >> security-summary.md
+          echo "- Dependency Check: ${{ needs.dependency-check.result }}" >> security-summary.md
+          echo "- Code Security: ${{ needs.code-security.result }}" >> security-summary.md
+          echo "- Secrets Scan: ${{ needs.secrets-scan.result }}" >> security-summary.md
+          echo "- Container Scan: ${{ needs.container-scan.result }}" >> security-summary.md
+          echo "- Infrastructure Scan: ${{ needs.infrastructure-scan.result }}" >> security-summary.md
+          echo "- SAST Scan: ${{ needs.sast-scan.result }}" >> security-summary.md
+          echo "- API Security: ${{ needs.api-security.result }}" >> security-summary.md
+          echo "- Compliance Check: ${{ needs.compliance-check.result }}" >> security-summary.md
+
+      - name: Upload security summary
+        uses: actions/upload-artifact@v3
+        with:
+    

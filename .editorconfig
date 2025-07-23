@@ -1,0 +1,92 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# TypeScript and JavaScript files
+[*.{ts,tsx,js,jsx,mjs,cjs}]
+indent_size = 2
+quote_type = single
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown files
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+
+# SQL files
+[*.sql]
+indent_size = 4
+
+# Shell scripts
+[*.sh]
+indent_size = 2
+
+# Dockerfile
+[Dockerfile*]
+indent_size = 2
+
+# Python files (for any build scripts)
+[*.py]
+indent_size = 4
+
+# CSS, SCSS, and Less files
+[*.{css,scss,sass,less}]
+indent_size = 2
+
+# HTML files
+[*.html]
+indent_size = 2
+
+# XML files
+[*.xml]
+indent_size = 2
+
+# Environment files
+[.env*]
+insert_final_newline = false
+
+# Package files
+[{package.json,package-lock.json,yarn.lock}]
+indent_size = 2
+
+# Configuration files
+[.{eslintrc,prettierrc,babelrc}]
+indent_size = 2
+
+# Git files
+[.git*]
+indent_size = 2
+
+# Docker compose files
+[docker-compose*.yml]
+indent_size = 2
+
+# Makefiles
+[Makefile]
+indent_style = tab
+
+# Go files (if any)
+[*.go]
+indent_style = tab
+
+# Ignore files
+[*.{min.js,min.css}]
+insert_final_newline = ignore
+trim_trailing_whitespace = ignore

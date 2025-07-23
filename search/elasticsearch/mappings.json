@@ -1,0 +1,49 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "boom_analyzer"
+      },
+      "description": {
+        "type": "text"
+      },
+      "category": {
+        "type": "keyword"
+      },
+      "subcategory": {
+        "type": "keyword"
+      },
+      "location": {
+        "type": "geo_point"
+      },
+      "address": {
+        "type": "text"
+      },
+      "city": {
+        "type": "keyword"
+      },
+      "discount": {
+        "type": "float"
+      },
+      "rating": {
+        "type": "float"
+      },
+      "reviewCount": {
+        "type": "integer"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "created_at": {
+        "type": "date"
+      },
+      "updated_at": {
+        "type": "date"
+      }
+    }
+  }
+}

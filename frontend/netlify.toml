@@ -1,0 +1,72 @@
+# Netlify Configuration for BOOM Card Frontend
+
+[build]
+  # Build command for Next.js
+  command = "npm run build"
+  
+  # Next.js build output directory
+  publish = ".next"
+
+# Environment variables needed for build
+[build.environment]
+  # Ensure Next.js optimizations are enabled
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+
+# Cache control for static assets
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects for Next.js routes
+[[redirects]]
+  from = "/_next/static/*"
+  to = "/static/:splat"
+  status = 200
+
+# Function configuration for Next.js SSR/API routes
+[functions]
+  # Directory containing serverless functions
+  directory = ".netlify/functions/"
+  
+  # Next.js specific function configuration
+  node_bundler = "esbuild"
+  
+  # Include files needed for functions
+  included_files = ["public/**", ".next/**"]
+
+# Plugin to handle Next.js deployment
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Development settings
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 3000
+  publish = ".next"
+  autoLaunch = true
+
+# Context-specific settings
+[context.production]
+  environment = { NODE_ENV = "production" }
+  
+[context.deploy-preview]
+  environment = { NODE_ENV = "development" }
+  
+[context.branch-deploy]
+  environment = { NODE_ENV = "development" }

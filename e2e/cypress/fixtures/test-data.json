@@ -1,0 +1,455 @@
+{
+  "users": {
+    "consumer": {
+      "valid": {
+        "email": "testuser@example.com",
+        "password": "Test123!@#",
+        "firstName": "John",
+        "lastName": "Doe",
+        "phone": "+359888123456",
+        "language": "en"
+      },
+      "premium": {
+        "email": "premium@example.com",
+        "password": "Premium123!@#",
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "phone": "+359888654321",
+        "language": "bg",
+        "subscriptionType": "premium",
+        "subscriptionStatus": "active"
+      },
+      "expired": {
+        "email": "expired@example.com",
+        "password": "Expired123!@#",
+        "firstName": "Bob",
+        "lastName": "Johnson",
+        "phone": "+359888111222",
+        "language": "en",
+        "subscriptionType": "premium",
+        "subscriptionStatus": "expired"
+      },
+      "invalid": {
+        "email": "invalid-email",
+        "password": "123",
+        "firstName": "",
+        "lastName": "",
+        "phone": "invalid"
+      }
+    },
+    "partner": {
+      "restaurant": {
+        "email": "restaurant@partner.com",
+        "password": "Partner123!@#",
+        "businessName": "Test Restaurant",
+        "contactPerson": "Manager Name",
+        "phone": "+359888777888",
+        "category": "restaurant"
+      },
+      "hotel": {
+        "email": "hotel@partner.com",
+        "password": "Hotel123!@#",
+        "businessName": "Test Hotel",
+        "contactPerson": "Hotel Manager",
+        "phone": "+359888999000",
+        "category": "hotel"
+      }
+    },
+    "admin": {
+      "superAdmin": {
+        "email": "admin@boomcard.bg",
+        "password": "Admin123!@#",
+        "role": "super_admin"
+      },
+      "support": {
+        "email": "support@boomcard.bg",
+        "password": "Support123!@#",
+        "role": "support"
+      }
+    }
+  },
+  "partners": {
+    "restaurants": [
+      {
+        "id": "rest-001",
+        "name": "Gourmet Paradise",
+        "category": "restaurant",
+        "subcategory": "fine_dining",
+        "discount": 20,
+        "location": {
+          "city": "Sofia",
+          "address": "123 Vitosha Blvd",
+          "coordinates": {
+            "lat": 42.6977,
+            "lng": 23.3219
+          }
+        },
+        "cuisine": ["Italian", "Mediterranean"],
+        "rating": 4.8,
+        "priceRange": 3,
+        "features": ["vegan_options", "gluten_free", "outdoor_seating"],
+        "businessHours": {
+          "monday": "11:00-23:00",
+          "tuesday": "11:00-23:00",
+          "wednesday": "11:00-23:00",
+          "thursday": "11:00-23:00",
+          "friday": "11:00-24:00",
+          "saturday": "11:00-24:00",
+          "sunday": "12:00-22:00"
+        }
+      },
+      {
+        "id": "rest-002",
+        "name": "Quick Bites",
+        "category": "restaurant",
+        "subcategory": "fast_food",
+        "discount": 15,
+        "location": {
+          "city": "Plovdiv",
+          "address": "45 Main Street",
+          "coordinates": {
+            "lat": 42.1354,
+            "lng": 24.7453
+          }
+        },
+        "cuisine": ["American", "Fast Food"],
+        "rating": 4.2,
+        "priceRange": 1,
+        "features": ["delivery", "takeaway", "parking"],
+        "businessHours": {
+          "monday": "09:00-22:00",
+          "tuesday": "09:00-22:00",
+          "wednesday": "09:00-22:00",
+          "thursday": "09:00-22:00",
+          "friday": "09:00-23:00",
+          "saturday": "09:00-23:00",
+          "sunday": "10:00-22:00"
+        }
+      }
+    ],
+    "hotels": [
+      {
+        "id": "hotel-001",
+        "name": "Grand Sofia Hotel",
+        "category": "hotel",
+        "subcategory": "5_star",
+        "discount": 25,
+        "location": {
+          "city": "Sofia",
+          "address": "1 Alexander Nevsky Square",
+          "coordinates": {
+            "lat": 42.6964,
+            "lng": 23.3327
+          }
+        },
+        "rating": 4.9,
+        "priceRange": 4,
+        "features": ["spa", "gym", "pool", "restaurant", "bar", "parking", "wifi"],
+        "amenities": {
+          "rooms": 150,
+          "checkIn": "14:00",
+          "checkOut": "12:00"
+        }
+      },
+      {
+        "id": "hotel-002",
+        "name": "Boutique Dreams",
+        "category": "hotel",
+        "subcategory": "boutique",
+        "discount": 30,
+        "location": {
+          "city": "Varna",
+          "address": "78 Sea Garden",
+          "coordinates": {
+            "lat": 43.2141,
+            "lng": 27.9147
+          }
+        },
+        "rating": 4.7,
+        "priceRange": 3,
+        "features": ["beachfront", "restaurant", "bar", "wifi", "pet_friendly"],
+        "amenities": {
+          "rooms": 25,
+          "checkIn": "15:00",
+          "checkOut": "11:00"
+        }
+      }
+    ],
+    "entertainment": [
+      {
+        "id": "ent-001",
+        "name": "Sky Lounge Bar",
+        "category": "entertainment",
+        "subcategory": "sky_bar",
+        "discount": 15,
+        "location": {
+          "city": "Sofia",
+          "address": "Top Floor, Business Tower",
+          "coordinates": {
+            "lat": 42.6784,
+            "lng": 23.3197
+          }
+        },
+        "rating": 4.6,
+        "priceRange": 3,
+        "features": ["live_music", "panoramic_view", "cocktails"],
+        "businessHours": {
+          "monday": "closed",
+          "tuesday": "18:00-02:00",
+          "wednesday": "18:00-02:00",
+          "thursday": "18:00-02:00",
+          "friday": "18:00-04:00",
+          "saturday": "18:00-04:00",
+          "sunday": "18:00-24:00"
+        }
+      },
+      {
+        "id": "ent-002",
+        "name": "Escape Matrix",
+        "category": "entertainment",
+        "subcategory": "escape_room",
+        "discount": 20,
+        "location": {
+          "city": "Sofia",
+          "address": "34 Youth Street",
+          "coordinates": {
+            "lat": 42.6890,
+            "lng": 23.3165
+          }
+        },
+        "rating": 4.9,
+        "priceRange": 2,
+        "features": ["team_building", "birthday_parties"],
+        "businessHours": {
+          "monday": "10:00-22:00",
+          "tuesday": "10:00-22:00",
+          "wednesday": "10:00-22:00",
+          "thursday": "10:00-22:00",
+          "friday": "10:00-24:00",
+          "saturday": "10:00-24:00",
+          "sunday": "10:00-22:00"
+        }
+      }
+    ],
+    "wellness": [
+      {
+        "id": "spa-001",
+        "name": "Zen Wellness Center",
+        "category": "wellness",
+        "subcategory": "spa",
+        "discount": 30,
+        "location": {
+          "city": "Sofia",
+          "address": "56 Relax Avenue",
+          "coordinates": {
+            "lat": 42.6650,
+            "lng": 23.3150
+          }
+        },
+        "rating": 4.8,
+        "priceRange": 3,
+        "features": ["massage", "sauna", "jacuzzi", "facial_treatments"],
+        "businessHours": {
+          "monday": "09:00-21:00",
+          "tuesday": "09:00-21:00",
+          "wednesday": "09:00-21:00",
+          "thursday": "09:00-21:00",
+          "friday": "09:00-21:00",
+          "saturday": "09:00-20:00",
+          "sunday": "10:00-19:00"
+        }
+      }
+    ]
+  },
+  "transactions": {
+    "successful": [
+      {
+        "id": "trans-001",
+        "userId": "user-001",
+        "partnerId": "rest-001",
+        "amount": 150.00,
+        "discount": 30.00,
+        "finalAmount": 120.00,
+        "status": "completed",
+        "timestamp": "2024-01-15T14:30:00Z"
+      },
+      {
+        "id": "trans-002",
+        "userId": "user-002",
+        "partnerId": "hotel-001",
+        "amount": 500.00,
+        "discount": 125.00,
+        "finalAmount": 375.00,
+        "status": "completed",
+        "timestamp": "2024-01-15T16:45:00Z"
+      }
+    ],
+    "pending": [
+      {
+        "id": "trans-003",
+        "userId": "user-001",
+        "partnerId": "spa-001",
+        "amount": 200.00,
+        "discount": 60.00,
+        "finalAmount": 140.00,
+        "status": "pending",
+        "timestamp": "2024-01-15T18:00:00Z"
+      }
+    ],
+    "failed": [
+      {
+        "id": "trans-004",
+        "userId": "user-003",
+        "partnerId": "rest-002",
+        "amount": 80.00,
+        "discount": 12.00,
+        "finalAmount": 68.00,
+        "status": "failed",
+        "errorCode": "SUBSCRIPTION_EXPIRED",
+        "timestamp": "2024-01-15T19:15:00Z"
+      }
+    ]
+  },
+  "subscriptions": {
+    "plans": [
+      {
+        "id": "basic",
+        "name": "Basic",
+        "price": 9.99,
+        "currency": "BGN",
+        "period": "monthly",
+        "features": [
+          "10% discount cap",
+          "Limited partners",
+          "Basic support"
+        ]
+      },
+      {
+        "id": "premium",
+        "name": "Premium",
+        "price": 19.99,
+        "currency": "BGN",
+        "period": "monthly",
+        "features": [
+          "Unlimited discounts",
+          "All partners",
+          "Priority support",
+          "Exclusive deals"
+        ]
+      },
+      {
+        "id": "annual",
+        "name": "Annual Premium",
+        "price": 199.99,
+        "currency": "BGN",
+        "period": "yearly",
+        "features": [
+          "All Premium features",
+          "2 months free",
+          "VIP events access"
+        ]
+      }
+    ]
+  },
+  "search": {
+    "queries": [
+      "italian restaurant sofia",
+      "spa discount",
+      "hotel varna",
+      "escape room",
+      "vegan restaurant",
+      "sky bar"
+    ],
+    "filters": {
+      "categories": ["restaurant", "hotel", "entertainment", "wellness"],
+      "cities": ["Sofia", "Plovdiv", "Varna", "Burgas"],
+      "priceRange": [1, 2, 3, 4],
+      "features": ["parking", "wifi", "outdoor_seating", "delivery"],
+      "discount": [10, 15, 20, 25, 30]
+    }
+  },
+  "qrCodes": {
+    "valid": {
+      "partnerId": "rest-001",
+      "type": "dynamic",
+      "expiresAt": "2025-12-31T23:59:59Z"
+    },
+    "expired": {
+      "partnerId": "hotel-002",
+      "type": "dynamic",
+      "expiresAt": "2023-12-31T23:59:59Z"
+    },
+    "invalid": {
+      "partnerId": "invalid-partner",
+      "type": "unknown"
+    }
+  },
+  "notifications": {
+    "templates": [
+      {
+        "id": "welcome",
+        "type": "email",
+        "subject": {
+          "en": "Welcome to BOOM Card!",
+          "bg": "Добре дошли в BOOM Card!"
+        },
+        "body": {
+          "en": "Thank you for joining BOOM Card. Start saving today!",
+          "bg": "Благодарим ви, че се присъединихте към BOOM Card. Започнете да спестявате днес!"
+        }
+      },
+      {
+        "id": "transaction_success",
+        "type": "push",
+        "title": {
+          "en": "Transaction Successful",
+          "bg": "Успешна транзакция"
+        },
+        "body": {
+          "en": "You saved {{discount}} at {{partner}}",
+          "bg": "Спестихте {{discount}} в {{partner}}"
+        }
+      }
+    ]
+  },
+  "analytics": {
+    "userMetrics": {
+      "totalUsers": 15420,
+      "activeUsers": 8956,
+      "premiumUsers": 3214,
+      "monthlyGrowth": 12.5
+    },
+    "partnerMetrics": {
+      "totalPartners": 856,
+      "activePartners": 742,
+      "newThisMonth": 28,
+      "topCategory": "restaurant"
+    },
+    "transactionMetrics": {
+      "totalTransactions": 45678,
+      "totalSavings": 256789.50,
+      "averageDiscount": 22.5,
+      "peakHour": "19:00"
+    }
+  },
+  "testCards": {
+    "valid": {
+      "number": "4242424242424242",
+      "exp": "12/25",
+      "cvc": "123",
+      "zip": "1000"
+    },
+    "declined": {
+      "number": "4000000000000002",
+      "exp": "12/25",
+      "cvc": "123",
+      "zip": "1000"
+    },
+    "insufficient": {
+      "number": "4000000000009995",
+      "exp": "12/25",
+      "cvc": "123",
+      "zip": "1000"
+    }
+  }
+}

@@ -1,0 +1,183 @@
+/*
+ * File: frontend/src/styles/variables.css
+ * Description: Defines global CSS variables for the BOOM Card frontend application.
+ *              These variables provide a consistent design system for colors, typography,
+ *              spacing, and more, ensuring a unified look and feel across the platform.
+ *
+ * BOOM Card Project - Discount Card Platform
+ * Tech Stack: React/Next.js
+ *
+ * Content Structure:
+ * 1. Global Reset & Base
+ * 2. Colors: Brand, Neutral, Semantic
+ * 3. Typography: Font Families, Sizes, Weights, Line Heights
+ * 4. Spacing System
+ * 5. Layout & Responsiveness: Breakpoints, Max Width
+ * 6. Borders & Shadows
+ * 7. Transitions & Animations
+ * 8. Z-Index Layers
+ */
+
+:root {
+  /* --- 1. Global Reset & Base --- */
+  /* Define a base font size for rem calculations. 16px is the browser default. */
+  font-size: 16px;
+
+  /* --- 2. Colors --- */
+
+  /* Brand Colors */
+  --color-primary: #0070F3; /* A strong, modern blue, representing reliability and trust */
+  --color-primary-light: #3291FF; /* Lighter shade for hover states or subtle elements */
+  --color-primary-dark: #0056B3; /* Darker shade for contrast or text on primary background */
+  --color-primary-text: #FFFFFF; /* Text color to be used on primary background */
+
+  --color-accent: #FFD200; /* A vibrant yellow, representing 'BOOM' and highlights */
+  --color-accent-light: #FFF066; /* Lighter shade of accent for subtle highlights */
+  --color-accent-dark: #CCAA00; /* Darker shade for deeper contrast */
+  --color-accent-text: #1A1A1A; /* Text color to be used on accent background (often dark) */
+
+  /* Neutral Colors (Grayscale) */
+  --color-text-primary: #1A1A1A; /* Darkest text for headings and main content */
+  --color-text-secondary: #5C5C5C; /* Medium gray for secondary text, descriptions */
+  --color-text-light: #999999; /* Light gray for subtle text, placeholders */
+  --color-text-placeholder: #B0B0B0; /* Specific color for input placeholders */
+
+  --color-background-body: #F5F7FA; /* Light blue-gray for main page background */
+  --color-background-card: #FFFFFF; /* White for cards, modals, and content blocks */
+  --color-background-header: #FFFFFF; /* White for header/navbar background */
+  --color-background-footer: #1A1A1A; /* Dark background for footer */
+  --color-background-overlay: rgba(0, 0, 0, 0.5); /* Overlay color for modals/drawers */
+
+  --color-border-default: #E0E0E0; /* Default border color for inputs, cards, etc. */
+  --color-border-light: #F0F0F0; /* Lighter border color for subtle divisions */
+  --color-divider: #EEEEEE; /* Color for horizontal/vertical dividers */
+
+  /* Semantic Colors (Status/Feedback) */
+  --color-success: #28A745; /* Green for success messages and positive actions */
+  --color-success-light: #D4EDDA; /* Lighter success background */
+  --color-success-dark: #1E7E34; /* Darker success for contrast */
+
+  --color-warning: #FFC107; /* Orange/yellow for warnings and alerts */
+  --color-warning-light: #FFF3CD; /* Lighter warning background */
+  --color-warning-dark: #D39E00; /* Darker warning for contrast */
+
+  --color-error: #DC3545; /* Red for errors and destructive actions */
+  --color-error-light: #F8D7DA; /* Lighter error background */
+  --color-error-dark: #BD2130; /* Darker error for contrast */
+
+  --color-info: #17A2B8; /* Light blue for informational messages */
+  --color-info-light: #D1ECF1; /* Lighter info background */
+  --color-info-dark: #117A8B; /* Darker info for contrast */
+
+
+  /* --- 3. Typography --- */
+
+  /* Font Families */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-headings: var(--font-family-primary); /* Often same as primary, or a more distinct sans-serif */
+
+  /* Font Sizes (based on 16px root font size) */
+  --font-size-xxs: 0.6875rem; /* ~11px for tiny text (e.g., footnotes) */
+  --font-size-xs: 0.75rem;    /* ~12px for small labels, timestamps */
+  --font-size-sm: 0.875rem;   /* ~14px for captions, secondary info */
+  --font-size-base: 1rem;     /* 16px default body text */
+  --font-size-md: 1.125rem;   /* ~18px for larger body text, button text */
+  --font-size-lg: 1.25rem;    /* ~20px for subheadings */
+  --font-size-xl: 1.5rem;     /* ~24px for H4/H3 */
+  --font-size-xxl: 1.875rem;  /* ~30px for H3/H2 */
+  --font-size-xxxl: 2.25rem;  /* ~36px for H2/H1 */
+  --font-size-xxxxl: 3rem;    /* ~48px for H1/Display */
+
+  /* Font Weights */
+  --font-weight-thin: 100;
+  --font-weight-extra-light: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extra-bold: 800;
+  --font-weight-black: 900;
+
+  /* Line Heights */
+  --line-height-heading: 1.2; /* Tighter line height for headings */
+  --line-height-body: 1.6;    /* More relaxed line height for body text */
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.5;
+  --line-height-loose: 1.7;
+
+
+  /* --- 4. Spacing System (Based on 8px grid) --- */
+  --spacing-xxs: 0.25rem;  /* 4px */
+  --spacing-xs: 0.5rem;   /* 8px */
+  --spacing-sm: 0.75rem;  /* 12px */
+  --spacing-md: 1rem;     /* 16px */
+  --spacing-lg: 1.5rem;   /* 24px */
+  --spacing-xl: 2rem;     /* 32px */
+  --spacing-xxl: 3rem;    /* 48px */
+  --spacing-xxxl: 4rem;   /* 64px */
+  --spacing-xxxxl: 5rem;  /* 80px */
+
+
+  /* --- 5. Layout & Responsiveness --- */
+
+  /* Breakpoints (min-width) */
+  --breakpoint-xs: 0px;    /* Extra small devices (portrait phones) */
+  --breakpoint-sm: 576px;  /* Small devices (landscape phones, 576px and up) */
+  --breakpoint-md: 768px;  /* Medium devices (tablets, 768px and up) */
+  --breakpoint-lg: 992px;  /* Large devices (desktops, 992px and up) */
+  --breakpoint-xl: 1200px; /* Extra large devices (large desktops, 1200px and up) */
+  --breakpoint-xxl: 1400px; /* XX-large devices (wider desktops, 1400px and up) */
+
+  /* Max content width to center content on large screens */
+  --max-content-width: 1280px;
+
+
+  /* --- 6. Borders & Shadows --- */
+
+  /* Border Radii */
+  --border-radius-none: 0;
+  --border-radius-sm: 0.25rem; /* 4px */
+  --border-radius-md: 0.5rem;  /* 8px */
+  --border-radius-lg: 0.75rem; /* 12px */
+  --border-radius-xl: 1rem;    /* 16px */
+  --border-radius-full: 50%;   /* For circular elements */
+
+  /* Border Widths */
+  --border-width-sm: 1px;
+  --border-width-md: 2px;
+  --border-width-lg: 3px;
+
+  /* Box Shadows */
+  --box-shadow-none: none;
+  --box-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Lightest shadow for subtle lift */
+  --box-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Medium shadow for cards */
+  --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Larger shadow for prominent elements */
+  --box-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Extra large for modals/popups */
+  --box-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* Inner shadow for pressed states */
+
+
+  /* --- 7. Transitions & Animations --- */
+
+  /* Transition Speeds */
+  --transition-speed-fast: 0.15s;
+  --transition-speed-normal: 0.3s;
+  --transition-speed-slow: 0.5s;
+
+  /* Transition Easing Functions */
+  --transition-easing-ease: ease-in-out;
+  --transition-easing-linear: linear;
+  --transition-easing-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+
+  /* --- 8. Z-Index Layers --- */
+  --z-index-base: 1; /* Default layer */
+  --z-index-dropdown: 1000; /* Dropdowns, tooltips */
+  --z-index-sticky: 1020;   /* Sticky headers/footers */
+  --z-index-fixed: 1030;    /* Fixed elements like chat buttons */
+  --z-index-modal-backdrop: 1040; /* Modal background overlay */
+  --z-index-modal: 1050;    /* Modals */
+  --z-index-popover: 1060;  /* Popovers */
+  --z-index-tooltip: 1070;  /* Tooltips */
+  --z-index-alert: 1080;    /* Global alerts/toasts */
+}

@@ -1,0 +1,545 @@
+version: 2.1
+
+# Orbs provide pre-built CircleCI configurations for common tools and services.
+orbs:
+  node: circleci/node@5.0.0
+  aws-cli: circleci/aws-cli@2.0.0
+  aws-ecr: circleci/aws-ecr@8.0.0
+
+# Define a common executor for Node.js based projects
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:16.14.0 # Using a specific LTS Node.js version for consistency
+    resource_class: large # Use a larger resource class for potentially faster builds and tests
+
+# Define reusable commands to reduce duplication across jobs
+commands:
+  # Command to install Node.js dependencies efficiently using caching
+  install_deps:
+    parameters:
+      path:
+        type: string
+        description: "Path to the application/service directory (e.g., services/api-gateway)"
+    steps:
+      - restore_cache:
+          # Cache key based on package-lock.json to ensure cache invalidation on dependency changes
+          keys:
+            - v1-dependencies-{{ checksum "<< parameters.path >>/package-lock.json" }}
+            - v1-dependencies- # Fallback cache
+      - run:
+          name: Install Dependencies
+          working_directory: << parameters.path >>
+          command: npm ci # Use npm ci for clean and reproducible installations in CI environments
+      - save_cache:
+          paths:
+            - << parameters.path >>/node_modules
+          key: v1-dependencies-{{ checksum "<< parameters.path >>/package-lock.json" }}
+
+  # Command to run type checking, linting, and unit/integration tests
+  run_checks:
+    parameters:
+      path:
+        type: string
+        description: "Path to the application/service directory"
+    steps:
+      - run:
+          name: Run Type Checking (TypeScript)
+          working_directory: << parameters.path >>
+          # Assumes a 'type-check' script in package.json (e.g., "tsc --noEmit")
+          command: npm run type-check
+      - run:
+          name: Run Linting
+          working_directory: << parameters.path >>
+          # Assumes a 'lint' script in package.json (e.g., "eslint src --ext .ts")
+          command: npm run lint
+      - run:
+          name: Run Tests
+          working_directory: << parameters.path >>
+          # Run tests with coverage reporting (adjust Jest/testing framework flags as needed)
+          command: npm test -- --coverage --ci --json --outputFile=test-results.json || true # Continue on test failure to upload results
+          environment:
+            CI: true # Set CI environment variable for Jest and other test runners
+      - store_test_results: # Store test results for CircleCI UI
+          path: << parameters.path >>/test-results.json
+      - store_artifacts: # Store coverage reports as artifacts
+          path: << parameters.path >>/coverage
+
+  # Command to build Node.js/TypeScript applications (e.g., API Gateway)
+  build_ts_app:
+    parameters:
+      path:
+        type: string
+        description: "Path to the Node.js application directory"
+    steps:
+      - run:
+          name: Build TypeScript Application
+          working_directory: << parameters.path >>
+          # Assumes a 'build' script in package.json (e.g., "tsc")
+          command: npm run build
+
+  # Command to build Next.js applications (for SSR deployments)
+  build_nextjs_app:
+    parameters:
+      path:
+        type: string
+        description: "Path to the Next.js application directory"
+      # This environment variable will be dynamically set to NEXT_PUBLIC_API_URL_DEV or NEXT_PUBLIC_API_URL_PROD
+      # based on the branch. It must be present in CircleCI environment variables.
+      api_url_env_var:
+        type: string
+        description: "Name of the env var holding the correct API URL (e.g., NEXT_PUBLIC_API_URL_DEV)"
+    steps:
+      - run:
+          name: Set Next.js Build-Time Environment Variable
+          working_directory: << parameters.path >>
+          command: |
+            # Dynamically sets NEXT_PUBLIC_API_URL for the Next.js build
+            # based on whether it's a 'main' (production) or 'develop' (development) build.
+            # The actual values for NEXT_PUBLIC_API_URL_PROD and NEXT_PUBLIC_API_URL_DEV
+            # must be configured as environment variables in CircleCI.
+            echo "NEXT_PUBLIC_API_URL=$(eval echo \$<< parameters.api_url_env_var >>)" >> $BASH_ENV
+            source $BASH_ENV # Load the new variable into the current shell environment
+          environment:
+            # Ensure the required environment variables are passed to this step
+            NEXT_PUBLIC_API_URL_DEV: ${NEXT_PUBLIC_API_URL_DEV}
+            NEXT_PUBLIC_API_URL_PROD: ${NEXT_PUBLIC_API_URL_PROD}
+      - run:
+          name: Build Next.js Application
+          working_directory: << parameters.path >>
+          # Assumes 'next build' as the 'build' script in package.json
+          command: npm run build
+      - persist_to_workspace: # Persist .next directory for Docker build
+          root: << parameters.path >>
+          paths:
+            - .next # Default Next.js build output directory
+            - public # Static assets often copied by Dockerfile
+
+  # Command to build and push Docker images to ECR
+  build_and_push_docker_image:
+    parameters:
+      app_name:
+        type: string
+        description: "Name of the application (e.g., api-gateway, consumer-web)"
+      context_path:
+        type: string
+        description: "Context path for the Docker build (e.g., services/api-gateway)"
+      dockerfile_path:
+        type: string
+        description: "Path to the Dockerfile relative to the context_path (e.g., Dockerfile)"
+      ecr_repo_prefix:
+        type: string
+        description: "Prefix for ECR repository (e.g., boom-card)"
+      tag:
+        type: string
+        default: "${CIRCLE_SHA1}" # Default to commit SHA as the Docker image tag
+        description: "Docker image tag"
+    steps:
+      - aws-ecr/build-image:
+          repo: << parameters.ecr_repo_prefix >>/<< parameters.app_name >>
+          dockerfile: << parameters.context_path >>/<< parameters.dockerfile_path >>
+          path: << parameters.context_path >> # Build context
+          tag: << parameters.tag >>
+      - aws-ecr/push-image:
+          repo: << parameters.ecr_repo_prefix >>/<< parameters.app_name >>
+          tag: << parameters.tag >>
+
+  # Command to deploy containerized applications to AWS ECS
+  # This command assumes a single container per task definition named after the app_name.
+  # For more complex task definitions, a dedicated deployment script or tool like Terraform/CloudFormation is recommended.
+  deploy_to_ecs:
+    parameters:
+      app_name:
+        type: string
+        description: "Name of the application/container for ECS service (e.g., api-gateway)"
+      cluster_env_var:
+        type: string
+        description: "Environment variable name for ECS Cluster (e.g., ECS_CLUSTER_DEV)"
+      service_env_var:
+        type: string
+        description: "Environment variable name for ECS Service (e.g., ECS_SERVICE_API_GATEWAY_DEV)"
+      task_def_env_var:
+        type: string
+        description: "Environment variable name for ECS Task Definition (e.g., ECS_TASK_DEFINITION_API_GATEWAY_DEV)"
+      ecr_repo_prefix:
+        type: string
+        description: "Prefix for ECR repository (e.g., boom-card)"
+      tag:
+        type: string
+        default: "${CIRCLE_SHA1}"
+        description: "Docker image tag to deploy"
+    steps:
+      - aws-cli/setup # Configure AWS CLI for the commands below
+      - run:
+          name: Deploy to ECS
+          command: |
+            # Dynamically retrieve cluster, service, and task definition names from environment variables
+            ECS_CLUSTER=$(eval echo \$<< parameters.cluster_env_var >>)
+            ECS_SERVICE=$(eval echo \$<< parameters.service_env_var >>)
+            ECS_TASK_DEFINITION=$(eval echo \$<< parameters.task_def_env_var >>)
+            IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/<< parameters.ecr_repo_prefix >>/<< parameters.app_name >>:<< parameters.tag >>"
+
+            echo "Deploying ${IMAGE_URI} to ECS Cluster: ${ECS_CLUSTER}, Service: ${ECS_SERVICE}, Task Def: ${ECS_TASK_DEFINITION}"
+
+            # Fetch the current active task definition JSON
+            TASK_DEF_JSON=$(aws ecs describe-task-definition \
+              --task-definition "${ECS_TASK_DEFINITION}" \
+              --query 'taskDefinition' \
+              --output json)
+
+            # Update the image URI for the specific container within the task definition.
+            # This uses 'jq' to modify the containerDefinitions array.
+            # It also removes auto-generated fields that prevent re-registration.
+            UPDATED_TASK_DEF=$(echo ${TASK_DEF_JSON} | jq \
+              --arg IMAGE "${IMAGE_URI}" \
+              --arg APP_NAME "<< parameters.app_name >>" \
+              '.containerDefinitions |= map(if .name == $APP_NAME then .image = $IMAGE else . end) | \
+              del(.status, .registeredAt, .deregisteredAt, .taskDefinitionArn, .revision, .requiresAttributes, .compatibilities, .registeredBy)')
+
+            # Register a new revision of the task definition
+            NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+              --cli-input-json "${UPDATED_TASK_DEF}" \
+              --query 'taskDefinition.taskDefinitionArn' \
+              --output text)
+            
+            echo "Registered new task definition: ${NEW_TASK_DEF_ARN}"
+
+            # Update the ECS service to use the new task definition and force a new deployment
+            aws ecs update-service \
+              --cluster "${ECS_CLUSTER}" \
+              --service "${ECS_SERVICE}" \
+              --task-definition "${NEW_TASK_DEF_ARN}" \
+              --force-new-deployment
+            
+            echo "ECS Service ${ECS_SERVICE} updated successfully with new deployment."
+          environment:
+            # Ensure AWS credentials and account ID are available as CircleCI environment variables
+            AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+            AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+            AWS_REGION: ${AWS_REGION}
+            AWS_ACCOUNT_ID: ${AWS_ACCOUNT_ID}
+
+jobs:
+  # Generic job for testing any Node.js/Next.js application
+  test_application:
+    executor: node-executor
+    parameters:
+      app_path:
+        type: string
+        description: "Path to the application/service directory (e.g., services/api-gateway)"
+    steps:
+      - checkout
+      - install_deps:
+          path: << parameters.app_path >>
+      - run_checks:
+          path: << parameters.app_path >>
+
+  # Job for building the API Gateway service
+  build_api_gateway:
+    executor: node-executor
+    parameters:
+      tag:
+        type: string
+        default: "${CIRCLE_SHA1}"
+    steps:
+      - checkout
+      - install_deps:
+          path: services/api-gateway
+      - build_ts_app:
+          path: services/api-gateway
+      - aws-ecr/check-login # Ensure ECR authentication is established
+      - build_and_push_docker_image:
+          app_name: api-gateway
+          context_path: services/api-gateway
+          dockerfile_path: Dockerfile # Assumes Dockerfile is in services/api-gateway
+          ecr_repo_prefix: boom-card
+          tag: << parameters.tag >>
+
+  # Job for building Next.js SSR applications (Consumer Web, Partner Dashboard, Admin Panel)
+  build_nextjs_ssr_app:
+    executor: node-executor
+    parameters:
+      app_name:
+        type: string
+        description: "Name of the Next.js application (e.g., consumer-web)"
+      app_path:
+        type: string
+        description: "Path to the Next.js application directory (e.g., apps/consumer-web)"
+      api_url_env_var:
+        type: string
+        description: "Environment variable name for the API URL during Next.js build"
+      tag:
+        type: string
+        default: "${CIRCLE_SHA1}"
+    steps:
+      - checkout
+      - install_deps:
+          path: << parameters.app_path >>
+      - build_nextjs_app:
+          path: << parameters.app_path >>
+          api_url_env_var: << parameters.api_url_env_var >>
+      - aws-ecr/check-login
+      - build_and_push_docker_image:
+          app_name: << parameters.app_name >>
+          context_path: << parameters.app_path >>
+          dockerfile_path: Dockerfile # Assumes Dockerfile is in the app's root (e.g., apps/consumer-web/Dockerfile)
+          ecr_repo_prefix: boom-card
+          tag: << parameters.tag >>
+
+  # Job to deploy the API Gateway to a specific ECS environment
+  deploy_api_gateway:
+    executor: node-executor
+    parameters:
+      env:
+        type: string
+        description: "Deployment environment (dev or prod)"
+      tag:
+        type: string
+        default: "${CIRCLE_SHA1}"
+    steps:
+      - deploy_to_ecs:
+          app_name: api-gateway
+          cluster_env_var: "ECS_CLUSTER_<< parameters.env | upcase >>"
+          service_env_var: "ECS_SERVICE_API_GATEWAY_<< parameters.env | upcase >>"
+          task_def_env_var: "ECS_TASK_DEFINITION_API_GATEWAY_<< parameters.env | upcase >>"
+          ecr_repo_prefix: boom-card
+          tag: << parameters.tag >>
+
+  # Job to deploy Next.js SSR applications to a specific ECS environment
+  deploy_nextjs_ssr_app:
+    executor: node-executor
+    parameters:
+      app_name:
+        type: string
+        description: "Name of the Next.js application (e.g., consumer-web)"
+      env:
+        type: string
+        description: "Deployment environment (dev or prod)"
+      tag:
+        type: string
+        default: "${CIRCLE_SHA1}"
+    steps:
+      - deploy_to_ecs:
+          app_name: << parameters.app_name >>
+          cluster_env_var: "ECS_CLUSTER_<< parameters.env | upcase >>"
+          # Construct environment variable names for service and task definition dynamically
+          service_env_var: "ECS_SERVICE_<< parameters.app_name | upcase | s/-/S_/g >>_<< parameters.env | upcase >>" # Replaces hyphens with _ for env var names
+          task_def_env_var: "ECS_TASK_DEFINITION_<< parameters.app_name | upcase | s/-/S_/g >>_<< parameters.env | upcase >>"
+          ecr_repo_prefix: boom-card
+          tag: << parameters.tag >>
+
+workflows:
+  version: 2
+  # Workflow for Continuous Integration: runs tests and builds on every push to 'develop' or 'main'
+  continuous_integration:
+    jobs:
+      # Test Jobs for each application/service
+      - test_application:
+          name: test_api_gateway
+          app_path: services/api-gateway
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+      - test_application:
+          name: test_consumer_web
+          app_path: apps/consumer-web
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+      - test_application:
+          name: test_partner_dashboard
+          app_path: apps/partner-dashboard
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+      - test_application:
+          name: test_admin_panel
+          app_path: apps/admin-panel
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+
+      # Build Jobs for 'develop' branch (builds latest commit for dev environment)
+      - build_api_gateway:
+          name: build_api_gateway_dev
+          requires:
+            - test_api_gateway # Only build if tests pass
+          filters:
+            branches:
+              only: develop
+
+      - build_nextjs_ssr_app:
+          name: build_consumer_web_dev
+          app_name: consumer-web
+          app_path: apps/consumer-web
+          api_url_env_var: NEXT_PUBLIC_API_URL_DEV # Use dev API URL for dev builds
+          requires:
+            - test_consumer_web
+          filters:
+            branches:
+              only: develop
+
+      - build_nextjs_ssr_app:
+          name: build_partner_dashboard_dev
+          app_name: partner-dashboard
+          app_path: apps/partner-dashboard
+          api_url_env_var: NEXT_PUBLIC_API_URL_DEV # Use dev API URL for dev builds
+          requires:
+            - test_partner_dashboard
+          filters:
+            branches:
+              only: develop
+
+      - build_nextjs_ssr_app:
+          name: build_admin_panel_dev
+          app_name: admin-panel
+          app_path: apps/admin-panel
+          api_url_env_var: NEXT_PUBLIC_API_URL_DEV # Use dev API URL for dev builds
+          requires:
+            - test_admin_panel
+          filters:
+            branches:
+              only: develop
+
+  # Workflow for deploying to the Development environment
+  deploy_development:
+    jobs:
+      - deploy_api_gateway:
+          name: deploy_api_gateway_dev
+          env: dev
+          requires:
+            - build_api_gateway_dev # Requires successful build
+          filters:
+            branches:
+              only: develop
+      - deploy_nextjs_ssr_app:
+          name: deploy_consumer_web_dev
+          app_name: consumer-web
+          env: dev
+          requires:
+            - build_consumer_web_dev
+          filters:
+            branches:
+              only: develop
+      - deploy_nextjs_ssr_app:
+          name: deploy_partner_dashboard_dev
+          app_name: partner-dashboard
+          env: dev
+          requires:
+            - build_partner_dashboard_dev
+          filters:
+            branches:
+              only: develop
+      - deploy_nextjs_ssr_app:
+          name: deploy_admin_panel_dev
+          app_name: admin-panel
+          env: dev
+          requires:
+            - build_admin_panel_dev
+          filters:
+            branches:
+              only: develop
+
+  # Workflow for deploying to the Production environment
+  deploy_production:
+    jobs:
+      # Build Jobs for 'main' branch (builds latest commit for production)
+      - build_api_gateway:
+          name: build_api_gateway_prod
+          # Ensure tests passed on 'main' before building for production
+          requires:
+            - test_api_gateway
+          filters:
+            branches:
+              only: main
+
+      - build_nextjs_ssr_app:
+          name: build_consumer_web_prod
+          app_name: consumer-web
+          app_path: apps/consumer-web
+          api_url_env_var: NEXT_PUBLIC_API_URL_PROD # Use prod API URL for prod builds
+          requires:
+            - test_consumer_web
+          filters:
+            branches:
+              only: main
+
+      - build_nextjs_ssr_app:
+          name: build_partner_dashboard_prod
+          app_name: partner-dashboard
+          app_path: apps/partner-dashboard
+          api_url_env_var: NEXT_PUBLIC_API_URL_PROD # Use prod API URL for prod builds
+          requires:
+            - test_partner_dashboard
+          filters:
+            branches:
+              only: main
+
+      - build_nextjs_ssr_app:
+          name: build_admin_panel_prod
+          app_name: admin-panel
+          app_path: apps/admin-panel
+          api_url_env_var: NEXT_PUBLIC_API_URL_PROD # Use prod API URL for prod builds
+          requires:
+            - test_admin_panel
+          filters:
+            branches:
+              only: main
+
+      # Manual approval step for Production deployment
+      - hold_for_approval:
+          type: approval
+          requires:
+            # All production builds must complete successfully before approval
+            - build_api_gateway_prod
+            - build_consumer_web_prod
+            - build_partner_dashboard_prod
+            - build_admin_panel_prod
+          filters:
+            branches:
+              only: main
+
+      # Deploy Jobs to Production environment after approval
+      - deploy_api_gateway:
+          name: deploy_api_gateway_prod
+          env: prod
+          requires:
+            - hold_for_approval
+          filters:
+            branches:
+              only: main
+      - deploy_nextjs_ssr_app:
+          name: deploy_consumer_web_prod
+          app_name: consumer-web
+          env: prod
+          requires:
+            - hold_for_approval
+          filters:
+            branches:
+              only: main
+      - deploy_nextjs_ssr_app:
+          name: deploy_partner_dashboard_prod
+          app_name: partner-dashboard
+          env: prod
+          requires:
+            - hold_for_approval
+          filters:
+            branches:
+              only: main
+      - deploy_nextjs_ssr_app:
+          name: deploy_admin_panel_prod
+          app_name: admin-panel
+          env: prod
+          requires:
+            - hold_for_approval
+          filters:
+            branches:
+              only: main

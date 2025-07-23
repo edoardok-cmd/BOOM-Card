@@ -1,0 +1,82 @@
+# Global settings for Prometheus
+global:
+  # How frequently to scrape targets by default.
+  scrape_interval: 15s
+
+  # How frequently to evaluate rules by default.
+  evaluation_interval: 15s
+
+  # Attach these labels to all metrics scraped from this Prometheus instance.
+  external_labels:
+    monitor: 'boom-card-monitor'
+
+# Rule files for recording rules and alerting rules.
+# Uncomment and configure if you have alert rules defined in separate files.
+# rule_files:
+#   - "/etc/prometheus/rules/*.yml"
+
+# Alertmanager configuration (if you are using Alertmanager for sending alerts).
+# Uncomment and configure if you have an Alertmanager instance.
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['localhost:9093'] # Default Alertmanager port
+
+# Scrape configurations for different services.
+scrape_configs:
+  # Scrape job for Prometheus itself. This allows monitoring Prometheus's own health and performance.
+  - job_name: 'prometheus'
+    # Default metrics path for Prometheus is '/metrics'.
+    # Default Prometheus port is 9090.
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape job for the BOOM Card Backend application(s).
+  # This covers Node.js/Express services like API Gateway, Admin Panel, Partner Dashboard,
+  # Payment Processing, and Analytics Engine.
+  # Assumes your Node.js application(s) expose Prometheus metrics, typically via 'prom-client' library.
+  - job_name: 'boom_card_backend'
+    # The path where your Node.js application exposes its metrics.
+    # Common path is '/metrics'.
+    metrics_path: '/metrics'
+    # Use 'http' or 'https' depending on your backend's exposure.
+    # For production, consider using 'https' with proper certificate setup.
+    scheme: http
+    static_configs:
+      # List of backend instances to scrape.
+      # In a production environment, replace 'localhost' with actual service IPs or hostnames.
+      # If your Node.js services are microservices running on different ports/hosts,
+      # add each one here.
+      - targets:
+          - 'localhost:8000' # Example: Main API Gateway / Core backend
+          # - 'localhost:8001' # Example: If Admin Panel is a separate Node.js instance
+          # - 'localhost:8002' # Example: If Partner Dashboard is a separate Node.js instance
+          # ... add other Node.js service instances as needed
+    # Optional: Relabeling can be used to add or modify labels on scraped metrics.
+    # relabel_configs:
+    #   - source_labels: [__address__]
+    #     regex: '(.*):8000'
+    #     target_label: service_name
+    #     replacement: 'api_gateway'
+
+  # Scrape job for PostgreSQL database metrics.
+  # This requires a 'postgres_exporter' instance running alongside or connected to your PostgreSQL database.
+  - job_name: 'boom_card_postgres'
+    # Default port for postgres_exporter.
+    static_configs:
+      - targets: ['localhost:9187'] # Replace 'localhost' with the postgres_exporter host.
+
+  # Scrape job for Redis cache metrics.
+  # This requires a 'redis_exporter' instance running alongside or connected to your Redis instance.
+  - job_name: 'boom_card_redis'
+    # Default port for redis_exporter.
+    static_configs:
+      - targets: ['localhost:9121'] # Replace 'localhost' with the redis_exporter host.
+
+  # You might also consider adding scrape jobs for:
+  # - Node Exporter: For host-level metrics (CPU, Memory, Disk I/O, Network).
+  #   - job_name: 'node_exporter'
+  #     static_configs:
+  #       - targets: ['localhost:9100'] # Default port for Node Exporter
+  # - Nginx/Load Balancer metrics (if applicable, via Nginx exporter or similar).
+  # - Kubernetes metrics (if deployed on Kubernetes, e.g., kube-state-metrics, cAdvisor).

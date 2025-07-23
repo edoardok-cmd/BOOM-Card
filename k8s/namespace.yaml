@@ -1,0 +1,217 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: boom-card-prod
+  labels:
+    app: boom-card
+    environment: production
+    team: platform
+    cost-center: marketing
+  annotations:
+    description: "Production namespace for BOOM Card discount platform"
+    owner: "platform-team@boomcard.com"
+    created-by: "kubernetes-admin"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: boom-card-staging
+  labels:
+    app: boom-card
+    environment: staging
+    team: platform
+    cost-center: development
+  annotations:
+    description: "Staging namespace for BOOM Card discount platform"
+    owner: "platform-team@boomcard.com"
+    created-by: "kubernetes-admin"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: boom-card-dev
+  labels:
+    app: boom-card
+    environment: development
+    team: platform
+    cost-center: development
+  annotations:
+    description: "Development namespace for BOOM Card discount platform"
+    owner: "platform-team@boomcard.com"
+    created-by: "kubernetes-admin"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: boom-card-prod-quota
+  namespace: boom-card-prod
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+    persistentvolumeclaims: "10"
+    services: "20"
+    pods: "100"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: boom-card-staging-quota
+  namespace: boom-card-staging
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    persistentvolumeclaims: "5"
+    services: "15"
+    pods: "50"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: boom-card-dev-quota
+  namespace: boom-card-dev
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    persistentvolumeclaims: "3"
+    services: "10"
+    pods: "30"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: boom-card-prod-limits
+  namespace: boom-card-prod
+spec:
+  limits:
+  - max:
+      cpu: "4"
+      memory: "8Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+  - max:
+      storage: "50Gi"
+    min:
+      storage: "1Gi"
+    type: PersistentVolumeClaim
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: boom-card-staging-limits
+  namespace: boom-card-staging
+spec:
+  limits:
+  - max:
+      cpu: "2"
+      memory: "4Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    default:
+      cpu: "250m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container
+  - max:
+      storage: "20Gi"
+    min:
+      storage: "1Gi"
+    type: PersistentVolumeClaim
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: boom-card-dev-limits
+  namespace: boom-card-dev
+spec:
+  limits:
+  - max:
+      cpu: "1"
+      memory: "2Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    default:
+      cpu: "100m"
+      memory: "128Mi"
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container
+  - max:
+      storage: "10Gi"
+    min:
+      storage: "1Gi"
+    type: PersistentVolumeClaim
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: boom-card-prod
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-from-ingress-controller
+  namespace: boom-card-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: boom-card
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: ingress-nginx
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-internal-communication
+  namespace: boom-card-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: boom-card
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: boom-card
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: boom-card
+  policyTypes:
+  - Ingress
+  - Egress

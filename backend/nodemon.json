@@ -1,0 +1,38 @@
+{
+  "watch": ["src"],
+  "ext": "ts,js,json",
+  "ignore": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "node_modules",
+    "dist",
+    "coverage",
+    "logs",
+    ".git",
+    "*.log"
+  ],
+  "exec": "ts-node -r tsconfig-paths/register --transpile-only",
+  "env": {
+    "NODE_ENV": "development",
+    "TS_NODE_PROJECT": "tsconfig.json",
+    "TS_NODE_TRANSPILE_ONLY": "true",
+    "TS_NODE_LOG_ERROR": "true"
+  },
+  "events": {
+    "restart": "echo \"[nodemon] Restarting due to changes...\"",
+    "crash": "echo \"[nodemon] App crashed! Waiting for file changes before starting...\"",
+    "exit": "echo \"[nodemon] Clean exit - waiting for changes before restart\""
+  },
+  "delay": "500",
+  "verbose": false,
+  "restartable": "rs",
+  "colours": true,
+  "stdout": true,
+  "execMap": {
+    "ts": "node --require ts-node/register --require tsconfig-paths/register"
+  },
+  "signal": "SIGTERM",
+  "stdin": true,
+  "runOnChangeOnly": false,
+  "legacyWatch": false
+}

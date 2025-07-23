@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{{i18n.subject_line}}</title>
+    <style type="text/css">
+        /* Client-specific Styles */
+        #outlook a {padding:0;} /* Force Outlook to provide a "view in browser" menu link. */
+        body{width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; margin:0; padding:0;}
+        .ExternalClass {width:100%;} /* Force Hotmail to display emails at full width */
+        .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {line-height: 100%;} /* Force Hotmail to display normal line spacing. */
+        #backgroundTable {margin:0; padding:0; width:100% !important; line-height: 100% !important;}
+        img {outline:none; text-decoration:none; -ms-interpolation-mode: bicubic;}
+        a img {border:none;}
+        .image_fix {display:block;}
+        p {margin: 0px 0px !important;}
+        table td {border-collapse: collapse;}
+        table {border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;}
+        a {color: #007bff; text-decoration: none;}
+
+        /* Responsive Styles */
+        @media only screen and (max-width: 600px) {
+            table[class="body-wrap"] {width: 100% !important;}
+            table[class="main-content"] {width: 100% !important;}
+            td[class="padding"] {padding: 15px !important;}
+            td[class="content-block"] {padding: 15px !important;}
+            td[class="header"] {padding: 20px 15px !important;}
+            td[class="footer"] {padding: 20px 15px !important;}
+            .full-width-image {width: 100% !important; height: auto !important;}
+            h1 {font-size: 20px !important;}
+            h2 {font-size: 18px !important;}
+        }
+    </style>
+</head>
+<body style="font-family: Arial, sans-serif; font-size: 15px; color: #333333; margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; background-color: #f4f4f4;">
+    <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable" style="margin: 0; padding: 0; background-color: #f4f4f4;">
+        <tr>
+            <td align="center" valign="top">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" class="body-wrap" style="width: 600px; max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" valign="top" class="header" style="padding: 30px; background-color: #2e3a59; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                            <a href="{{platformWebsiteUrl}}" target="_blank" style="text-decoration: none;">
+                                <img src="{{logoUrl}}" alt="BOOM Card Logo" width="150" style="display: block; border: 0; outline: none; text-decoration: none; width: 150px; height: auto;">
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td valign="top" class="content-block" style="padding: 20px 40px;">
+                            <h1 style="font-size: 24px; color: #333333; margin-top: 0; margin-bottom: 20px; text-align: center;">{{i18n.welcome_to_boom}}</h1>
+                            <p style="margin-bottom: 15px;">{{i18n.hello_user}}, {{userName}}!</p>
+                            <p style="margin-bottom: 25px;">{{i18n.confirmation_message}}</p>
+
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 25px; border: 1px solid #eeeeee; border-radius: 4px;">
+                                <tr>
+                                    <td colspan="2" style="background-color: #f9f9f9; padding: 15px; border-bottom: 1px solid #eeeeee;">
+                                        <strong style="font-size: 16px; color: #555555;">{{i18n.subscription_details_heading}}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 15px; border-bottom: 1px solid #eeeeee; width: 50%;">
+                                        {{i18n.plan_name_label}}:
+                                    </td>
+                                    <td style="padding: 10px 15px; border-bottom: 1px solid #eeeeee; width: 50%;">
+                                        <strong>{{planName}}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 15px; border-bottom: 1px solid #eeeeee;">
+                                        {{i18n.valid_until_label}}:
+                                    </td>
+                                    <td style="padding: 10px 15px; border-bottom: 1px solid #eeeeee;">
+                                        <strong>{{validUntilDate}}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 15px; border-bottom: 1px solid #eeeeee;">
+                                        {{i18n.amount_paid_label}}:
+                                    </td>
+                                    <td style="padding: 10px 15px; border-bottom: 1px solid #eeeeee;">
+                                        <strong>{{amountPaid}} {{currency}}</strong>
+                                    </td>
+                                </tr>
+                                {{#if transactionId}}
+                                <tr>
+                                    <td style="padding: 10px 15px;">
+                                        {{i18n.transaction_id_label}}:
+                                    </td>
+                                    <td style="padding: 10px 15px;">
+                                        <strong>{{transactionId}}</strong>
+                                    </td>
+                                </tr>
+                                {{/if}}
+                            </table>
+
+                            <h2 style="font-size: 20px; color: #333333; margin-top: 0; margin-bottom: 15px; text-align: center;">{{i18n.get_started_heading}}</h2>
+                            <p style="margin-bottom: 25px; text-align: center;">{{i18n.get_started_message}}</p>
+
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 15px;">
+                                        <a href="{{appStoreLink}}" target="_blank" style="display: inline-block; padding: 12px 25px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                            {{i18n.download_app_button}} (App Store)
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{googlePlayLink}}" target="_blank" style="display: inline-block; padding: 12px 25px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                            {{i18n.download_app_button}} (Google Play)
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding-top: 25px;">
+                                        <p style="margin-bottom: 10px;">{{i18n.or_explore_web}}</p>
+                                        <a href="{{explorePartnersLink}}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #ffc107; color: #333333; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                            {{i18n.explore_partners_button}}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="text-align: center; margin-top: 30px; font-size: 13px;">
+                                <a href="{{manageSubscriptionLink}}" target="_blank" style="color: #007bff; text-decoration: underline;">{{i18n.manage_subscription_text}}</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" valign="top" class="footer" style="padding: 30px; background-color: #2e3a59; color: #cccccc; font-size: 12px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                            <p style="margin-bottom: 15px;">{{i18n.follow_us}}</p>
+                            <table border="0" cellpadding="0" cellspacing="0" style="display: inline-block;">
+                                <tr>
+                                    {{#if socialMedia.facebookUrl}}
+                                    <td style="padding: 0 5px;">
+                                        <a href="{{socialMedia.facebookUrl}}" target="_blank" style="text-decoration: none;">
+                                            <img src="https://boomcard.com/images/icon-facebook.png" alt="Facebook" width="24" height="24" style="display: block; border: 0; outline: none; text-decoration: none;">
+                                        </a>
+                                    </td>
+                                    {{/if}}
+                                    {{#if socialMedia.instagramUrl}}
+                                    <td style="padding: 0 5px;">
+                                        <a href="{{socialMedia.instagramUrl}}" target="_blank" style="text-decoration: none;">
+                                            <img src="https://boomcard.com/images/icon-instagram.png" alt="Instagram" width="24" height="24" style="display: block; border: 0; outline: none; text-decoration: none;">
+                                        </a>
+                                    </td>
+                                    {{/if}}
+                                    {{#if socialMedia.linkedinUrl}}
+                                    <td style="padding: 0 5px;">
+                                        <a href="{{socialMedia.linkedinUrl}}" target="_blank" style="text-decoration: none;">
+                                            <img src="https://boomcard.com/images/icon-linkedin.png" alt="LinkedIn" width="24" height="24" style="display: block; border: 0; outline: none; text-decoration: none;">
+                                        </a>
+                                    </td>
+                                    {{/if}}
+                                </tr>
+                            </table>
+                            <p style="margin-top: 20px; margin-bottom: 5px;">{{i18n.copyright_text}} &copy; {{currentYear}} {{i18n.company_name}}</p>
+                            <p style="margin-top: 0; margin-bottom: 15px;">{{i18n.company_address}}</p>
+                            <p style="font-size: 11px;">
+                                {{i18n.unsubscribe_text}} <a href="{{unsubscribeLink}}" target="_blank" style="color: #cccccc; text-decoration: underline;">{{i18n.click_here}}</a>.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

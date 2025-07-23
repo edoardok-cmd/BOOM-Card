@@ -1,0 +1,313 @@
+---
+- name: Deploy BOOM Card Platform
+  hosts: web_servers # Define your target servers in your Ansible inventory (e.g., inventory.ini)
+  become: yes # Run tasks with root privileges where necessary
+
+  vars:
+    # --- General Project Settings ---
+    project_name: "boom_card"
+    project_root: "/var/www/{{ project_name }}"
+    git_repo: "https://github.com/your-org/boom-card.git" # IMPORTANT: Replace with your actual Git repository URL
+    git_branch: "main" # Or specify a production branch/tag, e.g., "release/v1.0"
+    deployment_user: "{{ ansible_user }}" # The user Ansible connects as, used for application ownership
+
+    # --- Node.js Settings ---
+    node_version: "18" # Recommended LTS version
+    pm2_home: "/home/{{ deployment_user }}/.pm2" # PM2's home directory for process management
+
+    # --- Nginx Settings ---
+    nginx_conf_dir: "/etc/nginx/sites-available"
+    nginx_enabled_dir: "/etc/nginx/sites-enabled"
+    nginx_log_dir: "/var/log/nginx/{{ project_name }}"
+    # IMPORTANT: Replace with your actual domain names
+    app_domain: "boomcard.com"
+    admin_domain: "admin.boomcard.com"
+    partner_domain: "partner.boomcard.com"
+
+    # --- Database Settings (PostgreSQL) ---
+    db_user: "{{ project_name }}_user"
+    db_name: "{{ project_name }}_db"
+    # IMPORTANT: Use Ansible Vault for sensitive data like passwords.
+    # Example: db_password: "{{ vault_db_password }}"
+    db_password: "{{ lookup('ansible.builtin.env', 'DB_PASSWORD_BOOMCARD') }}" # Placeholder: Fetch from environment variable for demo.
+    db_host: "localhost" # Assuming DB is on the same server, change if remote
+
+    # --- Redis Settings ---
+    redis_port: 6379
+    redis_host: "localhost" # Assuming Redis is on the same server, change if remote
+
+    # --- Application Environment Variables (Passed to .env files and PM2) ---
+    # These variables will be templated into each application's .env file.
+    # IMPORTANT: Sensitive variables (e.g., secrets, API keys) should be managed via Ansible Vault.
+    app_env_vars:
+      NODE_ENV: "production"
+      # Ports for different applications. Nginx will proxy these.
+      APP_CONSUMER_PORT: 3000
+      APP_API_PORT: 5000
+      APP_ADMIN_PORT: 4000
+      APP_PARTNER_PORT: 4001
+
+      # Database connection string
+      DATABASE_URL: "postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}:5432/{{ db_name }}"
+      REDIS_URL: "redis://{{ redis_host }}:{{ redis_port }}"
+
+      # Application-specific secrets (example, manage with Ansible Vault!)
+      JWT_SECRET: "{{ lookup('ansible.builtin.env', 'JWT_SECRET_BOOMCARD') }}"
+      PAYMENT_GATEWAY_API_KEY: "{{ lookup('ansible.builtin.env', 'PAYMENT_API_KEY_BOOMCARD') }}"
+
+      # Publicly exposed variables for Next.js applications
+      NEXT_PUBLIC_APP_DOMAIN: "https://{{ app_domain }}"
+      NEXT_PUBLIC_API_BASE_URL: "https://{{ app_domain }}/api" # API accessed via main domain's Nginx proxy
+      NEXT_PUBLIC_ADMIN_DOMAIN: "https://{{ admin_domain }}"
+      NEXT_PUBLIC_PARTNER_DOMAIN: "https://{{ partner_domain }}"
+
+      # Other potential variables (e.g., logging, file storage, email service config)
+      LOG_LEVEL: "info"
+      AWS_S3_BUCKET_NAME: "your-boom-card-s3-bucket" # Example
+      EMAIL_SERVICE_API_KEY: "{{ lookup('ansible.builtin.env', 'EMAIL_API_KEY_BOOMCARD') }}" # Example
+
+  pre_tasks:
+    - name: Ensure Nginx log directory exists
+      ansible.builtin.file:
+        path: "{{ nginx_log_dir }}"
+        state: directory
+        mode: '0755'
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600 # Cache for 1 hour to speed up subsequent runs
+
+    - name: Install essential system dependencies
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - nginx
+          - build-essential # Required for compiling native Node.js modules
+          - postgresql-client-14 # Ensure correct PostgreSQL client version
+          - redis-tools # For Redis CLI tools
+          - ufw # Uncomplicated Firewall
+        state: present
+        update_cache: yes
+
+    - name: Install Node.js (via NodeSource PPA)
+      ansible.builtin.shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+      args:
+        creates: /usr/bin/node # Only run if Node.js is not installed
+      tags:
+        - nodejs
+
+    - name: Install PM2 globally for Node.js process management
+      ansible.builtin.npm:
+        name: pm2
+        global: yes
+        state: present
+      tags:
+        - pm2
+
+    - name: Create project root directory
+      ansible.builtin.file:
+        path: "{{ project_root }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ deployment_user }}"
+        group: "{{ deployment_user }}"
+        recurse: yes
+
+    - name: Clone or update application repository
+      ansible.builtin.git:
+        repo: "{{ git_repo }}"
+        dest: "{{ project_root }}"
+        version: "{{ git_branch }}"
+        accept_hostkey: yes # Accept SSH host keys automatically
+        force: yes # Force checkout if local repo is dirty or needs reset
+      become_user: "{{ deployment_user }}" # Ensure operations are done as the deployment user
+      tags:
+        - code_deploy
+
+    - name: Create .env file for API Gateway
+      ansible.builtin.template:
+        src: templates/api_gateway.env.j2 # Path to your Jinja2 template for API Gateway .env
+        dest: "{{ project_root }}/apps/api-gateway/.env" # Assumes monorepo structure: project_root/apps/api-gateway
+        mode: '0644'
+      tags:
+        - config
+
+    - name: Create .env file for Consumer App
+      ansible.builtin.template:
+        src: templates/consumer_app.env.j2 # Path to your Jinja2 template for Consumer App .env
+        dest: "{{ project_root }}/apps/consumer-app/.env" # Assumes monorepo structure: project_root/apps/consumer-app
+        mode: '0644'
+      tags:
+        - config
+
+    - name: Create .env file for Partner Dashboard
+      ansible.builtin.template:
+        src: templates/partner_dashboard.env.j2 # Path to your Jinja2 template for Partner Dashboard .env
+        dest: "{{ project_root }}/apps/partner-dashboard/.env" # Assumes monorepo structure: project_root/apps/partner-dashboard
+        mode: '0644'
+      tags:
+        - config
+
+    - name: Create .env file for Admin Panel
+      ansible.builtin.template:
+        src: templates/admin_panel.env.j2 # Path to your Jinja2 template for Admin Panel .env
+        dest: "{{ project_root }}/apps/admin-panel/.env" # Assumes monorepo structure: project_root/apps/admin-panel
+        mode: '0644'
+      tags:
+        - config
+
+    - name: Install Node.js dependencies (assuming npm workspaces/monorepo)
+      ansible.builtin.npm:
+        path: "{{ project_root }}" # Runs `npm install` at the monorepo root
+        production: yes # Installs only production dependencies
+      become_user: "{{ deployment_user }}"
+      tags:
+        - dependencies
+
+    - name: Build all applications (frontend and backend)
+      # Assumes a root 'build' script (e.g., `npm run build` or `yarn build`) that orchestrates all sub-app builds.
+      # For example, `npm run build` might execute `next build` for frontends and `tsc` for Node.js backends.
+      ansible.builtin.shell: "npm run build"
+      args:
+        chdir: "{{ project_root }}"
+      become_user: "{{ deployment_user }}"
+      tags:
+        - build
+
+    - name: Run database migrations
+      # Assumes API Gateway handles database migrations. Adjust path and command as needed.
+      # Ensure migration tools (e.g., TypeORM CLI, Sequelize CLI) are configured in package.json
+      ansible.builtin.shell: "npm run db:migrate" # Example: script might be `npx typeorm migration:run`
+      args:
+        chdir: "{{ project_root }}/apps/api-gateway"
+      become_user: "{{ deployment_user }}"
+      environment: "{{ app_env_vars }}" # Pass environment variables needed for DB connection
+      tags:
+        - db_migrate
+
+    # --- PM2 Process Management for Node.js Applications ---
+    - name: Stop all existing PM2 processes for this project (if any)
+      ansible.builtin.shell: "pm2 stop all || true" # `|| true` prevents task from failing if no processes are running
+      args:
+        chdir: "{{ project_root }}"
+      become_user: "{{ deployment_user }}"
+      environment:
+        PM2_HOME: "{{ pm2_home }}"
+      ignore_errors: yes # Allow this task to fail gracefully if PM2 is not running or no processes exist
+
+    - name: Delete all existing PM2 processes for this project (if any)
+      ansible.builtin.shell: "pm2 delete all || true"
+      args:
+        chdir: "{{ project_root }}"
+      become_user: "{{ deployment_user }}"
+      environment:
+        PM2_HOME: "{{ pm2_home }}"
+      ignore_errors: yes
+
+    - name: Start API Gateway with PM2
+      ansible.builtin.shell: "pm2 start npm --name {{ project_name }}-api -- run start:api" # Assumes `start:api` script in api-gateway's package.json
+      args:
+        chdir: "{{ project_root }}/apps/api-gateway"
+      become_user: "{{ deployment_user }}"
+      environment: "{{ app_env_vars }}" # Pass environment variables to the Node.js process
+      tags:
+        - pm2_start
+
+    - name: Start Consumer App with PM2
+      ansible.builtin.shell: "pm2 start npm --name {{ project_name }}-consumer -- run start" # Assumes default `start` script for Next.js
+      args:
+        chdir: "{{ project_root }}/apps/consumer-app"
+      become_user: "{{ deployment_user }}"
+      environment: "{{ app_env_vars }}"
+      tags:
+        - pm2_start
+
+    - name: Start Partner Dashboard with PM2
+      ansible.builtin.shell: "pm2 start npm --name {{ project_name }}-partner -- run start"
+      args:
+        chdir: "{{ project_root }}/apps/partner-dashboard"
+      become_user: "{{ deployment_user }}"
+      environment: "{{ app_env_vars }}"
+      tags:
+        - pm2_start
+
+    - name: Start Admin Panel with PM2
+      ansible.builtin.shell: "pm2 start npm --name {{ project_name }}-admin -- run start"
+      args:
+        chdir: "{{ project_root }}/apps/admin-panel"
+      become_user: "{{ deployment_user }}"
+      environment: "{{ app_env_vars }}"
+      tags:
+        - pm2_start
+
+    - name: Save PM2 process list and configure startup on boot
+      ansible.builtin.shell: "pm2 save && pm2 startup systemd" # Generates a systemd startup script for PM2
+      args:
+        chdir: "{{ project_root }}" # Chdir is often needed for PM2 to save paths correctly
+      become_user: "{{ deployment_user }}" # `pm2 save` command should run as the application user
+      tags:
+        - pm2_save
+
+    # --- Nginx Configuration ---
+    - name: Configure Nginx for BOOM Card applications
+      ansible.builtin.template:
+        src: templates/nginx.conf.j2 # Path to your Jinja2 template for Nginx config
+        dest: "{{ nginx_conf_dir }}/{{ project_name }}.conf"
+        mode: '0644'
+      notify: Reload Nginx # Trigger Nginx reload handler if config changes
+      tags:
+        - nginx_config
+
+    - name: Enable Nginx configuration by creating a symlink
+      ansible.builtin.file:
+        src: "{{ nginx_conf_dir }}/{{ project_name }}.conf"
+        dest: "{{ nginx_enabled_dir }}/{{ project_name }}.conf"
+        state: link
+      notify: Reload Nginx # Trigger Nginx reload handler if symlink changes
+      tags:
+        - nginx_config
+
+    - name: Remove default Nginx configuration (if it exists)
+      ansible.builtin.file:
+        path: "{{ nginx_enabled_dir }}/default"
+        state: absent
+      notify: Reload Nginx # Trigger Nginx reload handler if default config is removed
+      tags:
+        - nginx_config
+
+    # --- UFW (Uncomplicated Firewall) Configuration ---
+    - name: Allow SSH (port 22) through UFW
+      community.general.ufw:
+        rule: allow
+        port: 22
+
+    - name: Allow HTTP (port 80) through UFW
+      community.general.ufw:
+        rule: allow
+        port: 80
+
+    - name: Allow HTTPS (port 443) through UFW
+      community.general.ufw:
+        rule: allow
+        port: 443
+
+    - name: Enable UFW and ensure it starts on boot
+      community.general.ufw:
+        state: enabled
+        default_deny: yes # Default to deny incoming connections not explicitly allowed
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+
+    - name: Restart Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted # Use restart if reload fails or during initial setup

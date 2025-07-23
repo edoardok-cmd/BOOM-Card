@@ -1,0 +1,307 @@
+```yaml
+# Kibana Configuration for BOOM Card Platform
+# Version: 7.17.x
+
+# ==================== System Configuration ====================
+
+# Kibana server host and port
+server.host: "0.0.0.0"
+server.port: 5601
+server.name: "boom-card-kibana"
+server.publicBaseUrl: "https://kibana.boom-card.com"
+
+# Maximum payload size
+server.maxPayload: 10485760
+
+# ==================== Elasticsearch Configuration ====================
+
+# Elasticsearch hosts
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# Elasticsearch authentication
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "${KIBANA_SYSTEM_PASSWORD}"
+
+# SSL/TLS configuration for Elasticsearch
+elasticsearch.ssl.verificationMode: full
+elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/ca.crt"]
+
+# Request configuration
+elasticsearch.requestTimeout: 30000
+elasticsearch.pingTimeout: 30000
+elasticsearch.shardTimeout: 30000
+
+# ==================== Security Configuration ====================
+
+# Enable security features
+xpack.security.enabled: true
+xpack.security.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
+xpack.security.sessionTimeout: 1800000  # 30 minutes
+xpack.security.session.idleTimeout: 900000  # 15 minutes
+xpack.security.session.lifespan: 86400000  # 24 hours
+
+# Security headers
+server.securityResponseHeaders:
+  strictTransportSecurity: "max-age=31536000; includeSubDomains"
+  xContentTypeOptions: "nosniff"
+  xFrameOptions: "SAMEORIGIN"
+  referrerPolicy: "strict-origin-when-cross-origin"
+  permissionsPolicy: "camera=(), display-capture=(), fullscreen=(self), geolocation=(), microphone=(), web-share=()"
+
+# Content Security Policy
+csp.rules:
+  - "script-src 'self' 'unsafe-eval'"
+  - "worker-src 'self' blob:"
+  - "style-src 'self' 'unsafe-inline'"
+  - "connect-src 'self' https://boom-card.com wss://boom-card.com"
+
+# ==================== Monitoring Configuration ====================
+
+# Enable monitoring collection
+monitoring.enabled: true
+monitoring.ui.enabled: true
+monitoring.kibana.collection.enabled: true
+monitoring.kibana.collection.interval: 10000
+
+# APM configuration
+elastic.apm.enabled: true
+elastic.apm.serverUrl: "http://apm-server:8200"
+elastic.apm.serviceVersion: "${BOOM_CARD_VERSION}"
+elastic.apm.environment: "${NODE_ENV}"
+elastic.apm.transactionSampleRate: 0.1
+elastic.apm.captureBody: "errors"
+elastic.apm.errorOnAbortedRequests: true
+
+# ==================== Logging Configuration ====================
+
+# Logging settings
+logging:
+  appenders:
+    default:
+      type: console
+      layout:
+        type: json
+    file:
+      type: rolling-file
+      fileName: /var/log/kibana/kibana.log
+      layout:
+        type: json
+      policy:
+        type: size-limit
+        size: 100mb
+      strategy:
+        type: numeric
+        max: 10
+  root:
+    level: info
+    appenders: [default, file]
+  loggers:
+    - name: plugins
+      level: warn
+    - name: elasticsearch
+      level: info
+    - name: metrics.ops
+      level: warn
+    - name: http.server.response
+      level: warn
+
+# ==================== Index Pattern Configuration ====================
+
+# Default index patterns for BOOM Card
+kibana.index: ".kibana_boom_card"
+kibana.defaultAppId: "dashboard/boom-card-overview"
+
+# ==================== Spaces and Features ====================
+
+# Enable spaces
+xpack.spaces.enabled: true
+xpack.spaces.maxSpaces: 50
+
+# Feature controls
+xpack.features.enabled: true
+
+# Disabled features for security
+xpack.features.disabled:
+  - "dev_tools"  # Disable in production
+  - "upgradeAssistant"
+
+# ==================== Maps Configuration ====================
+
+# Maps settings for partner locations
+xpack.maps.enabled: true
+xpack.maps.showMapsInspectorAdapter: false
+
+# ==================== Reporting Configuration ====================
+
+# Enable reporting
+xpack.reporting.enabled: true
+xpack.reporting.encryptionKey: "${REPORTING_ENCRYPTION_KEY}"
+xpack.reporting.queue.timeout: 120000
+xpack.reporting.capture.browser.chromium.maxScreenshotSize: 250000
+xpack.reporting.csv.maxSizeBytes: 10485760  # 10MB
+xpack.reporting.roles.enabled: true
+
+# ==================== Dashboard Configuration ====================
+
+# Dashboard settings
+dashboard.allowByValueEmbeddables: true
+
+# Time filter defaults
+timepicker:defaults:
+  timeDefaults: '{"from":"now-7d","to":"now"}'
+  refreshIntervalDefaults: '{"pause":false,"value":300000}'  # 5 minutes
+
+# ==================== Alerting Configuration ====================
+
+# Enable alerting
+xpack.alerting.enabled: true
+xpack.actions.enabled: true
+xpack.actions.allowedHosts: ["*"]
+
+# Email action settings
+xpack.actions.email.domain_allowlist:
+  - "boom-card.com"
+  - "smtp.sendgrid.net"
+  - "smtp.mailgun.org"
+
+# ==================== Machine Learning ====================
+
+# ML settings for anomaly detection
+xpack.ml.enabled: true
+
+# ==================== Saved Objects ====================
+
+# Saved objects settings
+savedObjects.maxImportExportSize: 10000
+savedObjects.maxImportPayloadBytes: 26214400  # 25MB
+
+# ==================== Development Tools ====================
+
+# Console settings (only in non-production)
+console.enabled: "${ENABLE_DEV_TOOLS:false}"
+
+# ==================== Internationalization ====================
+
+# i18n settings
+i18n.locale: "en"
+
+# ==================== UI Settings ====================
+
+# UI defaults
+uiSettings:
+  overrides:
+    defaultRoute: "/app/dashboards"
+    "theme:darkMode": false
+    "dateFormat": "YYYY-MM-DD HH:mm:ss"
+    "dateFormat:tz": "Europe/Sofia"
+    "defaultIndex": "boom-card-transactions-*"
+    "timepicker:timeDefaults": '{"from":"now-24h","to":"now"}'
+    "timepicker:refreshIntervalDefaults": '{"pause":false,"value":60000}'
+    "metaFields": ["_source", "_id", "_index", "_score"]
+    "discover:sampleSize": 500
+    "discover:sort:defaultOrder": "desc"
+    "fields:popularLimit": 10
+    "histogram:barTarget": 50
+    "histogram:maxBars": 100
+    "visualization:dimmingOpacity": 0.5
+    "visualization:regionmap:showWarnings": false
+    "state:storeInSessionStorage": true
+
+# ==================== Migration Settings ====================
+
+# Migration settings
+migrations.retryAttempts: 3
+migrations.scrollDuration: "15m"
+migrations.batchSize: 1000
+migrations.maxBatchSizeBytes: 104857600  # 100MB
+
+# ==================== Node Options ====================
+
+# Node settings
+node.roles: ["background_tasks", "ui"]
+
+# ==================== Custom Branding ====================
+
+# Custom branding for BOOM Card
+server.customResponseHeaders:
+  X-BOOM-Card-Platform: "Kibana"
+
+# ==================== Health Check ====================
+
+# Health check endpoint
+status.allowAnonymous: true
+
+# ==================== Performance Optimization ====================
+
+# Optimize bundles
+optimize.useBundleCache: true
+
+# Response cache
+data.search.sessions.enabled: true
+data.search.sessions.defaultExpiration: "7d"
+data.search.sessions.cleanupInterval: "1d"
+data.search.sessions.maxSessions: 10000
+
+# ==================== Fleet Configuration ====================
+
+# Fleet settings for agent management
+xpack.fleet.enabled: false  # Enable if using Elastic Agent
+
+# ==================== Task Manager ====================
+
+# Task manager settings
+xpack.task_manager.workers: 10
+xpack.task_manager.max_attempts: 3
+xpack.task_manager.poll_interval: 3000
+xpack.task_manager.index: ".kibana_task_manager_boom_card"
+
+# ==================== Event Log ====================
+
+# Event log settings
+xpack.eventLog.enabled: true
+xpack.eventLog.logEntries: true
+xpack.eventLog.indexEntries: true
+
+# ==================== Banner Configuration ====================
+
+# Custom banner for environments
+server.uuid: "${KIBANA_UUID}"
+xpack.banners.textContent: "${ENVIRONMENT_BANNER:}"
+xpack.banners.textColor: "#FFFFFF"
+xpack.banners.backgroundColor: "${BANNER_BG_COLOR:#FF6B6B}"
+
+# ==================== Telemetry ====================
+
+# Disable telemetry in production
+telemetry.enabled: false
+telemetry.optIn: false
+
+# ==================== Advanced Settings ====================
+
+# Memory settings
+node.options:
+  - "--max-old-space-size=2048"
+
+# Process settings
+pid.file: /var/run/kibana/kibana.pid
+
+# Shutdown timeout
+server.shutdownTimeout: "30s"
+
+# ==================== Plugin Configuration ====================
+
+# Disable unnecessary plugins
+timelion.enabled: false
+vega.enableExternalUrls: false
+
+# ==================== Index Management ====================
+
+# Index lifecycle management
+xpack.ilm.enabled: true
+
+# ==================== Enterprise Search ====================
+
+# Enterprise search integration (if used)
+enterpriseSearch.host: "http://enterprise-search:3002"
+enterpriseSearch.enabled: false
+```

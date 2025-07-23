@@ -1,0 +1,332 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-daily-tasks
+  namespace: production
+spec:
+  schedule: "0 2 * * *"
+  timeZone: "Europe/Sofia"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: boom-card-cronjob
+            type: daily-tasks
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: daily-tasks
+            image: boom-card/worker:latest
+            imagePullPolicy: Always
+            command: ["node", "dist/workers/daily-tasks.js"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: redis-url
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-host
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-user
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-password
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-subscription-check
+  namespace: production
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: boom-card-cronjob
+            type: subscription-check
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: subscription-checker
+            image: boom-card/worker:latest
+            imagePullPolicy: Always
+            command: ["node", "dist/workers/subscription-checker.js"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: redis-url
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: stripe-secret-key
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "50m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-analytics-aggregator
+  namespace: production
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: boom-card-cronjob
+            type: analytics-aggregator
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: analytics-aggregator
+            image: boom-card/worker:latest
+            imagePullPolicy: Always
+            command: ["node", "dist/workers/analytics-aggregator.js"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: redis-url
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "200m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-backup
+  namespace: production
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: boom-card-cronjob
+            type: backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: database-backup
+            image: boom-card/backup:latest
+            imagePullPolicy: Always
+            command: ["/scripts/backup.sh"]
+            env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: aws-secret-access-key
+            - name: S3_BUCKET
+              value: "boom-card-backups"
+            - name: AWS_REGION
+              value: "eu-central-1"
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-cleanup
+  namespace: production
+spec:
+  schedule: "0 4 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: boom-card-cronjob
+            type: cleanup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: cleanup
+            image: boom-card/worker:latest
+            imagePullPolicy: Always
+            command: ["node", "dist/workers/cleanup.js"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: redis-url
+            - name: CLEANUP_DAYS_THRESHOLD
+              value: "90"
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: boom-card-reports
+  namespace: production
+spec:
+  schedule: "0 8 1 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: boom-card-cronjob
+            type: monthly-reports
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: report-generator
+            image: boom-card/worker:latest
+            imagePullPolicy: Always
+            command: ["node", "dist/workers/monthly-reports.js"]
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: redis-url
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-host
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-user
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: smtp-password
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: boom-card-secrets
+                  key: aws-secret-access-key
+            - name: S3_REPORTS_BUCKET
+              value: "boom-card-reports"
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "200m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"

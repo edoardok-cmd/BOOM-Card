@@ -1,0 +1,144 @@
+{
+  "name": "@boom-card/queue",
+  "version": "1.0.0",
+  "description": "Message queue service for BOOM Card platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "docker:build": "docker build -t boom-card-queue .",
+    "docker:run": "docker run -p 9324:9324 boom-card-queue"
+  },
+  "keywords": [
+    "queue",
+    "message-queue",
+    "bull",
+    "redis",
+    "job-processing",
+    "boom-card"
+  ],
+  "author": "BOOM Card Development Team",
+  "license": "PRIVATE",
+  "dependencies": {
+    "bull": "^4.11.5",
+    "bullmq": "^4.14.0",
+    "ioredis": "^5.3.2",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0",
+    "uuid": "^9.0.1",
+    "prom-client": "^15.1.0",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "@sentry/node": "^7.85.0",
+    "@sentry/tracing": "^7.85.0",
+    "node-cron": "^3.0.3",
+    "p-retry": "^5.1.2",
+    "lodash": "^4.17.21",
+    "dayjs": "^1.11.10"
+  },
+  "devDependencies": {
+    "@types/bull": "^4.10.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "@types/jest": "^29.5.11",
+    "@types/lodash": "^4.14.202",
+    "@types/uuid": "^9.0.7",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/node-cron": "^3.0.11",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "supertest": "^6.3.3",
+    "@types/supertest": "^6.0.2",
+    "redis-memory-server": "^0.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boom-card/platform.git",
+    "directory": "services/queue"
+  },
+  "bugs": {
+    "url": "https://github.com/boom-card/platform/issues"
+  },
+  "homepage": "https://github.com/boom-card/platform/tree/main/services/queue#readme",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/*.test.ts",
+      "!src/**/*.spec.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
+    "testMatch": [
+      "**/__tests__/**/*.ts",
+      "**/?(*.)+(spec|test).ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json"
+    ],
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "testTimeout": 30000
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts",
+    "ignore": [
+      "src/**/*.test.ts",
+      "src/**/*.spec.ts"
+    ],
+    "exec": "ts-node",
+    "env": {
+      "NODE_ENV": "development"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "private"
+  }
+}

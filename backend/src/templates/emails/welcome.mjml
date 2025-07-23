@@ -1,0 +1,177 @@
+<mjml>
+  <mj-head>
+    <mj-title>Welcome to BOOM Card</mj-title>
+    <mj-preview>Your journey to exclusive discounts starts here!</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif" />
+      <mj-text font-size="16px" color="#333333" line-height="1.6" />
+      <mj-section background-color="#ffffff" />
+      <mj-class name="heading" font-size="24px" font-weight="bold" color="#1a1a1a" />
+      <mj-class name="subheading" font-size="18px" color="#666666" />
+      <mj-class name="button" background-color="#FF6B35" color="#ffffff" font-weight="bold" border-radius="8px" />
+      <mj-class name="footer-text" font-size="14px" color="#999999" />
+    </mj-attributes>
+    <mj-style inline="inline">
+      .discount-badge {
+        background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: bold;
+      }
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+      }
+      @media only screen and (max-width: 480px) {
+        .hide-mobile {
+          display: none !important;
+        }
+      }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <!-- Header -->
+    <mj-section background-color="#1a1a1a" padding="20px">
+      <mj-column>
+        <mj-image src="{{baseUrl}}/images/boom-card-logo-white.png" alt="BOOM Card" width="180px" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Hero Section -->
+    <mj-section background-color="#FF6B35" padding="40px 20px">
+      <mj-column>
+        <mj-text color="#ffffff" font-size="32px" font-weight="bold" align="center">
+          {{#if locale.en}}Welcome to BOOM Card!{{else}}Добре дошли в BOOM Card!{{/if}}
+        </mj-text>
+        <mj-text color="#ffffff" font-size="18px" align="center" padding-top="10px">
+          {{#if locale.en}}{{userName}}, your exclusive discount journey begins now{{else}}{{userName}}, вашето пътуване с ексклузивни отстъпки започва сега{{/if}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Welcome Message -->
+    <mj-section padding="40px 20px">
+      <mj-column>
+        <mj-text mj-class="heading" align="center" padding-bottom="20px">
+          {{#if locale.en}}You're now part of an exclusive community{{else}}Вече сте част от ексклузивна общност{{/if}}
+        </mj-text>
+        <mj-text align="center">
+          {{#if locale.en}}
+          Get ready to unlock amazing discounts at thousands of restaurants, hotels, spas, and entertainment venues. Your BOOM Card is your key to savings of up to 50% at premium locations.
+          {{else}}
+          Подгответе се да отключите невероятни отстъпки в хиляди ресторанти, хотели, спа центрове и места за развлечения. Вашата BOOM карта е ключът към спестявания до 50% в премиум локации.
+          {{/if}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Card Details -->
+    <mj-section background-color="#f9f9f9" padding="30px 20px">
+      <mj-column>
+        <mj-text mj-class="subheading" align="center" padding-bottom="20px">
+          {{#if locale.en}}Your Digital Card Details{{else}}Детайли за вашата дигитална карта{{/if}}
+        </mj-text>
+        <mj-image src="{{qrCodeUrl}}" alt="Your QR Code" width="200px" padding="20px 0" />
+        <mj-text align="center" font-weight="bold" font-size="20px">
+          {{#if locale.en}}Card Number{{else}}Номер на карта{{/if}}: {{cardNumber}}
+        </mj-text>
+        <mj-text align="center" color="#666666">
+          {{#if locale.en}}Valid until{{else}}Валидна до{{/if}}: {{expiryDate}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- How It Works -->
+    <mj-section padding="40px 20px">
+      <mj-column>
+        <mj-text mj-class="heading" align="center" padding-bottom="30px">
+          {{#if locale.en}}How It Works{{else}}Как работи{{/if}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding="0 20px 40px 20px">
+      <mj-column width="33%">
+        <mj-image src="{{baseUrl}}/images/icon-search.png" alt="Search" width="48px" />
+        <mj-text align="center" font-weight="bold" padding-top="10px">
+          {{#if locale.en}}1. Find Partners{{else}}1. Намерете партньори{{/if}}
+        </mj-text>
+        <mj-text align="center" font-size="14px">
+          {{#if locale.en}}Browse our extensive network of partners{{else}}Разгледайте нашата обширна мрежа от партньори{{/if}}
+        </mj-text>
+      </mj-column>
+      <mj-column width="33%">
+        <mj-image src="{{baseUrl}}/images/icon-qr.png" alt="QR Code" width="48px" />
+        <mj-text align="center" font-weight="bold" padding-top="10px">
+          {{#if locale.en}}2. Show QR Code{{else}}2. Покажете QR кода{{/if}}
+        </mj-text>
+        <mj-text align="center" font-size="14px">
+          {{#if locale.en}}Present your QR code at checkout{{else}}Представете вашия QR код при плащане{{/if}}
+        </mj-text>
+      </mj-column>
+      <mj-column width="33%">
+        <mj-image src="{{baseUrl}}/images/icon-save.png" alt="Save" width="48px" />
+        <mj-text align="center" font-weight="bold" padding-top="10px">
+          {{#if locale.en}}3. Save Instantly{{else}}3. Спестете веднага{{/if}}
+        </mj-text>
+        <mj-text align="center" font-size="14px">
+          {{#if locale.en}}Enjoy exclusive discounts immediately{{else}}Насладете се на ексклузивни отстъпки веднага{{/if}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Featured Partners -->
+    <mj-section background-color="#f9f9f9" padding="40px 20px">
+      <mj-column>
+        <mj-text mj-class="heading" align="center" padding-bottom="20px">
+          {{#if locale.en}}Featured Partners{{else}}Препоръчани партньори{{/if}}
+        </mj-text>
+        <mj-text align="center" padding-bottom="30px">
+          {{#if locale.en}}Start saving at these popular locations{{else}}Започнете да спестявате в тези популярни локации{{/if}}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Partner Grid -->
+    <mj-section background-color="#f9f9f9" padding="0 20px 40px 20px">
+      {{#each featuredPartners}}
+      <mj-column width="50%" padding="10px">
+        <mj-image src="{{this.imageUrl}}" alt="{{this.name}}" border-radius="8px" />
+        <mj-text font-weight="bold" padding-top="10px">{{this.name}}</mj-text>
+        <mj-text font-size="14px" color="#666666">{{this.category}}</mj-text>
+        <mj-text font-size="14px">
+          <span class="discount-badge">{{this.discount}}% OFF</span>
+        </mj-text>
+      </mj-column>
+      {{/each}}
+    </mj-section>
+
+    <!-- CTA Buttons -->
+    <mj-section padding="40px 20px">
+      <mj-column>
+        <mj-button mj-class="button" href="{{appDownloadUrl}}" padding="20px 0">
+          {{#if locale.en}}Download Mobile App{{else}}Изтеглете мобилното приложение{{/if}}
+        </mj-button>
+        <mj-button mj-class="button" background-color="#ffffff" color="#FF6B35" border="2px solid #FF6B35" href="{{browsePartnersUrl}}" padding="20px 0">
+          {{#if locale.en}}Browse All Partners{{else}}Разгледайте всички партньори{{/if}}
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Quick Tips -->
+    <mj-section background-color="#fff3cd" padding="30px 20px">
+      <mj-column>
+        <mj-text font-weight="bold" color="#856404" padding-bottom="15px">
+          {{#if locale.en}}💡 Pro Tips{{else}}💡 Професионални съвети{{/if}}
+        </mj-text>
+        <mj-text color="#856404" font-size="14px">
+          {{#if locale.en}}
+          • Save your QR code to your phone's photo gallery for quick access<br/>
+          • Check the app daily for new partners and exclusive deals<br/>
+          • Enable notifications to never miss limited-time offers<br/>
+          • Share BOOM Card with friends and earn referral rewards
+          {{else}}
+          • Запазете вашия QR код в галерията на телефона за бърз достъп<br/>
+          • Проверявайте приложението ежедневно за нови партньори и екск

@@ -1,0 +1,170 @@
+name: Data Backup for BOOM Card
+
+on:
+  # Manual trigger with options for specific backup types
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Select the type of data to backup'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all        # Backup Database, Redis, and Assets
+          - database   # Only backup PostgreSQL Database
+          - redis      # Only perform Redis snapshot
+          - assets     # Only backup S3 Assets
+
+  # Scheduled daily backup at 03:00 UTC
+  schedule:
+    - cron: '0 3 * * *' # Runs every day at 03:00 UTC
+
+# Define environment variables that can be used across jobs
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }} # AWS region for S3, RDS, ElastiCache operations
+  S3_BACKUP_BUCKET: ${{ secrets.S3_BACKUP_BUCKET }} # S3 bucket dedicated for backups
+  # Source S3 bucket for assets (if different from the backup bucket)
+  S3_ASSETS_BUCKET: ${{ secrets.S3_ASSETS_BUCKET }}
+
+jobs:
+  # The main backup job
+  perform_backup:
+    runs-on: ubuntu-latest # Use a GitHub-hosted runner
+    environment: production # Link to a GitHub Environment for secrets and protections
+
+    # Permissions required for AWS OIDC authentication and checking out the repository
+    permissions:
+      id-token: write # Required for `aws-actions/configure-aws-credentials` to assume an IAM role
+      contents: read  # Required to checkout the repository code
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # Configure AWS credentials using OIDC for enhanced security
+      # This step assumes an IAM role has been created in AWS with a trust policy
+      # that allows `token.actions.githubusercontent.com` to assume it,
+      # and with permissions to access S3, RDS, and ElastiCache.
+      - name: Configure AWS Credentials for IAM Role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }} # ARN of the IAM role to assume
+          aws-region: ${{ env.AWS_REGION }}
+          # Ensure this IAM role has permissions for:
+          # - s3:PutObject, s3:ListBucket, s3:GetObject (for backup bucket)
+          # - s3:GetObject, s3:ListBucket (for source assets bucket)
+          # - rds:DescribeDBClusters, rds:CreateDBSnapshot (if using RDS snapshots directly)
+          # - elasticache:CreateSnapshot, elasticache:DescribeCacheClusters
+
+      # --- PostgreSQL Database Backup ---
+      # This section installs PostgreSQL client tools and performs a database dump,
+      # then uploads it to the designated S3 backup bucket.
+      - name: Install PostgreSQL Client
+        # This step runs if 'all' or 'database' backup type is selected, or if triggered by schedule
+        if: github.event_name == 'schedule' || contains(github.event.inputs.backup_type, 'all') || contains(github.event.inputs.backup_type, 'database')
+        run: |
+          echo "Updating apt packages and installing postgresql-client..."
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          echo "postgresql-client installed."
+
+      - name: Perform PostgreSQL Database Dump and Upload to S3
+        # This step runs if 'all' or 'database' backup type is selected, or if triggered by schedule
+        if: github.event_name == 'schedule' || contains(github.event.inputs.backup_type, 'all') || contains(github.event.inputs.backup_type, 'database')
+        run: |
+          # Retrieve database connection details from GitHub Secrets
+          DB_HOST="${{ secrets.DB_HOST }}"
+          DB_PORT="${{ secrets.DB_PORT }}"
+          DB_USER="${{ secrets.DB_USER }}"
+          DB_NAME="${{ secrets.DB_NAME }}"
+
+          # Generate a timestamped filename for the backup
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE_NAME="boom_card_db_backup_${TIMESTAMP}.sql.gz"
+          S3_DATABASE_PATH="database/${BACKUP_FILE_NAME}" # Path within the S3 backup bucket
+
+          echo "Starting PostgreSQL database backup for ${DB_NAME} on ${DB_HOST}:${DB_PORT}..."
+          # Use PGPASSWORD environment variable for secure password handling with pg_dump
+          # The dump is piped directly to gzip for compression, then to a file
+          PGPASSWORD="${{ secrets.DB_PASSWORD }}" pg_dump -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" | gzip > "$BACKUP_FILE_NAME"
+          
+          # Check if the pg_dump command was successful
+          if [ $? -ne 0 ]; then
+            echo "Error: PostgreSQL database dump failed."
+            exit 1
+          fi
+          echo "PostgreSQL database dump created: ${BACKUP_FILE_NAME}"
+
+          echo "Uploading database backup to S3://${S3_BACKUP_BUCKET}/${S3_DATABASE_PATH}..."
+          aws s3 cp "$BACKUP_FILE_NAME" "s3://${S3_BACKUP_BUCKET}/${S3_DATABASE_PATH}"
+          
+          # Check if the S3 upload command was successful
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to upload database backup to S3."
+            exit 1
+          fi
+          echo "PostgreSQL database backup uploaded successfully."
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }} # Ensure password is only available to this step's environment
+
+      # --- Redis Backup (AWS ElastiCache Snapshot) ---
+      # This section initiates a snapshot for an AWS ElastiCache Redis cluster.
+      # This is the recommended approach for backing up Redis in an AWS environment.
+      # If Redis is self-hosted, a different strategy (e.g., volume snapshot, rsync dump.rdb)
+      # would be required, which is beyond the scope of a generic workflow.
+      - name: Perform Redis Snapshot (AWS ElastiCache)
+        # This step runs if 'all' or 'redis' backup type is selected, or if triggered by schedule
+        if: github.event_name == 'schedule' || contains(github.event.inputs.backup_type, 'all') || contains(github.event.inputs.backup_type, 'redis')
+        run: |
+          # Retrieve Redis cluster ID from GitHub Secrets
+          REDIS_CLUSTER_ID="${{ secrets.REDIS_CLUSTER_ID }}" # e.g., "boom-card-redis-prod-cluster"
+          SNAPSHOT_NAME="boom-card-redis-snapshot-$(date +%Y%m%d-%H%M%S)"
+
+          echo "Initiating AWS ElastiCache Redis snapshot for cluster: ${REDIS_CLUSTER_ID} with name ${SNAPSHOT_NAME}..."
+          # Call AWS CLI to create a snapshot
+          aws elasticache create-snapshot \
+            --snapshot-name "${SNAPSHOT_NAME}" \
+            --cache-cluster-id "${REDIS_CLUSTER_ID}" \
+            --output json > snapshot_creation_output.json
+          
+          # Check if the snapshot creation command was successful
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to create Redis snapshot."
+            cat snapshot_creation_output.json # Output error details from AWS CLI
+            exit 1
+          fi
+          echo "Redis snapshot initiation successful. Check AWS console for snapshot progress and completion."
+          cat snapshot_creation_output.json # Output snapshot details for logs
+
+      # --- Application Assets Backup (S3 to S3 Sync) ---
+      # This section syncs user-uploaded or application-generated assets
+      # from their source S3 bucket to a timestamped folder in the backup S3 bucket.
+      - name: Sync Application Assets from Source S3 to Backup S3
+        # This step runs if 'all' or 'assets' backup type is selected, or if triggered by schedule
+        if: github.event_name == 'schedule' || contains(github.event.inputs.backup_type, 'all') || contains(github.event.inputs.backup_type, 'assets')
+        run: |
+          # Generate a timestamped prefix for the asset backup destination
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          S3_ASSET_BACKUP_PREFIX="assets/${TIMESTAMP}/" # Path within the S3 backup bucket
+
+          echo "Syncing assets from s3://${S3_ASSETS_BUCKET} to s3://${S3_BACKUP_BUCKET}/${S3_ASSET_BACKUP_PREFIX}..."
+          # Use aws s3 sync for efficient mirroring.
+          # The --delete flag ensures the backup accurately reflects the source at the time of backup.
+          # For longer retention, S3 bucket versioning on the backup bucket is recommended,
+          # or omit --delete and manage older versions manually/via lifecycle policies.
+          aws s3 sync "s3://${S3_ASSETS_BUCKET}" "s3://${S3_BACKUP_BUCKET}/${S3_ASSET_BACKUP_PREFIX}" --delete
+          
+          # Check if the S3 sync command was successful
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to sync assets to S3 backup bucket."
+            exit 1
+          fi
+          echo "Application assets synced successfully."
+
+      # --- Cleanup (Optional, but good practice for sensitive files) ---
+      - name: Clean up local backup files
+        if: always() # Always run cleanup, even if previous steps failed
+        run: |
+          echo "Cleaning up local backup files..."
+          rm -f *.sql.gz # Remove any PostgreSQL dump files created locally
+          echo "Cleanup complete."

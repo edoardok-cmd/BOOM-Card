@@ -1,0 +1,143 @@
+# This file configures a GitHub Actions workflow to perform dependency vulnerability scanning
+# using OWASP Dependency-Check. It is designed for the BOOM Card platform, which uses
+# Node.js/TypeScript, React/Next.js, PostgreSQL, and Redis.
+
+name: Dependency Vulnerability Scan (OWASP Dependency-Check)
+
+# Triggers the workflow on push and pull request events for the main and develop branches.
+# This ensures that all new code and proposed changes are scanned for known vulnerabilities.
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+# Define a single job for performing the dependency check.
+jobs:
+  dependency-check:
+    # Runs the job on the latest Ubuntu runner.
+    runs-on: ubuntu-latest
+
+    # Set permissions for the GitHub Actions token.
+    # `contents: read` is needed to checkout the repository.
+    # `security-events: write` is crucial for uploading SARIF reports to GitHub Code Scanning.
+    permissions:
+      contents: read
+      security-events: write
+
+    # Steps to be executed in the dependency-check job.
+    steps:
+      # Step 1: Checkout the repository code.
+      # This makes the project files available to the runner.
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Java Development Kit (JDK).
+      # OWASP Dependency-Check is a Java application, so a JDK is required to run it.
+      # Using Temurin distribution for broader compatibility.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Recommended Java version for recent Dependency-Check releases
+          distribution: 'temurin'
+
+      # Step 3: Set up Node.js environment.
+      # This is necessary for Dependency-Check's Node.js analyzers to correctly identify
+      # dependencies from package.json, package-lock.json, and yarn.lock files.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use Node.js 20, aligning with modern development practices
+          cache: 'npm' # Cache npm dependencies for faster `npm install` if needed
+
+      # Step 4: Install Node.js dependencies.
+      # Although Dependency-Check can often work with just lock files, installing dependencies
+      # can ensure a complete environment for deep scans if enabled.
+      # This step checks for either `package-lock.json` or `yarn.lock` and runs the
+      # appropriate installation command.
+      - name: Install Node.js Dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "package-lock.json found, running npm clean-install..."
+            # `npm clean-install` ensures a clean node_modules directory based on the lock file.
+            # `--no-audit` to speed up the install as dependency-check will handle the audit.
+            npm clean-install --no-audit || echo "Warning: npm clean-install failed, proceeding without strict dependency installation."
+          elif [ -f "yarn.lock" ]; then
+            echo "yarn.lock found, running yarn install --frozen-lockfile..."
+            # `--frozen-lockfile` ensures exact dependencies from yarn.lock are used.
+            yarn install --frozen-lockfile || echo "Warning: yarn install failed, proceeding without strict dependency installation."
+          else
+            echo "No lock file found (package-lock.json or yarn.lock). Skipping dependency installation."
+            echo "Dependency-Check will rely on package.json for analysis where possible."
+          fi
+
+      # Step 5: Cache OWASP Dependency-Check data.
+      # This step speeds up subsequent runs by caching the NVD (National Vulnerability Database)
+      # and other update data that Dependency-Check downloads.
+      - name: Cache OWASP Dependency-Check Data
+        uses: actions/cache@v4
+        with:
+          # Specify the path where Dependency-Check stores its data.
+          path: ~/.cache/dependency-check
+          # Key for the cache, incorporating OS and hashes of package lock files to invalidate cache
+          # when project dependencies change. This ensures fresh data when dependencies are updated.
+          key: ${{ runner.os }}-dependency-check-data-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
+          # Fallback keys to restore older caches if the primary key doesn't match.
+          restore-keys: |
+            ${{ runner.os }}-dependency-check-data-
+
+      # Step 6: Run OWASP Dependency-Check.
+      # This step executes the Dependency-Check tool to scan for known vulnerabilities.
+      # We use a community action for simplicity and robustness.
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check-Action@main # Using 'main' for the latest version. Consider pinning to a specific release tag (e.g., v8) for stability.
+        id: depcheck # ID to reference outputs later
+        with:
+          # Specify the project name for reports.
+          project: 'BOOM Card Platform'
+          # Path to scan. '. ' scans the entire repository. Adjust if only specific sub-projects are relevant.
+          path: '.'
+          # Output directory for reports.
+          outputDirectory: 'dependency-check-report'
+          # Set the format of the output reports. SARIF is recommended for GitHub Code Scanning integration.
+          # HTML provides a human-readable report for detailed manual review.
+          format: 'ALL' # Generates HTML, JSON, SARIF, XML, etc.
+          # Enable Node.js specific analyzers. These are crucial for TypeScript/JavaScript projects.
+          nodeAnalyzerEnabled: true
+          # Enable Retire.js analyzer for client-side JavaScript libraries, identifying vulnerable JS components.
+          retirejsAnalyzerEnabled: true
+          # Arguments to pass directly to the Dependency-Check CLI.
+          # '--failOnCVSS 7.0': Fails the workflow if any vulnerability with a CVSS v3 score of 7.0 or higher is found.
+          # This acts as an automated quality gate for critical security issues.
+          # '--prettyPrint': Makes JSON/XML reports more readable.
+          # '--exclude': Excludes specified paths from scanning. Important for performance and reducing false positives.
+          # Excluding common build artifacts, test directories, and version control directories.
+          arguments: '--failOnCVSS 7.0 --prettyPrint --exclude "**/node_modules/**" --exclude ".git/**" --exclude "**/test/**" --exclude "**/__tests__/**" --exclude "**/docs/**" --exclude "**/dist/**" --exclude "**/build/**" --exclude "**/out/**" --exclude "**/coverage/**" --exclude "**/tmp/**"'
+
+      # Step 7: Upload SARIF report to GitHub Code Scanning.
+      # This makes vulnerability findings visible in the "Security" tab of the GitHub repository,
+      # integrating with GitHub's native security features.
+      # This step runs even if Dependency-Check found issues (failure()), ensuring all findings are reported.
+      - name: Upload SARIF report to GitHub Code Scanning
+        if: success() || failure() # Always attempt to upload, so findings are visible even if they caused a build failure.
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dependency-check-report/dependency-check.sarif
+          # Category for SARIF results, helps differentiate from other security scanners.
+          category: OWASP-Dependency-Check
+
+      # Step 8: Upload other reports as artifacts (optional but highly recommended for review).
+      # This allows downloading the full HTML report and other formats for detailed offline analysis
+      # or sharing with team members.
+      - name: Upload Dependency-Check Reports as Artifacts
+        if: always() # Always upload artifacts, regardless of previous step success/failure, for post-mortem analysis.
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-reports
+          path: dependency-check-report/
+          # Retention period for artifacts in days (e.g., 7 days to conserve storage).
+          retention-days: 7

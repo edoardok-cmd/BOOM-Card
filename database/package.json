@@ -1,0 +1,13 @@
+{
+  "name": "boom-card-database",
+  "version": "1.0.0",
+  "description": "Database migrations for BOOM Card",
+  "main": "migrate.js",
+  "scripts": {
+    "migrate": "node migrate.js",
+    "migrate:rollback": "node rollback.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
+}

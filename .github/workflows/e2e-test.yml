@@ -1,0 +1,414 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
+
+env:
+  NODE_VERSION: '20.x'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+  PLAYWRIGHT_VERSION: '1.40.0'
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [1, 2, 3, 4]
+        
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: boomcard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        id: cache-deps
+        with:
+          path: |
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json') }}-${{ env.PLAYWRIGHT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+            
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser }}
+          
+      - name: Setup test environment
+        run: |
+          cp .env.test.example .env.test
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/boomcard_test" >> .env.test
+          echo "REDIS_URL=redis://localhost:6379" >> .env.test
+          echo "JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}" >> .env.test
+          echo "STRIPE_SECRET_KEY=${{ secrets.TEST_STRIPE_SECRET_KEY }}" >> .env.test
+          echo "STRIPE_WEBHOOK_SECRET=${{ secrets.TEST_STRIPE_WEBHOOK_SECRET }}" >> .env.test
+          echo "SENDGRID_API_KEY=${{ secrets.TEST_SENDGRID_API_KEY }}" >> .env.test
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.TEST_AWS_ACCESS_KEY_ID }}" >> .env.test
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}" >> .env.test
+          echo "AWS_S3_BUCKET=${{ secrets.TEST_AWS_S3_BUCKET }}" >> .env.test
+          echo "QR_CODE_BASE_URL=http://localhost:3000" >> .env.test
+          echo "POS_API_KEY=${{ secrets.TEST_POS_API_KEY }}" >> .env.test
+          
+      - name: Run database migrations
+        run: |
+          npm run db:migrate:test
+          npm run db:seed:test
+        env:
+          NODE_ENV: test
+          
+      - name: Build application
+        run: |
+          npm run build
+          npm run build:server
+        env:
+          NODE_ENV: test
+          
+      - name: Start test server
+        run: |
+          npm run start:test &
+          npx wait-on http://localhost:3000 -t 60000
+        env:
+          NODE_ENV: test
+          PORT: 3000
+          
+      - name: Run E2E tests
+        run: |
+          npx playwright test --browser=${{ matrix.browser }} --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        env:
+          NODE_ENV: test
+          TEST_PARALLEL: true
+          PLAYWRIGHT_WORKERS: 2
+          
+      - name: Generate test report
+        if: always()
+        run: |
+          npx playwright show-report
+          
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.shard }}
+          path: playwright-report/
+          retention-days: 7
+          
+      - name: Upload test videos
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-videos-${{ matrix.browser }}-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 3
+          
+      - name: Upload coverage reports
+        if: matrix.browser == 'chromium' && matrix.shard == 1
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/e2e/lcov.info
+          flags: e2e
+          
+  e2e-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: e2e-tests
+    
+    strategy:
+      matrix:
+        device: [
+          "iPhone 14",
+          "iPhone SE",
+          "Pixel 7",
+          "Galaxy S22"
+        ]
+        
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: boomcard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          
+      - name: Setup test environment
+        run: |
+          cp .env.test.example .env.test
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/boomcard_test" >> .env.test
+          echo "REDIS_URL=redis://localhost:6379" >> .env.test
+          echo "JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}" >> .env.test
+          
+      - name: Run database setup
+        run: |
+          npm run db:migrate:test
+          npm run db:seed:test
+        env:
+          NODE_ENV: test
+          
+      - name: Build and start application
+        run: |
+          npm run build
+          npm run start:test &
+          npx wait-on http://localhost:3000 -t 60000
+        env:
+          NODE_ENV: test
+          
+      - name: Run mobile E2E tests
+        run: |
+          npx playwright test tests/e2e/mobile --device="${{ matrix.device }}"
+        env:
+          NODE_ENV: test
+          TEST_DEVICE: ${{ matrix.device }}
+          
+      - name: Upload mobile test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: mobile-report-${{ matrix.device }}
+          path: playwright-report/
+          retention-days: 7
+          
+  e2e-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: boomcard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Setup test environment
+        run: |
+          cp .env.test.example .env.test
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/boomcard_test" >> .env.test
+          echo "REDIS_URL=redis://localhost:6379" >> .env.test
+          echo "JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}" >> .env.test
+          echo "POS_API_KEY=${{ secrets.TEST_POS_API_KEY }}" >> .env.test
+          
+      - name: Run database setup
+        run: |
+          npm run db:migrate:test
+          npm run db:seed:test
+        env:
+          NODE_ENV: test
+          
+      - name: Start API server
+        run: |
+          npm run start:api:test &
+          npx wait-on http://localhost:4000/health -t 30000
+        env:
+          NODE_ENV: test
+          PORT: 4000
+          
+      - name: Run API E2E tests
+        run: npm run test:api:e2e
+        env:
+          NODE_ENV: test
+          API_URL: http://localhost:4000
+          
+      - name: Run API contract tests
+        run: npm run test:api:contract
+        env:
+          NODE_ENV: test
+          
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-test-results
+          path: |
+            test-results/api/
+            coverage/api/
+          retention-days: 7
+          
+  e2e-performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [e2e-tests, e2e-api]
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: boomcard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -g lighthouse
+          
+      - name: Setup test environment
+        run: |
+          cp .env.test.example .env.test
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/boomcard_test" >> .env.test
+          echo "REDIS_URL=redis://localhost:6379" >> .env.test
+          
+      - name: Build production bundle
+        run: npm run build:prod
+        env:
+          NODE_ENV: production
+          
+      - name: Start production server
+        run: |
+          npm run start:prod &
+          npx wait-on http://localhost:3000 -t 60000
+        env:
+          NODE_ENV: production
+          PORT: 3000
+          
+      - name: Run Lighthouse tests
+        run: |
+          lighthouse http://localhost:3000 --output=json --output-path=./lighthouse-report.json --chrome-flags="--headless"
+          lighthouse http://localhost:3000/partners --output=json --output-path=./lighthouse-partners.json --chrome-flags="--headless"
+          lighthouse http://localhost:3000/search --output=json --output-path=./lighthouse-search.json --chrome-flags="--headless"
+          
+      - name: Run performance tests
+        run: npm run test:performance
+        env:
+          NODE_ENV: test
+          BASE_URL: http://localhost:3000
+          
+      - name: Analyze bundle size
+        run: |
+          npm run analyze:bundle
+          npm run analyze:dependencies
+          
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+     

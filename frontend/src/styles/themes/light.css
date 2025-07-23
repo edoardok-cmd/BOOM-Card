@@ -1,0 +1,168 @@
+/*
+ * File: frontend/src/styles/themes/light.css
+ * Description: Defines CSS custom properties (variables) for the light theme of the BOOM Card platform.
+ * This theme provides a clean, professional, and accessible visual style with a focus on usability and readability.
+ *
+ * BOOM Card Platform - Light Theme Variables
+ * - Colors are chosen for readability and adherence to brand guidelines, ensuring good contrast.
+ * - Primary colors represent the main brand identity and interactive elements.
+ * - Secondary colors are for less prominent elements and supplementary information.
+ * - Neutral colors provide a base for backgrounds, text, and borders, supporting a clean aesthetic.
+ * - Semantic colors indicate success, error, warning, and informational states clearly to the user.
+ */
+
+.theme-light {
+    /* --- Brand & Primary Colors --- */
+    --color-brand-primary: #007bff; /* A vibrant, standard blue for main actions and branding */
+    --color-brand-primary-hover: #0056b3; /* Darker shade for hover states of primary elements */
+    --color-brand-primary-active: #004085; /* Even darker for active states of primary elements */
+    --color-brand-primary-rgb: 0, 123, 255; /* RGB values for creating rgba() transparency effects */
+
+    --color-brand-secondary: #6c757d; /* Muted grey for secondary actions or less emphasis */
+    --color-brand-secondary-hover: #5a6268; /* Darker shade for hover states of secondary elements */
+    --color-brand-secondary-active: #4a5156; /* Even darker for active states of secondary elements */
+    --color-brand-secondary-rgb: 108, 117, 125; /* RGB values for creating rgba() transparency effects */
+
+    /* --- Background Colors --- */
+    --bg-app: #f8f9fa; /* Overall application background, very light grey for a soft feel */
+    --bg-primary: #ffffff; /* Primary content background, e.g., cards, modals, main content blocks */
+    --bg-secondary: #f0f2f5; /* Secondary background areas, e.g., section separators, subtle highlight areas */
+    --bg-tertiary: #e9ecef; /* Even darker light grey for specific components or subtle contrasts */
+    --bg-overlay: rgba(0, 0, 0, 0.6); /* Dark semi-transparent overlay for modals/popups */
+    --bg-disabled: #e9ecef; /* Background color for disabled form elements or sections */
+
+    /* --- Text Colors --- */
+    --text-primary: #212529; /* Main text color, dark almost black for high readability */
+    --text-secondary: #495057; /* Secondary text color, softer dark grey for less prominent information */
+    --text-tertiary: #6c757d; /* Muted text color for captions, hints, or less important details */
+    --text-link: var(--color-brand-primary); /* Default link color, using the brand primary color */
+    --text-link-hover: var(--color-brand-primary-hover); /* Link hover color for interactive feedback */
+    --text-on-primary: #ffffff; /* Text color that ensures high contrast on primary brand backgrounds */
+    --text-on-secondary: #ffffff; /* Text color that ensures high contrast on secondary brand backgrounds */
+    --text-disabled: #adb5bd; /* Text color for disabled elements, indicating non-interactiveness */
+
+    /* --- Border & Divider Colors --- */
+    --border-color-primary: #dee2e6; /* Standard border color for forms, cards, and separators */
+    --border-color-secondary: #e9ecef; /* Lighter border color for more subtle divisions or outlines */
+    --border-color-focus: var(--color-brand-primary); /* Border color when an element is focused for accessibility */
+
+    /* --- Shadow Colors --- */
+    --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle shadow for small, elevated elements */
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.1); /* Standard shadow for cards, dropdowns, and larger components */
+    --shadow-large: 0 8px 24px rgba(0, 0, 0, 0.15); /* Prominent shadow for modals and popovers */
+
+    /* --- Form Elements --- */
+    --form-input-bg: var(--bg-primary); /* Background for input fields */
+    --form-input-border: var(--border-color-primary); /* Border for input fields */
+    --form-input-placeholder: var(--text-tertiary); /* Placeholder text color in input fields */
+    --form-input-focus-border: var(--border-color-focus); /* Focus border for inputs, matching focus outline */
+
+    /* --- Button Colors --- */
+    --btn-primary-bg: var(--color-brand-primary); /* Primary button background */
+    --btn-primary-text: var(--text-on-primary); /* Text color on primary buttons */
+    --btn-primary-hover-bg: var(--color-brand-primary-hover); /* Hover background for primary buttons */
+    --btn-primary-active-bg: var(--color-brand-primary-active); /* Active background for primary buttons */
+
+    --btn-secondary-bg: var(--color-brand-secondary); /* Secondary button background */
+    --btn-secondary-text: var(--text-on-secondary); /* Text color on secondary buttons */
+    --btn-secondary-hover-bg: var(--color-brand-secondary-hover); /* Hover background for secondary buttons */
+    --btn-secondary-active-bg: var(--color-brand-secondary-active); /* Active background for secondary buttons */
+
+    --btn-outline-primary-bg: transparent; /* Outline primary button background (transparent) */
+    --btn-outline-primary-text: var(--color-brand-primary); /* Text color for outline primary buttons */
+    --btn-outline-primary-border: var(--color-brand-primary); /* Border color for outline primary buttons */
+    --btn-outline-primary-hover-bg: var(--color-brand-primary); /* Hover background for outline primary buttons */
+    --btn-outline-primary-hover-text: var(--text-on-primary); /* Hover text color for outline primary buttons */
+
+    --btn-text-only-color: var(--color-brand-primary); /* Color for text-only buttons (ghost buttons) */
+    --btn-text-only-hover-bg: rgba(var(--color-brand-primary-rgb), 0.1); /* Subtle hover background for text-only buttons */
+
+    /* --- Card & Panel Colors --- */
+    --card-bg: var(--bg-primary); /* Background for cards and panels */
+    --card-border: var(--border-color-primary); /* Border for cards and panels */
+    --card-shadow: var(--shadow-small); /* Shadow for cards and panels */
+
+    /* --- Navigation Colors --- */
+    --nav-header-bg: var(--bg-primary); /* Background for the main header navigation */
+    --nav-header-text: var(--text-primary); /* Text color for header navigation items */
+    --nav-header-border-bottom: var(--border-color-primary); /* Bottom border for the header */
+
+    --nav-footer-bg: var(--bg-secondary); /* Background for the footer */
+    --nav-footer-text: var(--text-secondary); /* Text color for footer content */
+
+    --nav-link-color: var(--text-secondary); /* Default color for navigation links */
+    --nav-link-hover-color: var(--color-brand-primary); /* Hover color for navigation links */
+    --nav-link-active-color: var(--color-brand-primary); /* Active color for current navigation link */
+    --nav-link-active-bg: rgba(var(--color-brand-primary-rgb), 0.08); /* Subtle background for active nav items */
+
+    /* --- Icon Colors --- */
+    --icon-color-primary: var(--text-secondary); /* Default icon color */
+    --icon-color-brand: var(--color-brand-primary); /* Brand-colored icons */
+
+    /* --- Specific UI Components --- */
+    --scrollbar-track-bg: var(--bg-secondary); /* Background for scrollbar track */
+    --scrollbar-thumb-bg: var(--text-tertiary); /* Background for scrollbar thumb */
+    --scrollbar-thumb-hover-bg: var(--text-secondary); /* Hover background for scrollbar thumb */
+
+    /* --- Semantic Colors (for alerts, statuses, etc.) --- */
+    --color-success: #28a745; /* Green for success messages/icons */
+    --color-success-bg: #d4edda; /* Light green background for success alerts */
+    --color-success-text: #155724; /* Darker green text for success alerts */
+
+    --color-error: #dc3545; /* Red for error messages/icons */
+    --color-error-bg: #f8d7da; /* Light red background for error alerts */
+    --color-error-text: #721c24; /* Darker red text for error alerts */
+
+    --color-warning: #ffc107; /* Orange/Yellow for warning messages/icons */
+    --color-warning-bg: #fff3cd; /* Light yellow background for warning alerts */
+    --color-warning-text: #856404; /* Darker yellow text for warning alerts */
+
+    --color-info: #17a2b8; /* Cyan for informational messages/icons */
+    --color-info-bg: #d1ecf1; /* Light cyan background for info alerts */
+    --color-info-text: #0c5460; /* Darker cyan text for info alerts */
+
+    /* --- Interactive Map Colors (Hypothetical, for custom overlays or elements on the map) --- */
+    --map-marker-color: var(--color-brand-primary); /* Color for map markers */
+    --map-area-highlight: rgba(var(--color-brand-primary-rgb), 0.2); /* Highlight color for map areas */
+
+    /* --- Text Selection Color --- */
+    --selection-bg: var(--color-brand-primary); /* Background color for selected text */
+    --selection-text: var(--text-on-primary); /* Text color for selected text */
+}
+
+/* Base styles for scrollbars, applied when .theme-light is active */
+.theme-light ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.theme-light ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-bg);
+    border-radius: 10px;
+}
+
+.theme-light ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-bg);
+    border-radius: 10px;
+}
+
+.theme-light ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover-bg);
+}
+
+/* Accessibility: Focus outlines for interactive elements */
+/* Ensures keyboard navigation is clearly visible */
+.theme-light *:focus-visible {
+    outline: 2px solid var(--border-color-focus);
+    outline-offset: 2px;
+}
+
+/* Custom selection styles for better user experience */
+.theme-light ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-text);
+}
+.theme-light ::-moz-selection { /* For Firefox compatibility */
+    background: var(--selection-bg);
+    color: var(--selection-text);
+}

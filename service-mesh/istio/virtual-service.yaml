@@ -1,0 +1,325 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-card-frontend
+  namespace: boom-card
+spec:
+  hosts:
+  - boom-card.com
+  - www.boom-card.com
+  gateways:
+  - boom-card-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/
+    route:
+    - destination:
+        host: api-gateway
+        port:
+          number: 3000
+      weight: 100
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+    corsPolicy:
+      allowOrigins:
+      - exact: https://boom-card.com
+      - exact: https://www.boom-card.com
+      - exact: http://localhost:3000
+      allowMethods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+      allowHeaders:
+      - content-type
+      - authorization
+      - x-api-key
+      - x-request-id
+      - x-user-id
+      - x-language
+      exposeHeaders:
+      - x-request-id
+      - x-ratelimit-limit
+      - x-ratelimit-remaining
+      maxAge: "86400"
+      allowCredentials: true
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: frontend
+        port:
+          number: 80
+      weight: 100
+    headers:
+      response:
+        set:
+          x-frame-options: DENY
+          x-content-type-options: nosniff
+          x-xss-protection: 1; mode=block
+          strict-transport-security: max-age=31536000; includeSubDomains
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-card-api-gateway
+  namespace: boom-card
+spec:
+  hosts:
+  - api-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /v1/auth
+    route:
+    - destination:
+        host: auth-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 10s
+    retries:
+      attempts: 2
+      perTryTimeout: 5s
+  - match:
+    - uri:
+        prefix: /v1/users
+    route:
+    - destination:
+        host: user-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 10s
+  - match:
+    - uri:
+        prefix: /v1/partners
+    route:
+    - destination:
+        host: partner-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 15s
+  - match:
+    - uri:
+        prefix: /v1/qr
+    route:
+    - destination:
+        host: qr-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 5s
+  - match:
+    - uri:
+        prefix: /v1/transactions
+    route:
+    - destination:
+        host: transaction-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 20s
+  - match:
+    - uri:
+        prefix: /v1/subscriptions
+    route:
+    - destination:
+        host: subscription-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 15s
+  - match:
+    - uri:
+        prefix: /v1/payments
+    route:
+    - destination:
+        host: payment-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: 5xx,reset,connect-failure
+  - match:
+    - uri:
+        prefix: /v1/analytics
+    route:
+    - destination:
+        host: analytics-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 60s
+  - match:
+    - uri:
+        prefix: /v1/search
+    route:
+    - destination:
+        host: search-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 10s
+  - match:
+    - uri:
+        prefix: /v1/notifications
+    route:
+    - destination:
+        host: notification-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 10s
+  - match:
+    - uri:
+        prefix: /v1/pos
+    route:
+    - destination:
+        host: pos-integration-service
+        port:
+          number: 8080
+      weight: 100
+    timeout: 20s
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-card-admin
+  namespace: boom-card
+spec:
+  hosts:
+  - admin.boom-card.com
+  gateways:
+  - boom-card-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: admin-dashboard
+        port:
+          number: 80
+      weight: 100
+    headers:
+      response:
+        set:
+          x-frame-options: SAMEORIGIN
+          x-content-type-options: nosniff
+          x-xss-protection: 1; mode=block
+          strict-transport-security: max-age=31536000; includeSubDomains
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-card-partner
+  namespace: boom-card
+spec:
+  hosts:
+  - partners.boom-card.com
+  gateways:
+  - boom-card-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: partner-dashboard
+        port:
+          number: 80
+      weight: 100
+    headers:
+      response:
+        set:
+          x-frame-options: SAMEORIGIN
+          x-content-type-options: nosniff
+          x-xss-protection: 1; mode=block
+          strict-transport-security: max-age=31536000; includeSubDomains
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-card-websocket
+  namespace: boom-card
+spec:
+  hosts:
+  - ws.boom-card.com
+  gateways:
+  - boom-card-gateway
+  http:
+  - match:
+    - headers:
+        upgrade:
+          exact: websocket
+    route:
+    - destination:
+        host: websocket-service
+        port:
+          number: 8080
+      weight: 100
+    websocketUpgrade: true
+    timeout: 0s
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: boom-card-mobile-api
+  namespace: boom-card
+spec:
+  hosts:
+  - mobile-api.boom-card.com
+  gateways:
+  - boom-card-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: mobile-backend
+        port:
+          number: 8080
+      weight: 100
+    timeout: 20s
+    retries:
+      attempts: 3
+      perTryTimeout: 7s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+    corsPolicy:
+      allowOrigins:
+      - prefix: capacitor://
+      - prefix: ionic://
+      - exact: http://localhost
+      - exact: http://localhost:8100
+      allowMethods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+      allowHeaders:
+      - content-type
+      - authorization
+      - x-api-key
+      - x-device-id
+      - x-app-version
+      - x-platform
+      - x-language
+      exposeHeaders:
+      - x-request-id
+      maxAge: "86400"
+      allowCredentials: true

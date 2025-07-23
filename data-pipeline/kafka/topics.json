@@ -1,0 +1,29 @@
+{
+  "topics": [
+    {
+      "name": "boom-card-transactions",
+      "partitions": 3,
+      "replication": 1,
+      "config": {
+        "retention.ms": "604800000",
+        "compression.type": "snappy"
+      }
+    },
+    {
+      "name": "boom-card-events",
+      "partitions": 3,
+      "replication": 1,
+      "config": {
+        "retention.ms": "259200000"
+      }
+    },
+    {
+      "name": "boom-card-analytics",
+      "partitions": 1,
+      "replication": 1,
+      "config": {
+        "retention.ms": "2592000000"
+      }
+    }
+  ]
+}

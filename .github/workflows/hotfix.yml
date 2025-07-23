@@ -1,0 +1,351 @@
+name: Hotfix Deployment
+
+on:
+  push:
+    branches:
+      - 'hotfix/*'
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  NODE_VERSION: '18.x'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  validate:
+    name: Validate Hotfix
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'hotfix/'))
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate branch naming
+        run: |
+          if [[ ! "${{ github.ref }}" =~ ^refs/heads/hotfix/[a-zA-Z0-9-]+$ ]] && [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "❌ Invalid hotfix branch name. Must match pattern: hotfix/[issue-description]"
+            exit 1
+          fi
+
+      - name: Check commit messages
+        run: |
+          git log --format="%s" origin/main..HEAD | while read commit; do
+            if [[ ! "$commit" =~ ^(fix|hotfix|critical|security|patch): ]]; then
+              echo "❌ Invalid commit message: $commit"
+              echo "Hotfix commits must start with: fix:, hotfix:, critical:, security:, or patch:"
+              exit 1
+            fi
+          done
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high
+          cd frontend && npm audit --audit-level=high
+          cd ../backend && npm audit --audit-level=high
+
+  test:
+    name: Test Hotfix
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: boomcard_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+          cd ../backend && npm ci
+
+      - name: Run linting
+        run: |
+          npm run lint
+          cd frontend && npm run lint
+          cd ../backend && npm run lint
+
+      - name: Run type checking
+        run: |
+          cd frontend && npm run type-check
+          cd ../backend && npm run type-check
+
+      - name: Run backend tests
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret
+        run: |
+          cd backend
+          npm run test:ci
+          npm run test:integration
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm run test:ci
+          npm run test:e2e:headless
+
+      - name: Generate test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: '**/test-results.xml'
+          reporter: jest-junit
+
+  build:
+    name: Build Hotfix
+    runs-on: ubuntu-latest
+    needs: [security-scan, test]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          npm run build:analyze
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm ci
+          npm run build
+
+      - name: Upload frontend artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/dist
+          retention-days: 1
+
+      - name: Upload backend artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-build
+          path: backend/dist
+          retention-days: 1
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy backend to ECS
+        run: |
+          aws ecs update-service \
+            --cluster boomcard-staging \
+            --service boomcard-backend-staging \
+            --force-new-deployment
+
+      - name: Deploy frontend to S3
+        run: |
+          aws s3 sync frontend-build/ s3://boomcard-frontend-staging/ --delete
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.STAGING_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Run smoke tests
+        run: |
+          npm run test:smoke -- --url=https://staging.boomcard.bg
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "Hotfix deployed to staging",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Hotfix:* `${{ github.ref_name }}`\n*Status:* ${{ job.status }}\n*Actor:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  approval:
+    name: Production Approval
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production-approval
+    
+    steps:
+      - name: Request approval
+        run: |
+          echo "🚨 Hotfix ready for production deployment"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Please review staging deployment before approving"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: approval
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create database backup
+        run: |
+          aws rds create-db-snapshot \
+            --db-instance-identifier boomcard-prod \
+            --db-snapshot-identifier boomcard-prod-hotfix-${{ github.sha }}
+
+      - name: Deploy backend to ECS (Blue/Green)
+        run: |
+          # Update task definition
+          TASK_DEF=$(aws ecs describe-task-definition --task-definition boomcard-backend-prod --query 'taskDefinition')
+          NEW_TASK_DEF=$(echo $TASK_DEF | jq '.containerDefinitions[0].image = "'${{ secrets.ECR_REGISTRY }}/boomcard-backend:hotfix-${{ github.sha }}'"')
+          
+          # Register new task definition
+          TASK_ARN=$(echo $NEW_TASK_DEF | aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF" --query 'taskDefinition.taskDefinitionArn' --output text)
+          
+          # Update service
+          aws ecs update-service \
+            --cluster boomcard-prod \
+            --service boomcard-backend-prod \
+            --task-definition $TASK_ARN \
+            --deployment-configuration "maximumPercent=200,minimumHealthyPercent=100"
+
+      - name: Deploy frontend to S3
+        run: |
+          # Deploy to canary bucket first
+          aws s3 sync frontend-build/ s3://boomcard-frontend-prod-canary/ --delete
+          
+          # Wait for canary validation
+          sleep 300
+          
+          # Full deployment
+          aws s3 sync frontend-build/ s3://boomcard-frontend-prod/ --delete
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Monitor deployment
+        run: |
+          # Monitor ECS deployment
+          aws ecs wait services-stable \
+            --cluster boomcard-prod \
+            --services boomcard-backend-prod
+          
+          # Check application health
+          for i in {1..10}; do
+    

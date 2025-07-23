@@ -1,0 +1,49 @@
+{
+  "name": "Executive Summary",
+  "version": "1.0.0",
+  "widgets": [
+    {
+      "id": "revenue-chart",
+      "type": "line-chart",
+      "title": "Revenue Over Time",
+      "dataSource": "revenue_metrics",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "id": "user-growth",
+      "type": "bar-chart",
+      "title": "User Growth",
+      "dataSource": "user_metrics",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      }
+    },
+    {
+      "id": "partner-map",
+      "type": "map",
+      "title": "Partner Distribution",
+      "dataSource": "partner_locations",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 6
+      }
+    }
+  ],
+  "filters": [
+    {
+      "id": "date-range",
+      "type": "date-range",
+      "default": "last-30-days"
+    }
+  ]
+}

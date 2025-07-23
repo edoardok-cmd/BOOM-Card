@@ -1,0 +1,108 @@
+name: Code Security Scan
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  sast_codeql:
+    name: SAST - CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Or preferred Node.js LTS version for BOOM Card project
+
+      - name: Install Node.js dependencies
+        run: |
+          npm ci
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+
+  sca_snyk:
+    name: SCA - Snyk Dependency Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Node.js dependencies
+        run: |
+          npm ci
+
+      - name: Run Snyk scan
+        uses: snyk/actions/node@v1
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects --fail-on=all --json-file-output=snyk-results.json --sarif-file-output=snyk-sarif.json
+
+      - name: Upload Snyk SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-sarif.json
+        if: always()
+
+      - name: Upload Snyk JSON results
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-json-report
+          path: snyk-results.json
+        if: always()
+
+  secrets_gitleaks:
+    name: Secrets - Gitleaks Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks scan
+        uses: zricethezav/gitleaks-action@v3
+        with:
+          report_format: sarif
+          output: gitleaks-results.sarif
+
+      - name: Upload Gitleaks SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks-results.sarif
+        if: always()

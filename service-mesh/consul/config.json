@@ -1,0 +1,28 @@
+{
+  "datacenter": "boom-dc1",
+  "data_dir": "/opt/consul/data",
+  "log_level": "INFO",
+  "node_name": "boom-node-1",
+  "server": true,
+  "bootstrap_expect": 1,
+  "ui": true,
+  "client_addr": "0.0.0.0",
+  "bind_addr": "0.0.0.0",
+  "connect": {
+    "enabled": true,
+    "ca_provider": "consul"
+  },
+  "ports": {
+    "grpc": 8502
+  },
+  "services": [
+    {
+      "name": "boom-api",
+      "port": 3000,
+      "check": {
+        "http": "http://localhost:3000/health",
+        "interval": "10s"
+      }
+    }
+  ]
+}

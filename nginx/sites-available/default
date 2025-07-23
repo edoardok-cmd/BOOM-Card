@@ -1,0 +1,195 @@
+# Nginx default server configuration for BOOM Card Platform
+# This file defines the server blocks for handling HTTP and HTTPS traffic,
+# proxying requests to the Next.js frontend and Node.js backend APIs,
+# and serving static assets.
+
+# --- HTTP Server Block (Redirects to HTTPS) ---
+server {
+    listen 80;
+    listen [::]:80;
+
+    # Replace with your actual domain(s)
+    server_name boomcard.com www.boomcard.com; 
+
+    # Redirect all HTTP traffic to HTTPS for security
+    return 301 https://$host$request_uri;
+}
+
+# --- HTTPS Server Block ---
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    # Replace with your actual domain(s)
+    server_name boomcard.com www.boomcard.com; 
+
+    # --- SSL Configuration (IMPORTANT: Replace with your actual certificate paths) ---
+    # For Let's Encrypt, paths are typically like:
+    # ssl_certificate /etc/letsencrypt/live/boomcard.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/boomcard.com/privkey.pem;
+    # ssl_trusted_certificate /etc/letsencrypt/live/boomcard.com/chain.pem; # Optional, for OCSP stapling
+
+    # Placeholder certificates for initial setup or testing. DO NOT USE IN PRODUCTION.
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+
+    # Strong SSL Protocol and Cipher Suite Configuration for A+ Rating on SSL Labs
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
+    ssl_prefer_server_ciphers on;
+
+    # SSL Session Settings for improved performance
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    # OCSP Stapling (improves SSL handshake speed and security)
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    # Use reliable DNS resolvers for OCSP lookups (e.g., Google's Public DNS)
+    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    resolver_timeout 5s;
+
+    # HSTS (HTTP Strict Transport Security) Header:
+    # Forces browsers to always use HTTPS for a specified duration after the first visit.
+    # Enable only after you are confident HTTPS is fully operational.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # --- Common Security Headers ---
+    add_header X-Frame-Options "SAMEORIGIN" always; # Prevents clickjacking by restricting framing
+    add_header X-Content-Type-Options "nosniff" always; # Prevents MIME-sniffing attacks
+    add_header X-XSS-Protection "1; mode=block" always; # Enables XSS filters in browsers
+    add_header Referrer-Policy "no-referrer-when-downgrade" always; # Controls referrer information sent
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always; # Example policy, adjust as needed
+
+    # Hide Nginx version from error pages and headers
+    server_tokens off;
+
+    # --- Gzip Compression (Optional, but recommended for performance) ---
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
+    gzip_http_version 1.1;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+
+    # --- Error Pages (Optional: Customize for better user experience) ---
+    # error_page 404 /404.html;
+    # error_page 500 502 503 504 /50x.html;
+    # location = /404.html {
+    #     root /var/www/boomcard/errors; # Path to your custom error pages
+    #     internal;
+    # }
+    # location = /50x.html {
+    #     root /var/boomcard/errors;
+    #     internal;
+    # }
+
+    # --- Proxy Configuration for Frontend (Next.js) and Backend (Node.js) ---
+
+    # Location for Next.js static assets (e.g., JS, CSS, images under _next/static/)
+    # These files are typically immutable and can be cached aggressively.
+    location ~ ^/_next/static/ {
+        # 'root' should point to the directory containing your Next.js project's '.next' folder.
+        # Example: if your Next.js build output is in /var/www/boomcard/frontend/.next
+        root /var/www/boomcard/frontend; 
+
+        expires 1y; # Cache for a very long time
+        add_header Cache-Control "public, immutable"; # Indicate file won't change
+
+        # Optimize logging for static files
+        access_log off;
+        log_not_found off;
+    }
+
+    # Location for general static files from the Next.js 'public' directory
+    # Files in Next.js 'public' are served from the root path (e.g., /image.png).
+    # Next.js usually handles this, but Nginx can optimize if needed.
+    # This location block might not be strictly necessary if Next.js is proxy_passed for root.
+    # location ~* \.(jpg|jpeg|gif|png|ico|css|js|woff|woff2|eot|ttf|mp4|svg)$ {
+    #     root /var/www/boomcard/frontend/public;
+    #     expires 30d;
+    #     add_header Cache-Control "public, max-age=2592000";
+    #     access_log off;
+    #     log_not_found off;
+    # }
+
+
+    # Location for API routes (Node.js/Express Backend)
+    # All requests starting with /api/ will be forwarded to the Node.js backend.
+    location /api/ {
+        # Proxy to your Node.js backend. Adjust the port/hostname if different.
+        proxy_pass http://localhost:5000; 
+
+        # Standard proxy headers for preserving client information
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket support (crucial for real-time features if used)
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Proxy timeout settings (adjust based on expected response times)
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+
+        # Error handling for backend issues (Nginx serves custom page if backend fails)
+        proxy_intercept_errors on;
+        error_page 500 502 503 504 /50x.html; # Ensure /50x.html is configured above if used
+    }
+
+    # Location for ACME challenges (e.g., for Let's Encrypt certificate renewal)
+    # This directory must be accessible by Certbot for domain verification.
+    location ~ /\.well-known/acme-challenge/ {
+        allow all;
+        root /var/www/certbot; # Path where Certbot places challenge files
+        default_type "text/plain";
+    }
+
+    # Location for the main Next.js application (Consumer Web App, Partner Dashboard, Admin Panel)
+    # All other requests not matched by specific locations (like /api/ or /_next/static/)
+    # will be forwarded to the Next.js server.
+    location / {
+        # Proxy to your Next.js frontend server. Adjust the port/hostname if different.
+        proxy_pass http://localhost:3000; 
+
+        # Standard proxy headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket support
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Proxy timeout settings
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+
+        # Error handling for frontend issues
+        proxy_intercept_errors on;
+        error_page 500 502 503 504 /50x.html; # Ensure /50x.html is configured above if used
+    }
+
+    # Block access to hidden files (dotfiles) for security
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Optional: Deny access to specific sensitive files/directories (e.g., Next.js build internals)
+    # location ~ /\.next {
+    #     deny all;
+    #     access_log off;
+    #     log_not_found off;
+    # }
+}

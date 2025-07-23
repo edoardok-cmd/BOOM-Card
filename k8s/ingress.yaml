@@ -1,0 +1,271 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: boom-card-ingress
+  namespace: boom-card
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,X-API-Key,X-Device-ID,X-Session-ID,Accept-Language"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length,Content-Range,X-Total-Count,X-Page-Count"
+    nginx.ingress.kubernetes.io/cors-max-age: "3600"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:;";
+spec:
+  tls:
+    - hosts:
+        - boomcard.bg
+        - www.boomcard.bg
+        - api.boomcard.bg
+        - admin.boomcard.bg
+        - partner.boomcard.bg
+        - cdn.boomcard.bg
+      secretName: boom-card-tls
+  rules:
+    # Main website
+    - host: boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+    
+    # WWW redirect
+    - host: www.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+    
+    # API Gateway
+    - host: api.boomcard.bg
+      http:
+        paths:
+          # Consumer API
+          - path: /v1/consumer
+            pathType: Prefix
+            backend:
+              service:
+                name: consumer-api-service
+                port:
+                  number: 3000
+          
+          # Partner API
+          - path: /v1/partner
+            pathType: Prefix
+            backend:
+              service:
+                name: partner-api-service
+                port:
+                  number: 3001
+          
+          # Admin API
+          - path: /v1/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-api-service
+                port:
+                  number: 3002
+          
+          # POS Integration API
+          - path: /v1/pos
+            pathType: Prefix
+            backend:
+              service:
+                name: pos-api-service
+                port:
+                  number: 3003
+          
+          # Analytics API
+          - path: /v1/analytics
+            pathType: Prefix
+            backend:
+              service:
+                name: analytics-service
+                port:
+                  number: 3004
+          
+          # Payment API
+          - path: /v1/payment
+            pathType: Prefix
+            backend:
+              service:
+                name: payment-service
+                port:
+                  number: 3005
+          
+          # Notification Service
+          - path: /v1/notifications
+            pathType: Prefix
+            backend:
+              service:
+                name: notification-service
+                port:
+                  number: 3006
+          
+          # Search Service
+          - path: /v1/search
+            pathType: Prefix
+            backend:
+              service:
+                name: search-service
+                port:
+                  number: 3007
+          
+          # File Upload Service
+          - path: /v1/upload
+            pathType: Prefix
+            backend:
+              service:
+                name: upload-service
+                port:
+                  number: 3008
+          
+          # QR Code Service
+          - path: /v1/qr
+            pathType: Prefix
+            backend:
+              service:
+                name: qr-service
+                port:
+                  number: 3009
+          
+          # WebSocket connections
+          - path: /v1/ws
+            pathType: Prefix
+            backend:
+              service:
+                name: websocket-service
+                port:
+                  number: 3010
+    
+    # Admin Panel
+    - host: admin.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-frontend-service
+                port:
+                  number: 80
+    
+    # Partner Dashboard
+    - host: partner.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: partner-frontend-service
+                port:
+                  number: 80
+    
+    # CDN for static assets
+    - host: cdn.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cdn-service
+                port:
+                  number: 80
+
+---
+# Additional Ingress for staging environment
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: boom-card-staging-ingress
+  namespace: boom-card-staging
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: staging-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Staging Environment - Authentication Required"
+spec:
+  tls:
+    - hosts:
+        - staging.boomcard.bg
+        - api-staging.boomcard.bg
+        - admin-staging.boomcard.bg
+        - partner-staging.boomcard.bg
+      secretName: boom-card-staging-tls
+  rules:
+    - host: staging.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+    
+    - host: api-staging.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 3000
+    
+    - host: admin-staging.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-frontend-service
+                port:
+                  number: 80
+    
+    - host: partner-staging.boomcard.bg
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: partner-frontend-service
+                port:
+                  number: 80

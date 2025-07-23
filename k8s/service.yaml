@@ -1,0 +1,382 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-api
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: api
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-web
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: web
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3001
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-admin
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: admin
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: admin
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3002
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-partner
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: partner
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: partner
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3003
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-postgres
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: postgres
+    tier: database
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-redis
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: redis
+    tier: cache
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-elasticsearch
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: elasticsearch
+    tier: search
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: elasticsearch
+  ports:
+    - name: http
+      port: 9200
+      targetPort: 9200
+      protocol: TCP
+    - name: transport
+      port: 9300
+      targetPort: 9300
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-pos-gateway
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: pos-gateway
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: pos-gateway
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3004
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-analytics
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: analytics
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: analytics
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3005
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-notification
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: notification
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: notification
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3006
+      protocol: TCP
+    - name: websocket
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-payment
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: payment
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: payment
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3007
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-file-storage
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: file-storage
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: file-storage
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3008
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-auth
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: auth
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: auth
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3009
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-queue
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: queue
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: queue
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3010
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-reporting
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: reporting
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: reporting
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3011
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-integration
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: integration
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: integration
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3012
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-scheduler
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: scheduler
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: scheduler
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3013
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-external-api
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: external-api
+    tier: backend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+spec:
+  type: LoadBalancer
+  selector:
+    app: boom-card
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 3000
+      protocol: TCP

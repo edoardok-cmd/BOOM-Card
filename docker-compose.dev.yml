@@ -1,0 +1,354 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: boom-postgres-dev
+    environment:
+      POSTGRES_USER: boom_dev
+      POSTGRES_PASSWORD: boom_dev_password_2024
+      POSTGRES_DB: boom_card_dev
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_stat_statements"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - boom-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boom_dev -d boom_card_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: boom-redis-dev
+    command: redis-server --appendonly yes --requirepass boom_redis_dev_2024
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - boom-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js Backend API
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: boom-api-dev
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://boom_dev:boom_dev_password_2024@postgres:5432/boom_card_dev
+      REDIS_URL: redis://:boom_redis_dev_2024@redis:6379
+      JWT_SECRET: boom_jwt_secret_dev_2024_change_in_production
+      JWT_REFRESH_SECRET: boom_jwt_refresh_secret_dev_2024_change_in_production
+      SESSION_SECRET: boom_session_secret_dev_2024_change_in_production
+      CORS_ORIGIN: http://localhost:3000
+      API_PREFIX: /api/v1
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      UPLOAD_SIZE_LIMIT: 10mb
+      TEMP_UPLOAD_DIR: /app/uploads/temp
+      PERMANENT_UPLOAD_DIR: /app/uploads/permanent
+      LOG_LEVEL: debug
+      LOG_DIR: /app/logs
+      # Email Configuration
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_SECURE: false
+      SMTP_FROM: noreply@boomcard.dev
+      # Payment Gateway (Development)
+      STRIPE_SECRET_KEY: sk_test_development_key
+      STRIPE_WEBHOOK_SECRET: whsec_development_secret
+      # AWS S3 (LocalStack for dev)
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: eu-central-1
+      AWS_S3_BUCKET: boom-card-dev
+      AWS_ENDPOINT: http://localstack:4566
+      # Google Maps API
+      GOOGLE_MAPS_API_KEY: development_google_maps_key
+      # Analytics
+      ANALYTICS_ENABLED: false
+      # Feature Flags
+      FEATURE_MOBILE_APP: true
+      FEATURE_PARTNER_DASHBOARD: true
+      FEATURE_ADMIN_PANEL: true
+      FEATURE_QR_SCANNER: true
+      FEATURE_MULTI_LANGUAGE: true
+      SUPPORTED_LANGUAGES: en,bg
+      DEFAULT_LANGUAGE: bg
+    ports:
+      - "3001:3001"
+      - "9229:9229" # Node.js debugging port
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - api_uploads:/app/uploads
+      - api_logs:/app/logs
+    networks:
+      - boom-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: npm run dev:debug
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: boom-frontend-dev
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: development_google_maps_key
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_development_key
+      NEXT_PUBLIC_DEFAULT_LANGUAGE: bg
+      NEXT_PUBLIC_SUPPORTED_LANGUAGES: en,bg
+      NEXT_PUBLIC_ENABLE_PWA: false
+      NEXT_PUBLIC_SENTRY_DSN: 
+      NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - boom-network
+    depends_on:
+      - api
+    restart: unless-stopped
+    command: npm run dev
+
+  # Admin Panel
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: boom-admin-dev
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      NEXT_PUBLIC_APP_URL: http://localhost:3002
+      PORT: 3002
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./admin:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - boom-network
+    depends_on:
+      - api
+    restart: unless-stopped
+    command: npm run dev
+
+  # Partner Dashboard
+  partner:
+    build:
+      context: ./partner
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: boom-partner-dev
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      NEXT_PUBLIC_APP_URL: http://localhost:3003
+      PORT: 3003
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./partner:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - boom-network
+    depends_on:
+      - api
+    restart: unless-stopped
+    command: npm run dev
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: boom-nginx-dev
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.dev.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+      - nginx_logs:/var/log/nginx
+    networks:
+      - boom-network
+    depends_on:
+      - frontend
+      - admin
+      - partner
+      - api
+    restart: unless-stopped
+
+  # LocalStack for AWS Services (S3, SES, etc.)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: boom-localstack-dev
+    environment:
+      SERVICES: s3,ses,sqs,sns
+      DEBUG: 1
+      DOCKER_HOST: unix:///var/run/docker.sock
+      LAMBDA_EXECUTOR: docker
+      DEFAULT_REGION: eu-central-1
+      PERSISTENCE: 1
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/localstack:/docker-entrypoint-initaws.d
+    networks:
+      - boom-network
+    restart: unless-stopped
+
+  # MailHog for Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: boom-mailhog-dev
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - boom-network
+    restart: unless-stopped
+
+  # Adminer for Database Management
+  adminer:
+    image: adminer:latest
+    container_name: boom-adminer-dev
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha-dark
+    networks:
+      - boom-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Redis Commander for Redis Management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: boom-redis-commander-dev
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:boom_redis_dev_2024
+    ports:
+      - "8081:8081"
+    networks:
+      - boom-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Swagger UI for API Documentation
+  swagger:
+    image: swaggerapi/swagger-ui:latest
+    container_name: boom-swagger-dev
+    environment:
+      SWAGGER_JSON_URL: http://localhost:3001/api/v1/docs/swagger.json
+      BASE_URL: /swagger
+    ports:
+      - "8082:8080"
+    networks:
+      - boom-network
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Elasticsearch for Search Functionality
+  elasticsearch:
+    image: elasticsearch:8.11.1
+    container_name: boom-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - boom-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana for Elasticsearch Management
+  kibana:
+    image: kibana:8.11.1
+    container_name: boom-kibana-dev
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - boom-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  boom-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  api_uploads:
+    driver: local
+  api_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+  localstack_data:
+    driver: local
+  elasticsearch_data:
+    driver: local

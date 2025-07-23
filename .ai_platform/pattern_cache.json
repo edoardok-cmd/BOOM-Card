@@ -1,0 +1,1275 @@
+{
+  "Discount Card Platform_general_.yml": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 355,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.638699",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769961",
+    "example_count": 30
+  },
+  "Discount Card Platform_root_file_.md": {
+    "filename_pattern": "PascalCase",
+    "structure_template": {
+      "has_header_comment": true,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 368,
+      "function_count": 8
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.638940",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.767762",
+    "example_count": 3
+  },
+  "Discount Card Platform_root_file_.json": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 101,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639021",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.767768",
+    "example_count": 3
+  },
+  "Discount Card Platform_general_.md": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": true,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 10,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639059",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769979",
+    "example_count": 132
+  },
+  "Discount Card Platform_general_.json": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 295,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639207",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.770015",
+    "example_count": 314
+  },
+  "Discount Card Platform_general_.sql": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 252,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639346",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769909",
+    "example_count": 21
+  },
+  "Discount Card Platform_general_.js": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": true,
+      "has_imports": true,
+      "has_exports": true,
+      "line_count": 308,
+      "function_count": 29
+    },
+    "common_imports": [
+      "const { Client } = require('pg');",
+      "const fs = require('fs').promises;",
+      "const path = require('path');",
+      "const readline = require('readline');",
+      "const colors = {"
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639510",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.768541",
+    "example_count": 6
+  },
+  "Discount Card Platform_config_.js": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 254,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639646",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769969",
+    "example_count": 18
+  },
+  "Discount Card Platform_config_.json": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 106,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639720",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769438",
+    "example_count": 9
+  },
+  "Discount Card Platform_general_.ts": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": true,
+      "has_imports": true,
+      "has_exports": false,
+      "line_count": 231,
+      "function_count": 5
+    },
+    "common_imports": [
+      "import '@testing-library/jest-dom';"
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.639863",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.770011",
+    "example_count": 477
+  },
+  "Discount Card Platform_component_.tsx": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": true,
+      "has_exports": false,
+      "line_count": 240,
+      "function_count": 21
+    },
+    "common_imports": [
+      "import React from 'react';",
+      "import { render, screen, fireEvent } from '@testing-library/react';",
+      "import userEvent from '@testing-library/user-event';",
+      "import { describe, it, expect, vi, beforeEach } from 'vitest';",
+      "import Button from '../../components/Button'; // Assuming component path is correct",
+      "const mockT = vi.fn((key: string, options?: { count?: number; ns?: string }) => {"
+    ],
+    "style_rules": {
+      "uses_semicolons": true,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.640054",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769874",
+    "example_count": 321
+  },
+  "Discount Card Platform_general_.tsx": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": true,
+      "has_exports": false,
+      "line_count": 383,
+      "function_count": 12
+    },
+    "common_imports": [
+      "import React from 'react';",
+      "import { render, screen, waitFor } from '@testing-library/react';",
+      "import Home, { getServerSideProps } from '../../pages/index'; // Assuming Home component is in pages/index.tsx",
+      "import '@testing-library/jest-dom'; // For extended matchers"
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.640366",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769470",
+    "example_count": 108
+  },
+  "Discount Card Platform_component_.ts": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": true,
+      "has_imports": true,
+      "has_exports": false,
+      "line_count": 380,
+      "function_count": 1
+    },
+    "common_imports": [
+      "import React from 'react'; // Required for React.ReactNode, React.ComponentPropsWithoutRef etc."
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.640873",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769865",
+    "example_count": 144
+  },
+  "Discount Card Platform_service_.ts": {
+    "filename_pattern": "mixed",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": true,
+      "has_exports": true,
+      "line_count": 645,
+      "function_count": 34
+    },
+    "common_imports": [
+      "import axios, { AxiosInstance, AxiosError } from 'axios';",
+      "import { jwtDecode } from 'jwt-decode';",
+      "import { EventEmitter } from 'events';"
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.641433",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.770047",
+    "example_count": 180
+  },
+  "Discount Card Platform_general_.yaml": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 389,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.641622",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769973",
+    "example_count": 36
+  },
+  "Discount Card Platform_service_.yaml": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 383,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.641733",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769989",
+    "example_count": 15
+  },
+  "Discount Card Platform_config_.yaml": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 150,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.641816",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.768512",
+    "example_count": 3
+  },
+  "Discount Card Platform_config_.ts": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": true,
+      "has_exports": false,
+      "line_count": 351,
+      "function_count": 36
+    },
+    "common_imports": [
+      "import { createClient, RedisClientType } from 'redis';",
+      "import { logger } from '../utils/logger';"
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.642181",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.768768",
+    "example_count": 24
+  },
+  "Discount Card Platform_model_.ts": {
+    "filename_pattern": "PascalCase",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": true,
+      "has_exports": true,
+      "line_count": 197,
+      "function_count": 6
+    },
+    "common_imports": [
+      "import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';"
+    ],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "single",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.642388",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.768909",
+    "example_count": 51
+  },
+  "Discount Card Platform_component_.json": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 141,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.643210",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769487",
+    "example_count": 3
+  },
+  "Discount Card Platform_config_.yml": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 1,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.643742",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.770018",
+    "example_count": 9
+  },
+  "Discount Card Platform_service_.md": {
+    "filename_pattern": "kebab-case",
+    "structure_template": {
+      "has_header_comment": true,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 199,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.643923",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.769983",
+    "example_count": 3
+  },
+  "Discount Card Platform_service_.json": {
+    "filename_pattern": "snake_case",
+    "structure_template": {
+      "has_header_comment": false,
+      "has_imports": false,
+      "has_exports": false,
+      "line_count": 389,
+      "function_count": 0
+    },
+    "common_imports": [],
+    "style_rules": {
+      "uses_semicolons": false,
+      "quote_style": "double",
+      "indentation": "spaces"
+    },
+    "timestamp": "2025-07-23T08:47:34.644075",
+    "context": {
+      "project_name": "BOOM Card",
+      "project_type": "Discount Card Platform",
+      "description": "A comprehensive discount card platform with QR code-based transactions",
+      "features": [
+        "authentication",
+        "payment_processing",
+        "analytics_dashboard",
+        "pos_integration",
+        "qr_code_system",
+        "subscription_management",
+        "partner_dashboard",
+        "notification_system"
+      ],
+      "tech_stack": {
+        "frontend": [
+          "React",
+          "Next.js",
+          "TypeScript",
+          "Tailwind CSS"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "TypeScript",
+          "PostgreSQL",
+          "Redis"
+        ],
+        "infrastructure": [
+          "Docker",
+          "Kubernetes",
+          "AWS"
+        ]
+      }
+    },
+    "last_updated": "2025-07-23T08:49:15.770044",
+    "example_count": 18
+  }
+}

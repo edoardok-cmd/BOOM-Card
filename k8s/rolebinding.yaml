@@ -1,0 +1,125 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: rbac
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-service-account
+  namespace: boom-card
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-backend-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: backend
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-backend-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-backend-sa
+  namespace: boom-card
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-frontend-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: frontend
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-frontend-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-frontend-sa
+  namespace: boom-card
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-database-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: database
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-database-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-database-sa
+  namespace: boom-card
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-redis-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: redis
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-redis-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-redis-sa
+  namespace: boom-card
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-monitoring-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: monitoring
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-monitoring-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-monitoring-sa
+  namespace: boom-card
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boom-card-jobs-rolebinding
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: jobs
+    environment: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: boom-card-jobs-role
+subjects:
+- kind: ServiceAccount
+  name: boom-card-jobs-sa
+  namespace: boom-card

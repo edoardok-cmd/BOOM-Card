@@ -1,0 +1,311 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-web
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: web
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: web
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-api
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: api
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-admin
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: admin
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: admin
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-partner
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: partner
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: partner
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-postgres
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: postgres
+    tier: database
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: postgres
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-redis
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: redis
+    tier: cache
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: redis
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-websocket
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: websocket
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: websocket
+  ports:
+    - name: ws
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-analytics
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: analytics
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: analytics
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 4001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-payment
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: payment
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: payment
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 4002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-notification
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: notification
+    tier: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: notification
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 4003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-elasticsearch
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: elasticsearch
+    tier: search
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: elasticsearch
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9200
+      targetPort: 9200
+    - name: transport
+      protocol: TCP
+      port: 9300
+      targetPort: 9300
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-kibana
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: kibana
+    tier: monitoring
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: kibana
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5601
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-prometheus
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: prometheus
+    tier: monitoring
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: prometheus
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-grafana
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: grafana
+    tier: monitoring
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: grafana
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: boom-card-jaeger
+  namespace: boom-card
+  labels:
+    app: boom-card
+    component: jaeger
+    tier: monitoring
+spec:
+  type: ClusterIP
+  selector:
+    app: boom-card
+    component: jaeger
+  ports:
+    - name: query
+      protocol: TCP
+      port: 16686
+      targetPort: 16686
+    - name: collector
+      protocol: TCP
+      port: 14268
+      targetPort: 14268
+    - name: agent
+      protocol: UDP
+      port: 6831
+      targetPort: 6831

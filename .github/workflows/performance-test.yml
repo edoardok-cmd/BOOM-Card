@@ -1,0 +1,375 @@
+name: Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      test_duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '300'
+        type: string
+
+env:
+  NODE_VERSION: '20.x'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+  K6_VERSION: 'latest'
+  LIGHTHOUSE_VERSION: 'latest'
+  ARTILLERY_VERSION: 'latest'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      test_id: ${{ steps.generate_id.outputs.test_id }}
+      environment: ${{ steps.set_env.outputs.environment }}
+    steps:
+      - name: Generate Test ID
+        id: generate_id
+        run: echo "test_id=perf-$(date +%Y%m%d-%H%M%S)-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Set Environment
+        id: set_env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+  api-performance:
+    needs: setup
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: boomcard_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test data
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+        run: |
+          npm run db:migrate
+          npm run db:seed:performance
+
+      - name: Install k6
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg2
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Start API server
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-jwt-secret
+          PORT: 3000
+        run: |
+          npm run build
+          npm run start:test &
+          sleep 10
+
+      - name: Run API load tests
+        run: |
+          k6 run tests/performance/k6/api-load-test.js \
+            --out json=results/api-load-${{ needs.setup.outputs.test_id }}.json \
+            --summary-export=results/api-load-summary-${{ needs.setup.outputs.test_id }}.json \
+            -e TEST_DURATION=${{ github.event.inputs.test_duration || '300' }} \
+            -e BASE_URL=http://localhost:3000
+
+      - name: Run API stress tests
+        run: |
+          k6 run tests/performance/k6/api-stress-test.js \
+            --out json=results/api-stress-${{ needs.setup.outputs.test_id }}.json \
+            --summary-export=results/api-stress-summary-${{ needs.setup.outputs.test_id }}.json \
+            -e BASE_URL=http://localhost:3000
+
+      - name: Run API spike tests
+        run: |
+          k6 run tests/performance/k6/api-spike-test.js \
+            --out json=results/api-spike-${{ needs.setup.outputs.test_id }}.json \
+            --summary-export=results/api-spike-summary-${{ needs.setup.outputs.test_id }}.json \
+            -e BASE_URL=http://localhost:3000
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-performance-results-${{ needs.setup.outputs.test_id }}
+          path: results/
+          retention-days: 30
+
+      - name: Parse and check thresholds
+        id: check_thresholds
+        run: |
+          node scripts/performance/parse-k6-results.js \
+            --input results/api-load-summary-${{ needs.setup.outputs.test_id }}.json \
+            --threshold-p95 200 \
+            --threshold-p99 500 \
+            --threshold-error-rate 1
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('results/api-load-summary-${{ needs.setup.outputs.test_id }}.json', 'utf8'));
+            
+            const comment = `## 🚀 API Performance Test Results
+            
+            **Test ID:** ${{ needs.setup.outputs.test_id }}
+            
+            ### Load Test Results
+            - **Requests/sec:** ${results.metrics.http_reqs.rate}
+            - **P95 Response Time:** ${results.metrics.http_req_duration['p(95)']}ms
+            - **P99 Response Time:** ${results.metrics.http_req_duration['p(99)']}ms
+            - **Error Rate:** ${results.metrics.http_req_failed.rate * 100}%
+            
+            ### Thresholds
+            ${results.thresholds_passed ? '✅ All thresholds passed' : '❌ Some thresholds failed'}
+            
+            [View detailed results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  frontend-performance:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        device: [mobile, desktop]
+        page: [home, search, partner-details, checkout]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        env:
+          NODE_ENV: production
+          PORT: 3000
+        run: |
+          npm run start &
+          sleep 15
+
+      - name: Run Lighthouse tests
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000
+            http://localhost:3000/search
+            http://localhost:3000/partners/sample-partner
+            http://localhost:3000/checkout
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: .lighthouserc.json
+
+      - name: Run WebPageTest
+        if: needs.setup.outputs.environment == 'production'
+        env:
+          WPT_API_KEY: ${{ secrets.WPT_API_KEY }}
+        run: |
+          npm install -g webpagetest
+          webpagetest test http://localhost:3000 \
+            --key $WPT_API_KEY \
+            --location "ec2-us-east-1:Chrome" \
+            --device "${{ matrix.device }}" \
+            --runs 3 \
+            --first \
+            --json > results/wpt-${{ matrix.page }}-${{ matrix.device }}-${{ needs.setup.outputs.test_id }}.json
+
+      - name: Run Artillery browser tests
+        run: |
+          npm install -g artillery
+          artillery run tests/performance/artillery/${{ matrix.page }}-scenario.yml \
+            --output results/artillery-${{ matrix.page }}-${{ matrix.device }}-${{ needs.setup.outputs.test_id }}.json
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-performance-results-${{ matrix.device }}-${{ matrix.page }}-${{ needs.setup.outputs.test_id }}
+          path: results/
+          retention-days: 30
+
+  database-performance:
+    needs: setup
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: boomcard_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boomcard_test
+        run: |
+          npm run db:migrate
+          npm run db:seed:performance
+
+      - name: Install pgbench
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run pgbench tests
+        env:
+          PGPASSWORD: postgres
+        run: |
+          # Initialize pgbench
+          pgbench -i -s 100 -h localhost -U postgres boomcard_test
+          
+          # Run read-heavy workload
+          pgbench -c 20 -j 4 -T 300 -r \
+            -f tests/performance/pgbench/read-heavy.sql \
+            -h localhost -U postgres boomcard_test \
+            > results/pgbench-read-${{ needs.setup.outputs.test_id }}.txt
+          
+          # Run write-heavy workload
+          pgbench -c 10 -j 2 -T 300 -r \
+            -f tests/performance/pgbench/write-heavy.sql \
+            -h localhost -U postgres boomcard_test \
+            > results/pgbench-write-${{ needs.setup.outputs.test_id }}.txt
+
+      - name: Run custom query benchmarks
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boomcard_test
+        run: |
+          node scripts/performance/database-benchmarks.js \
+            --output results/db-benchmarks-${{ needs.setup.outputs.test_id }}.json
+
+      - name: Generate query performance report
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boomcard_test
+        run: |
+          psql -h localhost -U postgres -d boomcard_test \
+            -f scripts/performance/query-performance-report.sql \
+            -o results/query-report-${{ needs.setup.outputs.test_id }}.txt
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-performance-results-${{ needs.setup.outputs.test_id }}
+          path: results/
+          retention-days: 30
+
+  cache-performance:
+    needs: setup
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+     

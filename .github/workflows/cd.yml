@@ -1,0 +1,298 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: boomcard_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run type-check
+
+      - name: Run unit tests
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Generate coverage report
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/boomcard_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            .next
+            build
+            dist
+            public
+          retention-days: 7
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.boomcard.bg
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker images
+        run: |
+          docker build -t ${{ secrets.REGISTRY_URL }}/boomcard/api:staging-${{ github.sha }} -f docker/api/Dockerfile .
+          docker build -t ${{ secrets.REGISTRY_URL }}/boomcard/web:staging-${{ github.sha }} -f docker/web/Dockerfile .
+          docker push ${{ secrets.REGISTRY_URL }}/boomcard/api:staging-${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_URL }}/boomcard/web:staging-${{ github.sha }}
+
+      - name: Deploy to Kubernetes (Staging)
+        run: |
+          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl set image deployment/api-deployment api=${{ secrets.REGISTRY_URL }}/boomcard/api:staging-${{ github.sha }} -n staging
+          kubectl set image deployment/web-deployment web=${{ secrets.REGISTRY_URL }}/boomcard/web:staging-${{ github.sha }} -n staging
+          kubectl rollout status deployment/api-deployment -n staging
+          kubectl rollout status deployment/web-deployment -n staging
+          rm kubeconfig
+
+      - name: Run database migrations
+        run: |
+          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl exec -it deployment/api-deployment -n staging -- npm run migrate:up
+          rm kubeconfig
+
+      - name: Smoke tests
+        run: |
+          npm run test:smoke
+        env:
+          API_URL: https://api-staging.boomcard.bg
+          WEB_URL: https://staging.boomcard.bg
+
+      - name: Notify Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Staging deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://boomcard.bg
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Manual approval check
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ secrets.PRODUCTION_APPROVERS }}
+          minimum-approvals: 2
+          issue-title: "Deploy to Production: ${{ github.sha }}"
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Promote staging images to production
+        run: |
+          docker pull ${{ secrets.REGISTRY_URL }}/boomcard/api:staging-${{ github.sha }}
+          docker pull ${{ secrets.REGISTRY_URL }}/boomcard/web:staging-${{ github.sha }}
+          docker tag ${{ secrets.REGISTRY_URL }}/boomcard/api:staging-${{ github.sha }} ${{ secrets.REGISTRY_URL }}/boomcard/api:production-${{ github.sha }}
+          docker tag ${{ secrets.REGISTRY_URL }}/boomcard/web:staging-${{ github.sha }} ${{ secrets.REGISTRY_URL }}/boomcard/web:production-${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_URL }}/boomcard/api:production-${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_URL }}/boomcard/web:production-${{ github.sha }}
+
+      - name: Create database backup
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl exec -it deployment/postgres-deployment -n production -- pg_dump -U ${{ secrets.PROD_DB_USER }} ${{ secrets.PROD_DB_NAME }} > backup-${{ github.sha }}.sql
+          aws s3 cp backup-${{ github.sha }}.sql s3://${{ secrets.BACKUP_BUCKET }}/db-backups/
+          rm backup-${{ github.sha }}.sql kubeconfig
+
+      - name: Deploy to Kubernetes (Production)
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          
+          # Blue-Green deployment
+          kubectl apply -f k8s/production/api-deployment-green.yaml
+          kubectl apply -f k8s/production/web-deployment-green.yaml
+          
+          kubectl set image deployment/api-deployment-green api=${{ secrets.REGISTRY_URL }}/boomcard/api:production-${{ github.sha }} -n production
+          kubectl set image deployment/web-deployment-green web=${{ secrets.REGISTRY_URL }}/boomcard/web:production-${{ github.sha }} -n production
+          
+          kubectl rollout status deployment/api-deployment-green -n production
+          kubectl rollout status deployment/web-deployment-green -n production
+          
+          # Switch traffic to green
+          kubectl patch service api-service -n production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service web-service -n production -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          # Wait and monitor
+          sleep 300
+          
+          # Remove blue deployment
+          kubectl delete deployment api-deployment-blue web-deployment-blue -n production || true
+          
+          # Rename green to blue for next deployment
+          kubectl patch deployment api-deployment-green -n production -p '{"metadata":{"name":"api-deployment-blue"}}'
+          kubectl patch deployment web-deployment-green -n production -p '{"metadata":{"name":"web-deployment-blue"}}'
+          
+          rm kubeconfig
+
+      - name: Run database migrations
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl exec -it deployment/api-deployment-blue -n production -- npm run migrate:up
+          rm kubeconfig
+
+      - name: Health checks
+        run: |
+          npm run test:health
+        env:
+          API_URL: https://api.boomcard.bg
+          WEB_URL: https://boomcard.bg
+
+      - name: Performance tests
+        run: |
+          npm run test:performance
+        env:
+          API_URL: https://api.boomcard.bg
+          PERFORMANCE_THRESHOLD: 200
+
+      - name: Invalidate CDN cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      - name: Upda

@@ -1,0 +1,242 @@
+name: Dependency Security Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run every Monday at 3 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.npm
+          node_modules
+          */*/node_modules
+        key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ matrix.node-version }}-
+          ${{ runner.os }}-node-
+
+    - name: Install dependencies
+      run: |
+        npm ci --audit=false
+        cd frontend && npm ci --audit=false
+        cd ../backend && npm ci --audit=false
+
+    - name: Run npm audit
+      id: npm-audit
+      continue-on-error: true
+      run: |
+        echo "## NPM Audit Results" >> $GITHUB_STEP_SUMMARY
+        echo "### Root Package" >> $GITHUB_STEP_SUMMARY
+        npm audit --json > npm-audit-root.json || true
+        npm audit >> $GITHUB_STEP_SUMMARY || true
+        
+        echo "### Frontend Package" >> $GITHUB_STEP_SUMMARY
+        cd frontend
+        npm audit --json > ../npm-audit-frontend.json || true
+        npm audit >> $GITHUB_STEP_SUMMARY || true
+        
+        echo "### Backend Package" >> $GITHUB_STEP_SUMMARY
+        cd ../backend
+        npm audit --json > ../npm-audit-backend.json || true
+        npm audit >> $GITHUB_STEP_SUMMARY || true
+
+    - name: Check for critical vulnerabilities
+      run: |
+        check_vulnerabilities() {
+          local audit_file=$1
+          local package_name=$2
+          
+          if [ -f "$audit_file" ]; then
+            critical_count=$(jq '.metadata.vulnerabilities.critical // 0' "$audit_file")
+            high_count=$(jq '.metadata.vulnerabilities.high // 0' "$audit_file")
+            
+            echo "Package: $package_name"
+            echo "Critical vulnerabilities: $critical_count"
+            echo "High vulnerabilities: $high_count"
+            
+            if [ "$critical_count" -gt 0 ]; then
+              echo "::error::$package_name has $critical_count critical vulnerabilities"
+              return 1
+            fi
+            
+            if [ "$high_count" -gt 5 ]; then
+              echo "::warning::$package_name has $high_count high vulnerabilities (threshold: 5)"
+            fi
+          fi
+          return 0
+        }
+        
+        failed=0
+        check_vulnerabilities "npm-audit-root.json" "Root" || failed=1
+        check_vulnerabilities "npm-audit-frontend.json" "Frontend" || failed=1
+        check_vulnerabilities "npm-audit-backend.json" "Backend" || failed=1
+        
+        exit $failed
+
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'boom-card-platform'
+        path: '.'
+        format: 'ALL'
+        args: >
+          --enableRetired
+          --enableExperimental
+          --nvdApiKey ${{ secrets.NVD_API_KEY }}
+          --suppressionFiles ./.dependency-check-suppressions.xml
+          --failOnCVSS 7
+          --nodeAuditSkipDevDependencies
+
+    - name: Upload OWASP results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: dependency-check-report-${{ matrix.node-version }}
+        path: reports/
+
+    - name: Publish OWASP results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: reports/dependency-check-report.sarif
+        category: dependency-check
+
+    - name: Check for outdated packages
+      run: |
+        echo "## Outdated Packages Check" >> $GITHUB_STEP_SUMMARY
+        echo "### Root Package" >> $GITHUB_STEP_SUMMARY
+        npx npm-check-updates --format table >> $GITHUB_STEP_SUMMARY || true
+        
+        echo "### Frontend Package" >> $GITHUB_STEP_SUMMARY
+        cd frontend
+        npx npm-check-updates --format table >> $GITHUB_STEP_SUMMARY || true
+        
+        echo "### Backend Package" >> $GITHUB_STEP_SUMMARY
+        cd ../backend
+        npx npm-check-updates --format table >> $GITHUB_STEP_SUMMARY || true
+
+    - name: License compatibility check
+      run: |
+        echo "## License Check" >> $GITHUB_STEP_SUMMARY
+        npx license-checker --production --summary >> $GITHUB_STEP_SUMMARY
+        
+        # Check for problematic licenses
+        problematic=$(npx license-checker --production --onlyAllow 'MIT;ISC;BSD-2-Clause;BSD-3-Clause;Apache-2.0;CC0-1.0;CC-BY-3.0;CC-BY-4.0;Unlicense' --excludePrivatePackages 2>&1 | grep -E "(GPL|AGPL|LGPL|SSPL)" || true)
+        
+        if [ ! -z "$problematic" ]; then
+          echo "::warning::Found packages with potentially incompatible licenses"
+          echo "$problematic" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Security best practices check
+      run: |
+        # Check for hardcoded secrets
+        echo "## Security Checks" >> $GITHUB_STEP_SUMMARY
+        
+        # Check for potential secrets
+        if grep -r -E "(api[_-]?key|api[_-]?secret|password|pwd|token|secret[_-]?key)" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --exclude-dir=node_modules --exclude-dir=.git . | grep -v -E "(process\.env|import|require|interface|type|\.test\.|\.spec\.|example|sample|mock|dummy)"; then
+          echo "::warning::Potential hardcoded secrets found"
+          echo "Found potential hardcoded secrets - please review" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Create PR comment
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          let comment = '## 🔒 Dependency Security Check Results\n\n';
+          comment += `Node.js version: ${{ matrix.node-version }}\n\n`;
+          
+          // Read audit results
+          try {
+            const rootAudit = JSON.parse(fs.readFileSync('npm-audit-root.json', 'utf8'));
+            const frontendAudit = JSON.parse(fs.readFileSync('npm-audit-frontend.json', 'utf8'));
+            const backendAudit = JSON.parse(fs.readFileSync('npm-audit-backend.json', 'utf8'));
+            
+            comment += '### Vulnerability Summary\n';
+            comment += '| Package | Critical | High | Medium | Low |\n';
+            comment += '|---------|----------|------|--------|-----|\n';
+            
+            const addRow = (name, audit) => {
+              const vulns = audit.metadata.vulnerabilities;
+              comment += `| ${name} | ${vulns.critical || 0} | ${vulns.high || 0} | ${vulns.moderate || 0} | ${vulns.low || 0} |\n`;
+            };
+            
+            addRow('Root', rootAudit);
+            addRow('Frontend', frontendAudit);
+            addRow('Backend', backendAudit);
+            
+          } catch (e) {
+            comment += '⚠️ Unable to parse audit results\n';
+          }
+          
+          comment += '\n[View full report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n';
+          
+          // Find and update existing comment or create new one
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Dependency Security Check Results') &&
+            comment.body.includes(`Node.js version: ${{ matrix.node-version }}`)
+          );
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: comment
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+          }
+
+    - name: Dependency review (PR only)
+      if: github.event_name == 'pull_request'
+      uses: actions/dependency-review-action@v3
+      with:
+        fail-on-severity: critical
+        deny-licenses: GPL-3.0, AGPL-3.0, LGPL-3.0
+        comment-summary-in-pr: true

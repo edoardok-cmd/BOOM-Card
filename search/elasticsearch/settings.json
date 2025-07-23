@@ -1,0 +1,28 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "boom_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "boom_synonyms"
+          ]
+        }
+      },
+      "filter": {
+        "boom_synonyms": {
+          "type": "synonym",
+          "synonyms": [
+            "restaurant,dining,food",
+            "hotel,accommodation,lodging",
+            "bar,pub,drinks"
+          ]
+        }
+      }
+    }
+  }
+}

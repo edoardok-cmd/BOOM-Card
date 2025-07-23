@@ -1,0 +1,159 @@
+/*
+ * frontend/src/styles/themes/dark.css
+ *
+ * BOOM Card - Dark Theme CSS Variables
+ *
+ * This file defines CSS custom properties (variables) for the dark theme.
+ * These variables are designed to be used across the application to maintain a consistent
+ * dark mode aesthetic, adhering to the BOOM Card's brand identity.
+ *
+ * Usage: Apply the `.theme-dark` class to the `html` or `body` element to activate these variables.
+ * For example: `<body class="theme-dark">...</body>`
+ *
+ * Table of Contents:
+ * 1. Base Colors & Grayscale Palette
+ * 2. Backgrounds
+ * 3. Text Colors
+ * 4. Accent/Brand Colors (BOOM Card Specific)
+ * 5. Borders & Dividers
+ * 6. Shadows
+ * 7. State Colors (Success, Error, Warning, Info)
+ * 8. Form Elements
+ * 9. Buttons
+ * 10. Scrollbars
+ * 11. Specific Component Colors (e.g., Navigation, Cards, Modals)
+ * 12. Miscellaneous
+ */
+
+.theme-dark {
+  /* 1. Base Colors & Grayscale Palette */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-light-grey: #e0e0e0;      /* For primary text on dark backgrounds */
+  --color-medium-grey: #b0b0b0;     /* For secondary text, descriptions */
+  --color-dark-grey: #808080;       /* For subtle text, placeholders, disabled states */
+  --color-extra-dark-grey: #444444; /* For borders, scrollbar thumbs */
+
+  /* 2. Backgrounds */
+  --bg-body: #121212;               /* Very dark background for the entire page */
+  --bg-primary: #1e1e1e;            /* Main background for sections, panels, global containers */
+  --bg-secondary: #2c2c2c;          /* Background for cards, distinct UI elements like sidebars */
+  --bg-tertiary: #3a3a3a;           /* Even lighter dark, for nested elements or specific inputs */
+  --bg-overlay: rgba(0, 0, 0, 0.7); /* Overlay for modals, popups, tooltips */
+  --bg-highlight: #343434;          /* For active/hover states on darker backgrounds (e.g., table rows, list items) */
+  --bg-code: #282c34;               /* Specific background for code blocks */
+
+  /* 3. Text Colors */
+  --text-primary: var(--color-light-grey);  /* Main text color for content */
+  --text-secondary: var(--color-medium-grey); /* Secondary text, descriptions, labels */
+  --text-tertiary: var(--color-dark-grey);   /* Subtle text, placeholders, captions */
+  --text-link: var(--color-accent-primary); /* Default link color, aligns with primary brand accent */
+  --text-on-accent: var(--color-white);     /* Text color when placed on accent backgrounds */
+  --text-on-dark: var(--color-white);       /* General text color on very dark backgrounds */
+  --text-inverted: var(--color-black);      /* For specific cases where dark text on light background is needed */
+
+  /* 4. Accent/Brand Colors (BOOM Card theme) */
+  --color-accent-primary: #FF9900;          /* Vibrant orange/gold - BOOM Card primary brand color */
+  --color-accent-primary-hover: #E08900;    /* Darker shade for hover states */
+  --color-accent-primary-active: #FFB74D;   /* Lighter shade for active/focus states */
+  --color-accent-secondary: #00BCD4;         /* A complementary teal/cyan for secondary actions, subtle highlights */
+  --color-accent-secondary-hover: #0097A7;
+  --color-accent-secondary-active: #4DD0E1;
+
+  /* 5. Borders & Dividers */
+  --border-color-primary: #444444; /* General border color for separation */
+  --border-color-secondary: #555555; /* Slightly lighter border for subtle division */
+  --border-color-focus: var(--color-accent-primary); /* Border color on focus states for interactive elements */
+  --border-color-error: var(--color-error); /* Border for error states on inputs or elements */
+
+  /* 6. Shadows */
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.4);      /* Subtle shadow for depth */
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.6);     /* More pronounced shadow for cards, modals */
+  --shadow-large: 0 10px 15px rgba(0, 0, 0, 0.8);    /* Deep shadow for floating elements like dropdowns */
+  --shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.2); /* Inset shadow for input fields */
+
+  /* 7. State Colors (Success, Error, Warning, Info) */
+  --color-success: #4CAF50;          /* Green for successful operations */
+  --color-success-dark: #388E3C;
+  --color-error: #F44336;            /* Red for errors or critical messages */
+  --color-error-dark: #D32F2F;
+  --color-warning: #FFC107;          /* Yellow/Orange for warnings or alerts */
+  --color-warning-dark: #FFA000;
+  --color-info: #2196F3;             /* Blue for informational messages */
+  --color-info-dark: #1976D2;
+
+  /* 8. Form Elements */
+  --input-bg: var(--bg-primary);          /* Background for text inputs, textareas, selects */
+  --input-border: var(--border-color-primary); /* Default border for inputs */
+  --input-text: var(--text-primary);      /* Text color inside inputs */
+  --input-placeholder: var(--text-tertiary); /* Placeholder text color */
+  --input-focus-border: var(--border-color-focus); /* Border color when input is focused */
+  --input-disabled-bg: var(--bg-tertiary); /* Background for disabled inputs */
+  --input-disabled-text: var(--text-secondary); /* Text color for disabled inputs */
+  --checkbox-radio-border: var(--border-color-primary);
+  --checkbox-radio-checked-bg: var(--color-accent-primary);
+  --checkbox-radio-checked-icon: var(--text-on-accent);
+
+  /* 9. Buttons */
+  --btn-primary-bg: var(--color-accent-primary);      /* Primary action button background */
+  --btn-primary-text: var(--text-on-accent);          /* Primary action button text */
+  --btn-primary-bg-hover: var(--color-accent-primary-hover);
+  --btn-primary-bg-active: var(--color-accent-primary-active);
+
+  --btn-secondary-bg: var(--bg-secondary);            /* Secondary action button background */
+  --btn-secondary-text: var(--text-primary);          /* Secondary action button text */
+  --btn-secondary-border: var(--border-color-primary); /* Secondary button border */
+  --btn-secondary-bg-hover: var(--bg-tertiary);
+  --btn-secondary-text-hover: var(--text-link);
+
+  --btn-tertiary-bg: transparent;                     /* Tertiary (ghost/text) button background */
+  --btn-tertiary-text: var(--text-link);              /* Tertiary button text */
+  --btn-tertiary-bg-hover: var(--bg-highlight);
+
+  --btn-disabled-bg: var(--bg-tertiary);              /* Disabled button background */
+  --btn-disabled-text: var(--text-tertiary);          /* Disabled button text */
+
+  /* 10. Scrollbars */
+  --scrollbar-thumb-bg: var(--color-extra-dark-grey); /* Scrollbar thumb color */
+  --scrollbar-track-bg: var(--bg-primary);             /* Scrollbar track color */
+  --scrollbar-thumb-hover-bg: var(--color-dark-grey);  /* Scrollbar thumb color on hover */
+
+  /* 11. Specific Component Colors */
+  --nav-bg: var(--bg-primary);               /* Navigation bar background */
+  --nav-link-text: var(--text-secondary);    /* Navigation link default text color */
+  --nav-link-text-hover: var(--text-link);   /* Navigation link text color on hover */
+  --nav-link-active-text: var(--color-accent-primary); /* Active navigation link text color */
+  --nav-link-active-border: var(--color-accent-primary); /* Active navigation link underline/border */
+
+  --card-bg: var(--bg-secondary);           /* Background for cards/panels displaying content */
+  --card-border: var(--border-color-primary); /* Border for cards */
+  --card-hover-bg: var(--bg-tertiary);      /* Card background on hover */
+
+  --modal-bg: var(--bg-secondary);          /* Modal dialog background */
+  --modal-header-bg: var(--bg-primary);     /* Modal header background */
+  --modal-footer-bg: var(--bg-primary);     /* Modal footer background */
+  --modal-border: var(--border-color-primary);
+
+  --table-header-bg: var(--bg-tertiary);    /* Table header background */
+  --table-row-bg-even: var(--bg-secondary); /* Background for even table rows */
+  --table-row-bg-odd: var(--bg-primary);    /* Background for odd table rows */
+  --table-row-hover-bg: var(--bg-highlight); /* Background for table rows on hover */
+  --table-border: var(--border-color-primary); /* Table cell borders */
+
+  --progress-bar-bg: var(--bg-tertiary);    /* Progress bar track background */
+  --progress-bar-fill: var(--color-accent-primary); /* Progress bar filled portion color */
+
+  --tooltip-bg: var(--bg-tertiary);
+  --tooltip-text: var(--text-primary);
+
+  --badge-bg-default: var(--bg-tertiary);
+  --badge-text-default: var(--text-primary);
+  --badge-bg-accent: var(--color-accent-primary);
+  --badge-text-accent: var(--text-on-accent);
+
+  /* 12. Miscellaneous */
+  --divider-color: var(--border-color-primary); /* General divider line color */
+
+  --skeleton-base-color: #333333;       /* Base color for skeleton loading states */
+  --skeleton-highlight-color: #444444;  /* Highlight color for skeleton loading animation */
+}
