@@ -1,8 +1,8 @@
 # Netlify Configuration for BOOM Card Frontend
 
 [build]
-  # Build command for Next.js
-  command = "npm run build"
+  # Build command for Next.js with install step
+  command = "npm ci --legacy-peer-deps && npm run build"
   
   # Next.js build output directory
   publish = ".next"
@@ -11,6 +11,10 @@
 [build.environment]
   # Ensure Next.js optimizations are enabled
   NEXT_TELEMETRY_DISABLED = "1"
+  # Set Node version
+  NODE_VERSION = "18"
+  # Don't skip devDependencies
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # Headers for security and performance
 [[headers]]
