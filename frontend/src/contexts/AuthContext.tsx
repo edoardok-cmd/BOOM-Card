@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const API_BASE_URL = 'http://localhost:5002';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5002';
     // Temporarily use test endpoint for debugging
     const response = await fetch(`${API_BASE_URL}/test-login`, {
       method: 'POST',
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (firstName: string, lastName: string, email: string, password: string) => {
-    const API_BASE_URL = 'http://localhost:5002/api';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {

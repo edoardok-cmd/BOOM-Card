@@ -122,6 +122,29 @@ app.get('/api', (req, res) => {
   });
 });
 
+// Test login endpoint (for debugging CORS)
+app.post('/test-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    res.json({
+      success: true,
+      message: 'Test login successful - CORS working!',
+      data: {
+        email: email,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+      }
+    });
+  } catch (error) {
+    console.error('Test login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 // Basic auth endpoints
 app.post('/api/auth/login', async (req, res) => {
   try {
