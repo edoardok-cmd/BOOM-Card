@@ -1,22 +1,25 @@
 # Netlify Configuration for BOOM Card Frontend
 
 [build]
-  # Build command for Next.js
-  command = "npm ci --legacy-peer-deps && npm run build"
+  # Build command using npm install for reliable dependency resolution
+  command = "npm install --legacy-peer-deps && npm run build"
   
   # Next.js build output directory
   publish = ".next"
 
 # Environment variables needed for build
 [build.environment]
-  # Ensure Next.js optimizations are enabled
+  # Node and npm configuration
+  NODE_VERSION = "18.17.0"
+  NPM_VERSION = "9.6.7"
+  NODE_ENV = "production"
+  
+  # Next.js configuration
   NEXT_TELEMETRY_DISABLED = "1"
-  # Set Node version
-  NODE_VERSION = "18"
+  NEXT_PUBLIC_API_URL = "https://boom-card.onrender.com/api"
+  
   # Build flags
   NPM_FLAGS = "--legacy-peer-deps"
-  # API URL for build
-  NEXT_PUBLIC_API_URL = "https://boom-card.onrender.com/api"
 
 # Headers for security and performance
 [[headers]]
