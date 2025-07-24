@@ -1,61 +1,41 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   swcMinify: true,
   poweredByHeader: false,
   
-  // Basic image configuration
+  // Basic image configuration - use unoptimized for static export
   images: {
-    domains: ['localhost', 'api.boomcard.com'],
-    formats: ['image/avif', 'image/webp'],
-  },
-
-  // API rewrites for backend proxy
-  async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
-    console.log('API URL configured as:', apiUrl);
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiUrl}/:path*`,
-      },
-      {
-        source: '/health',
-        destination: `${apiUrl.replace('/api', '')}/health`,
-      },
-    ]
+    unoptimized: true,
+    domains: ['localhost', 'api.boomcard.com', 'boom-card.onrender.com'],
   },
 
   // Environment variables
   env: {
     NEXT_PUBLIC_APP_NAME: 'BOOM Card',
     NEXT_PUBLIC_APP_VERSION: '1.0.0',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api'
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://boom-card.onrender.com/api'
   },
 
-  // Webpack configuration for path aliases
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': require('path').resolve(__dirname, './src'),
-      '@components': require('path').resolve(__dirname, './src/components'),
-      '@lib': require('path').resolve(__dirname, './src/lib'),
-      '@hooks': require('path').resolve(__dirname, './src/hooks'),
-      '@utils': require('path').resolve(__dirname, './src/utils'),
-      '@styles': require('path').resolve(__dirname, './src/styles'),
-      '@types': require('path').resolve(__dirname, './src/types'),
-    }
-    return config
-  },
-
-  // TypeScript configuration
+  // TypeScript configuration - ignore errors for now
   typescript: {
     ignoreBuildErrors: true,
   },
 
-  // ESLint configuration
+  // ESLint configuration - ignore during builds
   eslint: {
     ignoreDuringBuilds: true,
+  },
+
+  // Simple webpack config
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    return config;
   },
 }
 
