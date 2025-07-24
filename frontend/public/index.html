@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="BOOM Card - Your ultimate discount card platform. Save up to 50% at restaurants, hotels, spas, and entertainment venues with QR code-based transactions." />
@@ -14,23 +14,23 @@
     <meta property="og:url" content="https://boomcard.com/" />
     <meta property="og:title" content="BOOM Card - Save More, Experience More" />
     <meta property="og:description" content="Get exclusive discounts at thousands of venues. Download the app and start saving today!" />
-    <meta property="og:image" content="%PUBLIC_URL%/og-image.jpg" />
+    <meta property="og:image" content="/og-image.jpg" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://boomcard.com/" />
     <meta property="twitter:title" content="BOOM Card - Save More, Experience More" />
     <meta property="twitter:description" content="Get exclusive discounts at thousands of venues. Download the app and start saving today!" />
-    <meta property="twitter:image" content="%PUBLIC_URL%/twitter-image.jpg" />
+    <meta property="twitter:image" content="/twitter-image.jpg" />
     
     <!-- Apple Web App Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="BOOM Card" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="manifest" href="/manifest.json" />
     
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -142,7 +142,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('%PUBLIC_URL%/service-worker.js')
+                navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => console.log('SW registered:', registration))
                     .catch(error => console.log('SW registration failed:', error));
             });

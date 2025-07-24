@@ -202,6 +202,131 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// Mock API endpoints for frontend functionality
+app.get('/api/auth/profile', async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      id: '1',
+      email: 'user@example.com',
+      firstName: 'Demo',
+      lastName: 'User',
+      membershipType: 'Premium',
+      joinDate: '2024-01-01',
+      validUntil: '2025-12-31'
+    }
+  });
+});
+
+app.get('/api/users/achievements', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, title: 'Welcome!', description: 'Joined BOOM Card', icon: '🎉', date: '2024-01-01' },
+      { id: 2, title: 'First Purchase', description: 'Made your first purchase', icon: '🛒', date: '2024-01-15' }
+    ]
+  });
+});
+
+app.get('/api/qr/membership', async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      qrCode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      membershipId: 'BOOM-001',
+      validUntil: '2025-12-31'
+    }
+  });
+});
+
+app.get('/api/users/stats', async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      totalSavings: 150.75,
+      totalPurchases: 12,
+      favoritePartners: 5,
+      memberSince: '2024-01-01'
+    }
+  });
+});
+
+app.get('/api/users/favorites', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, name: 'Demo Restaurant', category: 'Food', discount: '20%', image: '/images/restaurant-poster.jpg' },
+      { id: 2, name: 'Demo Store', category: 'Shopping', discount: '15%', image: '/images/restaurant-poster.jpg' }
+    ]
+  });
+});
+
+app.get('/api/users/activity', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, type: 'purchase', description: 'Used discount at Demo Restaurant', date: '2024-07-20', amount: 25.50 },
+      { id: 2, type: 'favorite', description: 'Added Demo Store to favorites', date: '2024-07-18' }
+    ]
+  });
+});
+
+app.get('/api/subscriptions/plans', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, name: 'Basic', price: 9.99, features: ['Basic discounts', 'Email support'] },
+      { id: 2, name: 'Premium', price: 19.99, features: ['All discounts', 'Priority support', 'Exclusive deals'] }
+    ]
+  });
+});
+
+app.get('/api/subscriptions/me', async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      plan: 'Premium',
+      status: 'active',
+      validUntil: '2025-12-31',
+      autoRenew: true
+    }
+  });
+});
+
+app.get('/api/partners', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, name: 'Demo Restaurant', category: 'Food', city: 'Sofia', discount: '20%', rating: 4.5, image: '/images/restaurant-poster.jpg' },
+      { id: 2, name: 'Demo Store', category: 'Shopping', city: 'Sofia', discount: '15%', rating: 4.2, image: '/images/restaurant-poster.jpg' },
+      { id: 3, name: 'Demo Cafe', category: 'Food', city: 'Plovdiv', discount: '10%', rating: 4.8, image: '/images/restaurant-poster.jpg' }
+    ]
+  });
+});
+
+app.get('/api/partners/cities', async (req, res) => {
+  res.json({
+    success: true,
+    data: ['Sofia', 'Plovdiv', 'Varna', 'Burgas']
+  });
+});
+
+app.get('/api/partners/featured', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, name: 'Featured Restaurant', category: 'Food', discount: '25%', rating: 4.9, image: '/images/restaurant-poster.jpg' }
+    ]
+  });
+});
+
+app.get('/api/partners/categories', async (req, res) => {
+  res.json({
+    success: true,
+    data: ['Food', 'Shopping', 'Entertainment', 'Health', 'Beauty', 'Travel']
+  });
+});
+
 // Test database endpoint
 app.get('/api/test/db', async (req, res) => {
   if (!db) {
