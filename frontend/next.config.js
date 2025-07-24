@@ -17,11 +17,7 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://boom-card.onrender.com/api'
   },
 
-  // Completely disable TypeScript checking
-  typescript: {
-    ignoreBuildErrors: true,
-    ignoreDevErrors: true,
-  },
+  // No TypeScript configuration needed
 
   // ESLint configuration - ignore during builds
   eslint: {
