@@ -28,86 +28,86 @@ import logger from '../../utils/logger';
 import config from '../../config';
 
 interface TestUser {
-  id: string;
-  email: string;
-  password: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  isEmailVerified: boolean;
-  is2FAEnabled: boolean;
-  twoFactorSecret?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string,
+  email: string,
+  password: string,
+  username: string,
+  firstName: string,
+  lastName: string,
+  isEmailVerified: boolean,
+  is2FAEnabled: boolean,
+  twoFactorSecret?: string,
+  createdAt: Date,
+  updatedAt: Date,
 }
 
 interface TestSession {
-  id: string;
-  userId: string;
-  token: string;
-  refreshToken: string;
-  ipAddress: string;
-  userAgent: string;
-  expiresAt: Date;
-  createdAt: Date;
+  id: string,
+  userId: string,
+  token: string,
+  refreshToken: string,
+  ipAddress: string,
+  userAgent: string,
+  expiresAt: Date,
+  createdAt: Date,
 }
 
 interface TestAuthToken {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string;
-  expiresIn: number;
+  accessToken: string,
+  refreshToken: string,
+  tokenType: string,
+  expiresIn: number,
 }
 
 interface TestLoginAttempt {
-  id: string;
-  email: string;
-  ipAddress: string;
-  userAgent: string;
-  success: boolean;
-  failureReason?: string;
-  attemptedAt: Date;
+  id: string,
+  email: string,
+  ipAddress: string,
+  userAgent: string,
+  success: boolean,
+  failureReason?: string,
+  attemptedAt: Date,
 }
 
 interface TestPasswordResetToken {
-  id: string;
-  userId: string;
-  token: string;
-  expiresAt: Date;
-  usedAt?: Date;
-  createdAt: Date;
+  id: string,
+  userId: string,
+  token: string,
+  expiresAt: Date,
+  usedAt?: Date,
+  createdAt: Date,
 }
 
 interface TestEmailVerificationToken {
-  id: string;
-  userId: string;
-  token: string;
-  expiresAt: Date;
-  verifiedAt?: Date;
-  createdAt: Date;
+  id: string,
+  userId: string,
+  token: string,
+  expiresAt: Date,
+  verifiedAt?: Date,
+  createdAt: Date,
 }
 
 interface Test2FASetup {
-  secret: string;
-  qrCode: string;
-  backupCodes: string[];
+  secret: string,
+  qrCode: string,
+  backupCodes: string[],
 }
 
 interface TestRateLimitInfo {
-  limit: number;
-  remaining: number;
-  reset: Date;
+  limit: number,
+  remaining: number,
+  reset: Date,
   retryAfter?: number;
 }
 
 interface TestAuditLog {
-  id: string;
-  userId: string;
-  action: string;
-  ipAddress: string;
-  userAgent: string;
+  id: string,
+  userId: string,
+  action: string,
+  ipAddress: string,
+  userAgent: string,
   metadata?: Record<string, any>;
-  createdAt: Date;
+  createdAt: Date,
 }
 
 const TEST_CONFIG = {
@@ -118,13 +118,13 @@ const TEST_CONFIG = {
   JWT_EXPIRES_IN: '15m',
   JWT_REFRESH_EXPIRES_IN: '7d',
   BCRYPT_ROUNDS: 10,
-  RATE_LIMIT_WINDOW: 15 * 60 * 1000, // 15 minutes
+  RATE_LIMIT_WINDOW: 15 * 60 * 1000; // 15 minutes,
   RATE_LIMIT_MAX_ATTEMPTS: 5,
-  PASSWORD_RESET_TOKEN_EXPIRES: 3600000, // 1 hour
-  EMAIL_VERIFICATION_TOKEN_EXPIRES: 86400000, // 24 hours
-  SESSION_TIMEOUT: 1800000, // 30 minutes
+  PASSWORD_RESET_TOKEN_EXPIRES: 3600000; // 1 hour,
+  EMAIL_VERIFICATION_TOKEN_EXPIRES: 86400000; // 24 hours,
+  SESSION_TIMEOUT: 1800000; // 30 minutes,
   MAX_LOGIN_ATTEMPTS: 5,
-  LOCKOUT_DURATION: 900000, // 15 minutes
+  LOCKOUT_DURATION: 900000; // 15 minutes,
   MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
   PASSWORD_REGEX: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
@@ -137,59 +137,56 @@ const TEST_CONFIG = {
   AUDIT_LOG_RETENTION_DAYS: 90,
   MAX_SESSIONS_PER_USER: 5,
   CSRF_TOKEN_LENGTH: 32,
-  ALLOWED_ORIGINS: ['http://localhost:3000', 'http://localhost:3001'],
+  ALLOWED_ORIGINS: ['http://localhost:3000', 'http: //localhost:3001'],
   COOKIE_SECURE: false,
   COOKIE_HTTP_ONLY: true,
   COOKIE_SAME_SITE: 'lax' as const,
-  COOKIE_MAX_AGE: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
-
-const TEST_USERS = {
+  COOKIE_MAX_AGE: 7 * 24 * 60 * 60 * 1000; // 7 days
+}
+    const TEST_USERS = {
   VALID_USER: {
-    email: 'testuser@boomcard.com',
+  email: 'testuser@boomcard.com',
     password: 'Test@Password123',
     username: 'testuser',
     firstName: 'Test',
-    lastName: 'User',
-  },
+    lastName: 'User'
+},
   UNVERIFIED_USER: {
-    email: 'unverified@boomcard.com',
+  email: 'unverified@boomcard.com',
     password: 'Unverified@123',
     username: 'unverified',
     firstName: 'Unverified',
-    lastName: 'User',
-  },
+    lastName: 'User'
+},
   TWO_FA_USER: {
-    email: 'twofa@boomcard.com',
+  email: 'twofa@boomcard.com',
     password: 'TwoFA@Password123',
     username: 'twofauser',
     firstName: 'TwoFA',
-    lastName: 'User',
-  },
+    lastName: 'User'
+},
   LOCKED_USER: {
-    email: 'locked@boomcard.com',
+  email: 'locked@boomcard.com',
     password: 'Locked@Password123',
     username: 'lockeduser',
     firstName: 'Locked',
-    lastName: 'User',
-  },
+    lastName: 'User'
+},
   ADMIN_USER: {
-    email: 'admin@boomcard.com',
+  email: 'admin@boomcard.com',
     password: 'Admin@Password123',
     username: 'adminuser',
     firstName: 'Admin',
-    lastName: 'User',
-  },
-};
-
-const TEST_HEADERS = {
+    lastName: 'User'
+}
+}
+    const TEST_HEADERS = {
   USER_AGENT: 'Mozilla/5.0 (Test) Integration Tests',
   IP_ADDRESS: '127.0.0.1',
-  ORIGIN: 'http://localhost:3000',
+  ORIGIN: 'http://localhost:3000',;
   CONTENT_TYPE: 'application/json',
-};
-
-const TEST_ENDPOINTS = {
+}
+    const TEST_ENDPOINTS = {
   REGISTER: '/api/auth/register',
   LOGIN: '/api/auth/login',
   LOGOUT: '/api/auth/logout',
@@ -211,11 +208,10 @@ const TEST_ENDPOINTS = {
   DELETE_ACCOUNT: '/api/auth/account/delete',
   GET_AUDIT_LOGS: '/api/auth/audit-logs',
   CHECK_USERNAME: '/api/auth/check-username',
-  CHECK_EMAIL: '/api/auth/check-email',
+  CHECK_EMAIL: '/api/auth/check-email',;
   GET_CSRF_TOKEN: '/api/auth/csrf-token',
-};
-
-const ERROR_MESSAGES = {
+}
+    const ERROR_MESSAGES = {
   INVALID_CREDENTIALS: 'Invalid email or password',
   EMAIL_NOT_VERIFIED: 'Please verify your email before logging in',
   ACCOUNT_LOCKED: 'Account is locked due to too many failed attempts',
@@ -234,51 +230,49 @@ const ERROR_MESSAGES = {
   CSRF_TOKEN_INVALID: 'Invalid CSRF token',
   UNAUTHORIZED: 'Unauthorized access',
   FORBIDDEN: 'Forbidden access',
-  VALIDATION_FAILED: 'Validation failed',
+  VALIDATION_FAILED: 'Validation failed',;
   INTERNAL_ERROR: 'Internal server error',
-};
-
-const MOCK_SERVICES = {
+}
+    const MOCK_SERVICES = {
   emailService: {
-    sendVerificationEmail: jest.fn(),
+  sendVerificationEmail: jest.fn(),
     sendPasswordResetEmail: jest.fn(),
     sendWelcomeEmail: jest.fn(),
     sendAccountDeletionEmail: jest.fn(),
     send2FAEnabledEmail: jest.fn(),
-    sendSecurityAlertEmail: jest.fn(),
-  },
+    sendSecurityAlertEmail: jest.fn()
+},
   notificationService: {
-    sendLoginNotification: jest.fn(),
+  sendLoginNotification: jest.fn(),
     sendLogoutNotification: jest.fn(),
     sendPasswordChangeNotification: jest.fn(),
     sendAccountUpdateNotification: jest.fn(),
-    sendSecurityAlertNotification: jest.fn(),
-  },
-};
+    sendSecurityAlertNotification: jest.fn()
+}
+}
 
-describe('Auth Integration Tests', () => {
-  let app: Express;
-  let server: http.Server;
-  let db: AuthTestDatabase;
-  let authService: AuthService;
-  let tokenService: TokenService;
-  let userService: UserService;
-  let otpService: OTPService;
-  let notificationService: NotificationService;
-  let kycService: KYCService;
-  let fraudService: FraudDetectionService;
-  let redisClient: Redis;
-  let mockEmailProvider: MockEmailProvider;
-  let mockSMSProvider: MockSMSProvider;
-  
+describe('Auth Integration Tests', () => {;
+  let app: Express; // TODO: Move to proper scope
+  let server: http.Server,
+  let db: AuthTestDatabase,
+  let authService: AuthService,
+  let tokenService: TokenService,
+  let userService: UserService,
+  let otpService: OTPService,
+  let notificationService: NotificationService,
+  let kycService: KYCService,
+  let fraudService: FraudDetectionService,
+  let redisClient: Redis,
+  let mockEmailProvider: MockEmailProvider,
+  let mockSMSProvider: MockSMSProvider,
   beforeAll(async () => {
-    // Initialize test database
+    // Initialize test database;
     db = new AuthTestDatabase();
     await db.initialize();
     
     // Initialize Redis
     redisClient = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
+  host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
       db: parseInt(process.env.REDIS_TEST_DB || '1')
     });
@@ -288,7 +282,7 @@ describe('Auth Integration Tests', () => {
     mockSMSProvider = new MockSMSProvider();
     
     notificationService = new NotificationService({
-      emailProvider: mockEmailProvider,
+  emailProvider: mockEmailProvider,
       smsProvider: mockSMSProvider
     });
     
@@ -311,9 +305,8 @@ describe('Auth Integration Tests', () => {
     app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    
-    // Apply auth routes
-    const authRouter = new AuthRouter(authService);
+    // Apply auth routes;
+const authRouter = new AuthRouter(authService);
     app.use('/api/auth', authRouter.getRouter());
     
     // Start server
@@ -335,7 +328,7 @@ describe('Auth Integration Tests', () => {
   
   describe('User Registration Flow', () => {
     const validRegistrationData: RegistrationRequest = {
-      email: 'test@boomcard.com',
+  email: 'test@boomcard.com',
       password: 'SecurePass123!',
       firstName: 'John',
       lastName: 'Doe',
@@ -343,12 +336,12 @@ describe('Auth Integration Tests', () => {
       country: 'US',
       acceptedTerms: true,
       marketingOptIn: false
-    };
+    }
     
     test('should successfully register a new user', async () => {
       const response = await request(app)
-        .post('/api/auth/register')
-        .send(validRegistrationData)
+        .post('/api/auth/register');
+        .send(validRegistrationData);
         .expect(201);
       
       expect(response.body).toMatchObject({
@@ -357,10 +350,12 @@ describe('Auth Integration Tests', () => {
           userId: expect.any(String),
           email: validRegistrationData.email,
           verificationRequired: true
-        });
+        
+        }
+      });
       
-      // Verify email was sent
-      const sentEmails = mockEmailProvider.getSentEmails();
+      // Verify email was sent;
+const sentEmails = mockEmailProvider.getSentEmails();
       expect(sentEmails).toHaveLength(1);
       expect(sentEmails[0].to).toBe(validRegistrationData.email);
       expect(sentEmails[0].subject).toContain('Verify your email');
@@ -369,13 +364,15 @@ describe('Auth Integration Tests', () => {
     test('should reject registration with existing email', async () => {
       // First registration
       await request(app)
-        .post('/api/auth/register')
-        .send(validRegistrationData)
+        const response = await request(app);
+        .post('/api/auth/register');
+        .send(validRegistrationData);
         .expect(201);
       
       // Duplicate registration
-        .post('/api/auth/register')
-        .send(validRegistrationData)
+      const response = await request(app)
+        .post('/api/auth/register');
+        .send(validRegistrationData);
         .expect(409);
       
       expect(response.body).toMatchObject({
@@ -383,35 +380,36 @@ describe('Auth Integration Tests', () => {
         error: {
           code: 'USER_EXISTS',
           message: 'User with this email already exists'
-        });
+        }
+      });
     });
     
     test('should validate password requirements', async () => {
       const weakPasswordData = {
-        ...validRegistrationData,
-        password: 'weak'
-      };
-      
-        .post('/api/auth/register')
-        .send(weakPasswordData)
+        ...validRegistrationData,;
+        password: 'weak',
+      }
+      const response = await request(app)
+        .post('/api/auth/register');
+        .send(weakPasswordData);
         .expect(400);
       
       expect(response.body).toMatchObject({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
+  code: 'VALIDATION_ERROR',
           message: expect.stringContaining('Password must')
         });
     });
     
     test('should validate email format', async () => {
       const invalidEmailData = {
-        ...validRegistrationData,
-        email: 'invalid-email'
-      };
-      
-        .post('/api/auth/register')
-        .send(invalidEmailData)
+        ...validRegistrationData,;
+        email: 'invalid-email',
+      }
+      const response = await request(app)
+        .post('/api/auth/register');
+        .send(invalidEmailData);
         .expect(400);
       
       expect(response.body).toMatchObject({
@@ -419,17 +417,18 @@ describe('Auth Integration Tests', () => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid email format'
-        });
+        }
+      });
     });
     
     test('should require terms acceptance', async () => {
       const noTermsData = {
-        ...validRegistrationData,
-        acceptedTerms: false
-      };
-      
-        .post('/api/auth/register')
-        .send(noTermsData)
+        ...validRegistrationData,;
+        acceptedTerms: false,
+      }
+      const response = await request(app)
+        .post('/api/auth/register');
+        .send(noTermsData);
         .expect(400);
       
       expect(response.body).toMatchObject({
@@ -437,40 +436,43 @@ describe('Auth Integration Tests', () => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'You must accept the terms and conditions'
-        });
+        }
+      });
     });
   });
   
   describe('Email Verification Flow', () => {
-    let userId: string;
-    let verificationToken: string;
-    
+    let userId: string,
+    let verificationToken: string,
     beforeEach(async () => {
       // Register a user
+      const response = await request(app)
         .post('/api/auth/register')
         .send({
-          email: 'verify@boomcard.com',
+  email: 'verify@boomcard.com',
           password: 'SecurePass123!',
           firstName: 'Jane',
           lastName: 'Doe',
           phoneNumber: '+1234567890',
-          country: 'US',
-          acceptedTerms: true
+          country: 'US',;
+          acceptedTerms: true,
         });
       
       userId = response.body.data.userId;
       
-      // Extract verification token from email
+      // Extract verification token from email;
+const sentEmails = mockEmailProvider.getSentEmails();
       const verificationEmail = sentEmails[0];
-      const tokenMatch = verificationEmail.body.match(/token=([a-zA-Z0-9-_]+)/);
+      const tokenMatch = verificationEmail.body.match(/token: ([a-zA-Z0-9-_]+)/);
       verificationToken = tokenMatch![1];
     });
     
     test('should verify email with valid token', async () => {
+      const response = await request(app)
         .post('/api/auth/verify-email')
         .send({
-          token: verificationToken
-        })
+  token: verificationToken,
+        });
         .expect(200);
       
       expect(response.body).toMatchObject({
@@ -479,19 +481,22 @@ describe('Auth Integration Tests', () => {
           message: 'Email verified successfully',
           accessToken: expect.any(String),
           refreshToken: expect.any(String)
-        });
+        
+        }
+      });
       
-      // Verify user status is updated
-      const user = await userService.getUserById(userId);
+      // Verify user status is updated;
+const user = await userService.getUserById(userId);
       expect(user.emailVerified).toBe(true);
       expect(user.status).toBe('ACTIVE');
     });
     
     test('should reject invalid verification token', async () => {
+      const response = await request(app)
         .post('/api/auth/verify-email')
         .send({
-          token: 'invalid-token'
-        })
+  token: 'invalid-token',
+        });
         .expect(400);
       
       expect(response.body).toMatchObject({
@@ -499,17 +504,18 @@ describe('Auth Integration Tests', () => {
         error: {
           code: 'INVALID_TOKEN',
           message: 'Invalid or expired verification token'
-        });
+        }
+      });
     });
     
     test('should reject expired verification token', async () => {
       // Manually expire the token
-      await redisClient.del(`email_verification:${verificationToken}`);
-      
+      await redisClient.del(`email_verification: ${verificationToken}`);
+      const response = await request(app)
         .post('/api/auth/verify-email')
         .send({
-          token: verificationToken
-        })
+  token: verificationToken,
+        });
         .expect(400);
       
       expect(response.body).toMatchObject({
@@ -517,21 +523,24 @@ describe('Auth Integration Tests', () => {
         error: {
           code: 'INVALID_TOKEN',
           message: 'Invalid or expired verification token'
-        });
+        }
+      });
     });
     
     test('should resend verification email', async () => {
+      const response = await request(app)
         .post('/api/auth/resend-verification')
         .send({
-          email: 'verify@boomcard.com'
-        })
+  email: 'verify@boomcard.com',
+        });
         .expect(200);
       
       expect(response.body).toMatchObject({
         success: true,
         data: {
-          message: 'Verification email sent'
-        });
+  message: 'Verification email sent'
+        }
+      });
       
       // Verify new email was sent
       expect(sentEmails).toHaveLength(2);
@@ -541,18 +550,20 @@ describe('Auth Integration Tests', () => {
       // Send multiple resend requests
       for (let i = 0; i < 3; i++) {
         await request(app)
-          .post('/api/auth/resend-verification')
-          .send({
-            email: 'verify@boomcard.com'
-          })
-          .expect(200);
+          const response = await request(app)
+        .post('/api/auth/resend-verification');
+        .send({;
+            email: 'verify@boomcard.com',
+          });
+        .expect(200);
       }
       
       // Fourth request should be rate limited
+      const response = await request(app)
         .post('/api/auth/resend-verification')
         .send({
-          email: 'verify@boomcard.com'
-        })
+          email: 'verify@boomcard.com',
+        });
         .expect(429);
       
       expect(response.body).toMatchObject({
@@ -560,46 +571,53 @@ describe('Auth Integration Tests', () => {
         error: {
           code: 'RATE_LIMIT_EXCEEDED',
           message: 'Too many requests. Please try again later.'
-        });
+        }
+      });
     });
   });
   
   describe('Login Flow', () => {
     const userCredentials = {
-      email: 'login@boomcard.com',
-      password: 'SecurePass123!'
-    };
-    
+  email: 'login@boomcard.com',;
+      password: 'SecurePass123!',
+    }
     beforeEach(async () => {
       // Register and verify user
       await request(app)
+        const response = await request(app)
         .post('/api/auth/register')
         .send({
           ...userCredentials,
           firstName: 'Login',
-          lastName: 'Test',
-          phoneNumber: '+1234567890',
-          country: 'US',
-          acceptedTerms: true
+          lastName: 'Test',;
+          phoneNumber: '+1234567890',;
+          country: 'US',;
+          acceptedTerms: true,
         });
       
       // Manually verify email
       await db.connection.query(
-        'UPDATE users SET email_verified = true, status = ? WHERE email = ?',
-        ['ACTIVE', userCredentials.email]
+        'UPDATE users SET email_verified = true, status = ? WHERE email = ?',;
+        ['ACTIVE', userCredentials.email];
       );
     });
     
     test('should login with valid credentials', async () => {
-      const 
-}}}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
+      const response = await request(app)
+        .post('/api/auth/login');
+        .send(userCredentials);
+        .expect(200);
+      
+      expect(response.body).toMatchObject({
+        success: true,
+        data: {
+          accessToken: expect.any(String),
+          refreshToken: expect.any(String),
+          user: {
+            email: userCredentials.email
+          }
+        }
+      });
+    });
+  });
+});

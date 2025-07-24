@@ -23,130 +23,129 @@ import { User, Session, RefreshToken, EmailVerificationToken } from '../../model
 import { AuthError, ValidationError, RateLimitError } from '../../errors';
 import { UserRole, TokenType, SessionStatus } from '../../types/enums';
 import { config } from '../../config';
-
+;
 interface TestUser {
   id: string;
   email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  isVerified: boolean;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  password: string,
+  firstName: string,
+  lastName: string,
+  role: UserRole,
+  isVerified: boolean,
+  isActive: boolean,
+  createdAt: Date,
+  updatedAt: Date,
 }
-
+;
 interface TestSession {
   id: string;
   userId: string;
-  token: string;
-  refreshToken: string;
-  deviceInfo: DeviceInfo;
-  ipAddress: string;
-  status: SessionStatus;
-  expiresAt: Date;
-  lastActivityAt: Date;
-  createdAt: Date;
+  token: string,
+  refreshToken: string,
+  deviceInfo: DeviceInfo,
+  ipAddress: string,
+  status: SessionStatus,
+  expiresAt: Date,
+  lastActivityAt: Date,
+  createdAt: Date,
 }
-
+;
 interface DeviceInfo {
   userAgent: string;
   platform: string;
-  browser: string;
-  version: string;
-  os: string;
-  device: string;
+  browser: string,
+  version: string,
+  os: string,
+  device: string,
 }
-
+;
 interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
+  expiresIn: number,
+  tokenType: string,
 }
-
+;
 interface LoginRequest {
   email: string;
   password: string;
   deviceInfo?: DeviceInfo;
   rememberMe?: boolean;
 }
-
+;
 interface RegisterRequest {
   email: string;
   password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  acceptTerms: boolean;
+  confirmPassword: string,
+  firstName: string,
+  lastName: string,
+  acceptTerms: boolean,
 }
-
+;
 interface RefreshTokenRequest {
   refreshToken: string;
   deviceInfo?: DeviceInfo;
 }
-
+;
 interface PasswordResetRequest {
   email: string;
 }
-
+;
 interface PasswordResetConfirmRequest {
   token: string;
   password: string;
-  confirmPassword: string;
+  confirmPassword: string,
 }
-
+;
 interface EmailVerificationRequest {
   token: string;
 }
-
+;
 interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
-  confirmPassword: string;
+  confirmPassword: string,
 }
-
+;
 interface TestContext {
   app: Application;
   db: Pool;
-  redis: Redis;
-  authService: AuthService;
-  userService: UserService;
-  sessionService: SessionService;
-  emailService: EmailService;
-  tokenService: TokenService;
+  redis: Redis,
+  authService: AuthService,
+  userService: UserService,
+  sessionService: SessionService,
+  emailService: EmailService,
+  tokenService: TokenService,
 }
-
-const TEST_CONFIG = {
+;
+// const TEST_CONFIG = {
   database: {
-    host: process.env.TEST_DB_HOST || 'localhost',
+  host: process.env.TEST_DB_HOST || 'localhost',
     port: parseInt(process.env.TEST_DB_PORT || '5432'),
     user: process.env.TEST_DB_USER || 'test',
     password: process.env.TEST_DB_PASSWORD || 'test',
-    database: process.env.TEST_DB_NAME || 'boomcard_test',
-  },
+    database: process.env.TEST_DB_NAME || 'boomcard_test'
+},
   redis: {
-    host: process.env.TEST_REDIS_HOST || 'localhost',
+  host: process.env.TEST_REDIS_HOST || 'localhost',
     port: parseInt(process.env.TEST_REDIS_PORT || '6379'),
-    password: process.env.TEST_REDIS_PASSWORD,
-  },
+    password: process.env.TEST_REDIS_PASSWORD
+},
   jwt: {
-    secret: process.env.TEST_JWT_SECRET || 'test-secret-key',
+  secret: process.env.TEST_JWT_SECRET || 'test-secret-key',
     accessTokenExpiry: '15m',
-    refreshTokenExpiry: '7d',
-  },
+    refreshTokenExpiry: '7d'
+},
   rateLimit: {
-    windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000,
     maxRequests: 5,
-    skipSuccessfulRequests: false,
-  },
+    skipSuccessfulRequests: false
+},
   bcrypt: {
-    saltRounds: 10,
-  },
-};
-
-const ENDPOINTS = {
+  saltRounds: 10
+}
+}
+    const ENDPOINTS = {
   register: '/api/v1/auth/register',
   login: '/api/v1/auth/login',
   logout: '/api/v1/auth/logout',
@@ -159,58 +158,55 @@ const ENDPOINTS = {
   me: '/api/v1/auth/me',
   sessions: '/api/v1/auth/sessions',
   revokeSession: '/api/v1/auth/sessions/:sessionId/revoke',
-  revokeAllSessions: '/api/v1/auth/sessions/revoke-all',
+  revokeAllSessions: '/api/v1/auth/sessions/revoke-all'
 };
-
-const DEFAULT_DEVICE_INFO: DeviceInfo = {
+    const DEFAULT_DEVICE_INFO: DeviceInfo = {; // TODO: Move to proper scope
   userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
   platform: 'MacOS',
   browser: 'Chrome',
   version: '120.0.0',
   os: 'MacOS 10.15.7',
-  device: 'Desktop',
-};
-
-const MOCK_USERS = {
+  device: 'Desktop'
+}
+    // const MOCK_USERS = {
   verified: {
-    email: 'verified@test.com',
+  email: 'verified@test.com',
     password: 'Password123!',
     firstName: 'John',
     lastName: 'Doe',
     role: UserRole.USER,
     isVerified: true,
-    isActive: true,
-  },
+    isActive: true
+},
   unverified: {
-    email: 'unverified@test.com',
+  email: 'unverified@test.com',
     password: 'Password123!',
     firstName: 'Jane',
     lastName: 'Smith',
     role: UserRole.USER,
     isVerified: false,
-    isActive: true,
-  },
+    isActive: true
+},
   admin: {
-    email: 'admin@test.com',
+  email: 'admin@test.com',
     password: 'AdminPass123!',
     firstName: 'Admin',
     lastName: 'User',
     role: UserRole.ADMIN,
     isVerified: true,
-    isActive: true,
-  },
+    isActive: true
+},
   inactive: {
-    email: 'inactive@test.com',
+  email: 'inactive@test.com',
     password: 'Password123!',
     firstName: 'Inactive',
     lastName: 'User',
     role: UserRole.USER,
     isVerified: true,
-    isActive: false,
-  },
-};
-
-const ERROR_MESSAGES = {
+    isActive: false
+}
+}
+    const ERROR_MESSAGES = {
   INVALID_CREDENTIALS: 'Invalid email or password',
   EMAIL_NOT_VERIFIED: 'Please verify your email before logging in',
   ACCOUNT_INACTIVE: 'Your account has been deactivated',
@@ -222,10 +218,9 @@ const ERROR_MESSAGES = {
   RATE_LIMIT_EXCEEDED: 'Too many requests, please try again later',
   INVALID_PASSWORD_FORMAT: 'Password must be at least 8 characters with uppercase, lowercase, number and special character',
   PASSWORDS_DO_NOT_MATCH: 'Passwords do not match',
-  TERMS_NOT_ACCEPTED: 'You must accept the terms and conditions',
+  TERMS_NOT_ACCEPTED: 'You must accept the terms and conditions'
 };
-
-const HTTP_STATUS = {
+    const HTTP_STATUS = {
   OK: 200,
   CREATED: 201,
   BAD_REQUEST: 400,
@@ -234,16 +229,15 @@ const HTTP_STATUS = {
   NOT_FOUND: 404,
   CONFLICT: 409,
   TOO_MANY_REQUESTS: 429,
-  INTERNAL_SERVER_ERROR: 500,
+  INTERNAL_SERVER_ERROR: 500
 };
 
 describe('Auth Integration Tests', () => {
-  let app: Application;
+  let app: Application; // TODO: Move to proper scope
   let server: any;
   let testDb: any;
-
   beforeAll(async () => {
-    // Initialize test database
+    // Initialize test database;
     testDb = await initTestDatabase();
     
     // Create Express app with auth middleware
@@ -251,16 +245,16 @@ describe('Auth Integration Tests', () => {
     app.use(express.json());
     app.use(cookieParser());
     
-    // Initialize auth middleware
-    const authMiddleware = new AuthMiddleware({
-      jwtSecret: process.env.JWT_SECRET || 'test-secret',
+    // Initialize auth middleware;
+// const authMiddleware = new AuthMiddleware({
+  jwtSecret: process.env.JWT_SECRET || 'test-secret',
       sessionStore: new RedisStore({
-        client: createMockRedisClient(),
-      }),
-    });
+  client: createMockRedisClient()
+}); // TODO: Move to proper scope
+});
     
-    // Setup routes
-    const authRoutes = new AuthRoutes(authMiddleware);
+    // Setup routes;
+// const authRoutes = new AuthRoutes(authMiddleware); // TODO: Move to proper scope
     app.use('/api/auth', authRoutes.getRouter());
     
     server = app.listen(0);
@@ -278,36 +272,35 @@ describe('Auth Integration Tests', () => {
 
   describe('POST /api/auth/register', () => {
     it('should register a new user successfully', async () => {
-      const userData = {
-        email: 'test@example.com',
+      // const userData = {
+  email: 'test@example.com',
         password: 'SecurePass123!',
         firstName: 'John',
-        lastName: 'Doe',
-      };
-
-      const response = await request(app)
+        lastName: 'Doe'
+}
+    const response = await request(app)
         .post('/api/auth/register')
-        .send(userData)
+        .send(userData); // TODO: Move to proper scope
         .expect(201);
 
       expect(response.body).toMatchObject({
         success: true,
         user: {
-          email: userData.email,
+  email: userData.email,
           firstName: userData.firstName,
-          lastName: userData.lastName,
-        },
-      });
+          lastName: userData.lastName
+};
+});
       expect(response.body.user.password).toBeUndefined();
       expect(response.body.token).toBeDefined();
     });
 
     it('should fail with duplicate email', async () => {
-        email: 'duplicate@example.com',
+  email: 'duplicate@example.com',
         password: 'SecurePass123!',
         firstName: 'Jane',
-        lastName: 'Doe',
-      };
+        lastName: 'Doe'
+}
 
       await request(app)
         .post('/api/auth/register')
@@ -320,16 +313,16 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Email already registered',
-      });
+        error: 'Email already registered'
+});
     });
 
     it('should validate password requirements', async () => {
-        email: 'weak@example.com',
+  email: 'weak@example.com',
         password: 'weak',
         firstName: 'Test',
-        lastName: 'User',
-      };
+        lastName: 'User'
+}
 
         .post('/api/auth/register')
         .send(userData)
@@ -337,41 +330,41 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Password must be at least 8 characters and contain uppercase, lowercase, number, and special character',
-      });
+        error: 'Password must be at least 8 characters and contain uppercase, lowercase, number, and special character'
+});
     });
   });
 
   describe('POST /api/auth/login', () => {
-    const validUser = {
-      email: 'user@example.com',
+    // const validUser = {
+  email: 'user@example.com',
       password: 'ValidPass123!',
       firstName: 'Valid',
-      lastName: 'User',
-    };
+      lastName: 'User'
+}
 
     beforeEach(async () => {
       await request(app)
-        .post('/api/auth/register')
+        .post('/api/auth/register'); // TODO: Move to proper scope
         .send(validUser);
     });
 
     it('should login with valid credentials', async () => {
         .post('/api/auth/login')
         .send({
-          email: validUser.email,
-          password: validUser.password,
-        })
+  email: validUser.email,
+          password: validUser.password
+})
         .expect(200);
 
       expect(response.body).toMatchObject({
         success: true,
         user: {
-          email: validUser.email,
+  email: validUser.email,
           firstName: validUser.firstName,
-          lastName: validUser.lastName,
-        },
-      });
+          lastName: validUser.lastName
+}
+});
       expect(response.body.token).toBeDefined();
       expect(response.headers['set-cookie']).toBeDefined();
     });
@@ -379,61 +372,60 @@ describe('Auth Integration Tests', () => {
     it('should fail with invalid password', async () => {
         .post('/api/auth/login')
         .send({
-          email: validUser.email,
-          password: 'WrongPassword123!',
-        })
+  email: validUser.email,
+          password: 'WrongPassword123!'
+})
         .expect(401);
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Invalid credentials',
-      });
+        error: 'Invalid credentials'
+});
     });
 
     it('should fail with non-existent email', async () => {
         .post('/api/auth/login')
         .send({
-          email: 'nonexistent@example.com',
-          password: 'AnyPass123!',
-        })
+  email: 'nonexistent@example.com',
+          password: 'AnyPass123!'
+})
         .expect(401);
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Invalid credentials',
-      });
+        error: 'Invalid credentials'
+});
     });
 
     it('should implement rate limiting', async () => {
-      const loginAttempts = Array(6).fill(null).map(() =>
-        request(app)
+      // const loginAttempts = Array(6).fill(null).map(() => {
+    request(app)
           .post('/api/auth/login')
           .send({
-            email: validUser.email,
-            password: 'WrongPassword',
-          })
+  email: validUser.email,
+            password: 'WrongPassword'
+}); // TODO: Move to proper scope
       );
-
-      const responses = await Promise.all(loginAttempts);
-      const lastResponse = responses[responses.length - 1];
+;
+// const responses = await Promise.all(loginAttempts); // TODO: Move to proper scope
+      // const lastResponse = responses[responses.length - 1]; // TODO: Move to proper scope
       
       expect(lastResponse.status).toBe(429);
       expect(lastResponse.body).toMatchObject({
-        success: false,
-        error: 'Too many login attempts. Please try again later.',
-      });
+  success: false,
+        error: 'Too many login attempts. Please try again later.'
+});
     });
   });
 
   describe('POST /api/auth/logout', () => {
     let authToken: string;
-
     beforeEach(async () => {
-        email: 'logout@example.com',
+  email: 'logout@example.com',
         password: 'LogoutPass123!',
         firstName: 'Logout',
-        lastName: 'Test',
-      };
+        lastName: 'Test'
+}
 
         .post('/api/auth/register')
         .send(userData);
@@ -448,8 +440,8 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: true,
-        message: 'Logged out successfully',
-      });
+        message: 'Logged out successfully'
+});
       expect(response.headers['set-cookie']).toMatch(/token=;/);
     });
 
@@ -465,18 +457,18 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Invalid or expired token',
-      });
+        error: 'Invalid or expired token'
+});
     });
   });
 
   describe('GET /api/auth/me', () => {
     let authToken: string;
-      email: 'me@example.com',
+  email: 'me@example.com',
       password: 'MePass123!',
       firstName: 'Current',
-      lastName: 'User',
-    };
+      lastName: 'User'
+}
 
     beforeEach(async () => {
         .post('/api/auth/register')
@@ -493,11 +485,11 @@ describe('Auth Integration Tests', () => {
       expect(response.body).toMatchObject({
         success: true,
         user: {
-          email: userData.email,
+  email: userData.email,
           firstName: userData.firstName,
-          lastName: userData.lastName,
-        },
-      });
+          lastName: userData.lastName
+}
+});
     });
 
     it('should fail without authentication', async () => {
@@ -506,21 +498,20 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Authentication required',
-      });
+        error: 'Authentication required'
+});
     });
   });
 
   describe('POST /api/auth/refresh', () => {
     let authToken: string;
     let refreshToken: string;
-
     beforeEach(async () => {
-        email: 'refresh@example.com',
+  email: 'refresh@example.com',
         password: 'RefreshPass123!',
         firstName: 'Refresh',
-        lastName: 'Test',
-      };
+        lastName: 'Test'
+}
 
         .post('/api/auth/register')
         .send(userData);
@@ -535,8 +526,8 @@ describe('Auth Integration Tests', () => {
         .expect(200);
 
       expect(response.body).toMatchObject({
-        success: true,
-      });
+  success: true
+});
       expect(response.body.token).toBeDefined();
       expect(response.body.refreshToken).toBeDefined();
       expect(response.body.token).not.toBe(authToken);
@@ -549,8 +540,8 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Invalid refresh token',
-      });
+        error: 'Invalid refresh token'
+});
     });
 
     it('should fail with expired refresh token', async () => {
@@ -565,17 +556,17 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: false,
-        error: 'Refresh token expired',
-      });
+        error: 'Refresh token expired'
+});
     });
   });
 
   describe('POST /api/auth/forgot-password', () => {
-      email: 'forgot@example.com',
+  email: 'forgot@example.com',
       password: 'ForgotPass123!',
       firstName: 'Forgot',
-      lastName: 'User',
-    };
+      lastName: 'User'
+}
 
     beforeEach(async () => {
       await request(app)
@@ -590,9 +581,9 @@ describe('Auth Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         success: true,
-        message: 'Password reset email sent',
-      });
+        message: 'Password reset email sent'
+});
 
       // Verify email was sent
       expect(mockEmailSer
-}}}
+}

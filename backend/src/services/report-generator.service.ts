@@ -25,7 +25,7 @@ import { NotificationService } from './notification.service';
 import { EmailService } from './email.service';
 import { CacheService } from './cache.service';
 import { MetricsService } from './metrics.service';
-
+;
 export enum ReportType {
   TRANSACTION_SUMMARY = 'transaction_summary',
   SPENDING_ANALYSIS = 'spending_analysis',
@@ -38,14 +38,12 @@ export enum ReportType {
   EMPLOYEE_EXPENSES = 'employee_expenses',
   CUSTOM = 'custom'
 }
-
 export enum ReportFormat {
   PDF = 'pdf',
   EXCEL = 'excel',
   CSV = 'csv',
   JSON = 'json'
 }
-
 export enum ReportFrequency {
   DAILY = 'daily',
   WEEKLY = 'weekly',
@@ -54,7 +52,6 @@ export enum ReportFrequency {
   YEARLY = 'yearly',
   CUSTOM = 'custom'
 }
-
 export enum ReportStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
@@ -62,16 +59,15 @@ export enum ReportStatus {
   FAILED = 'failed',
   CANCELLED = 'cancelled'
 }
-
 export interface ReportGenerationOptions {
   type: ReportType;
-  format: ReportFormat;
-  organizationId: string;
-  userId?: string;
+  format: ReportFormat,
+  organizationId: string,
+  userId?: string,
   dateRange: {
-    start: Date;
-    end: Date;
-  };
+  start: Date,
+  end: Date,
+  }
   filters?: {
     cardIds?: string[];
     userIds?: string[];
@@ -81,171 +77,159 @@ export interface ReportGenerationOptions {
     maxAmount?: number;
     status?: string[];
     tags?: string[];
-  };
+  }
   groupBy?: string[];
   sortBy?: {
-    field: string;
-    order: 'asc' | 'desc';
-  };
+  field: string,
+  order: 'asc' | 'desc',
+  }
   includeCharts?: boolean;
   includeDetails?: boolean;
   customFields?: string[];
   timezone?: string;
   locale?: string;
 }
-
 export interface ReportSchedule {
   id: string;
-  organizationId: string;
-  userId: string;
-  name: string;
-  description?: string;
-  type: ReportType;
-  format: ReportFormat;
-  frequency: ReportFrequency;
-  options: ReportGenerationOptions;
-  recipients: string[];
-  nextRunAt: Date;
-  lastRunAt?: Date;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  organizationId: string,
+  userId: string,
+  name: string,
+  description?: string,
+  type: ReportType,
+  format: ReportFormat,
+  frequency: ReportFrequency,
+  options: ReportGenerationOptions,
+  recipients: string[];,
+  nextRunAt: Date,
+  lastRunAt?: Date,
+  isActive: boolean,
+  createdAt: Date,
+  updatedAt: Date,
 }
-
 export interface ReportJob {
   id: string;
-  scheduleId?: string;
-  organizationId: string;
-  userId: string;
-  type: ReportType;
-  format: ReportFormat;
-  status: ReportStatus;
-  options: ReportGenerationOptions;
-  progress: number;
-  fileUrl?: string;
-  error?: string;
-  startedAt?: Date;
-  completedAt?: Date;
-  metadata?: Record<string, any>;
-}
-
+  scheduleId?: string,
+  organizationId: string,
+  userId: string,
+  type: ReportType,
+  format: ReportFormat,
+  status: ReportStatus,
+  options: ReportGenerationOptions,
+  progress: number,
+  fileUrl?: string
+  error?: string
+  startedAt?: Date
+  completedAt?: Date
+  metadata?: Record<string, any>}
 export interface ReportMetadata {
   reportId: string;
-  generatedAt: Date;
-  generatedBy: string;
+  generatedAt: Date,
+  generatedBy: string,
   organization: {
-    id: string;
-    name: string;
-  };
-  reportType: ReportType;
+  id: string,
+  name: string,
+  },
+    reportType: ReportType,
   dateRange: {
-    start: Date;
-    end: Date;
-  };
-  totalRecords: number;
-  filters: Record<string, any>;
+  start: Date,
+  end: Date,
+  },
+    totalRecords: number,
+  filters: Record<string, any>;,
   summary: Record<string, any>;
 }
-
 export interface TransactionReportData {
   transactionId: string;
-  cardId: string;
-  cardNumber: string;
-  cardholderName: string;
-  merchantName: string;
-  merchantCategory: string;
-  transactionDate: Date;
-  postingDate?: Date;
-  amount: number;
-  currency: string;
-  status: string;
-  description?: string;
-  tags?: string[];
-  notes?: string;
-  receiptUrl?: string;
-  category?: string;
-  project?: string;
-  department?: string;
-}
-
+  cardId: string,
+  cardNumber: string,
+  cardholderName: string,
+  merchantName: string,
+  merchantCategory: string,
+  transactionDate: Date,
+  postingDate?: Date,
+  amount: number,
+  currency: string,
+  status: string,
+  description?: string
+  tags?: string[]
+  notes?: string
+  receiptUrl?: string
+  category?: string
+  project?: string
+  department?: string}
 export interface SpendingAnalysisData {
   category: string;
-  totalSpent: number;
-  transactionCount: number;
-  averageTransaction: number;
-  percentageOfTotal: number;
-  trend: number;
+  totalSpent: number,
+  transactionCount: number,
+  averageTransaction: number,
+  percentageOfTotal: number,
+  trend: number,
   topMerchants: Array<{
-    name: string;
-    amount: number;
-    count: number;
+  name: string,
+  amount: number,
+  count: number,
   }>;
   monthlyBreakdown?: Array<{
-    month: string;
-    amount: number;
-    count: number;
+  month: string,
+  amount: number,
+  count: number,
   }>;
 }
-
 export interface CardUsageData {
   cardId: string;
-  cardNumber: string;
-  cardholderName: string;
-  status: string;
-  totalSpent: number;
-  transactionCount: number;
-  lastUsed?: Date;
-  utilizationRate: number;
+  cardNumber: string,
+  cardholderName: string,
+  status: string,
+  totalSpent: number,
+  transactionCount: number,
+  lastUsed?: Date,
+  utilizationRate: number,
   topCategories: Array<{
-    category: string;
-    amount: number;
-  }>;
+  category: string,
+  amount: number,
+  }>;,
   monthlySpending: Array<{
-    month: string;
-    amount: number;
+  month: string,
+  amount: number,
   }>;
 }
-
 export interface ComplianceReportData {
   policyViolations: Array<{
-    transactionId: string;
-    cardId: string;
-    violationType: string;
-    description: string;
-    amount: number;
-    date: Date;
-    status: string;
-  }>;
+  transactionId: string;
+  cardId: string,
+  violationType: string,
+  description: string,
+  amount: number,
+  date: Date,
+  status: string,
+  }>;,
   spendingLimitExceeded: Array<{
-    cardId: string;
-    limit: number;
-    actual: number;
-    period: string;
-  }>;
+  cardId: string,
+  limit: number,
+  actual: number,
+  period: string,
+  }>;,
   unusualTransactions: Array<{
-    transactionId: string;
-    reason: string;
-    riskScore: number;
-  }>;
-  complianceScore: number;
-  recommendations: string[];
+  transactionId: string,
+  reason: string,
+  riskScore: number,
+  }>;,
+  complianceScore: number,
+  recommendations: string[],
 }
-
 export interface ChartConfiguration {
   type: 'bar' | 'line' | 'pie' | 'doughnut' | 'area';
-  title: string;
+  title: string,
   data: {
-    labels: string[];
-    datasets: Array<{
-      label: string;
-      data: number[];
-      backgroundColor?: string | string[];
-      borderColor?: string;
-    }>;
-  };
+  labels: string[];,
+  datasets: Array<{
+  label: string,
+  data: number[],
+      backgroundColor?: string | string[]
+      borderColor?: string}>;
+  }
   options?: Record<string, any>;
 }
-
 const REPORT_CONSTANTS = {
   MAX_RECORDS_PER_PAGE: 1000,
   DEFAULT_PAGE_SIZE: 50,
@@ -257,12 +241,12 @@ const REPORT_CONSTANTS = {
   MAX_FILE_SIZE_MB: 100,
   SUPPORTED_CURRENCIES: ['USD', 'EUR', 'GBP', 'CAD', 'AUD'],
   DATE_FORMATS: {
-    display: 'MMM dd, yyyy',
+  display: 'MMM dd, yyyy',
     filename: 'yyyy-MM-dd',
     timestamp: 'yyyy-MM-dd HH:mm:ss'
   },
   CHART_COLORS: {
-    primary: '#4F46E5',
+  primary: '#4F46E5',
     secondary: '#10B981',
     tertiary: '#F59E0B',
     danger: '#EF4444',
@@ -270,47 +254,44 @@ const REPORT_CONSTANTS = {
     success: '#22C55E',
     warning: '#F97316',
     neutral: '#6B7280'
-  };
-
-const REPORT_TEMPLATES = {
+  }
+    const REPORT_TEMPLATES = {
   [ReportType.TRANSACTION_SUMMARY]: {
-    title: 'Transaction Summary Report',
+  title: 'Transaction Summary Report',
     sections: ['overview', 'transactions', 'summary', 'charts'],
     defaultFormat: ReportFormat.EXCEL
   },
   [ReportType.SPENDING_ANALYSIS]: {
-    title: 'Spending Analysis Report',
+  title: 'Spending Analysis Report',
     sections: ['overview', 'categories', 'merchants', 'trends', 'charts'],
     defaultFormat: ReportFormat.PDF
   },
   [ReportType.CARD_USAGE]: {
-    title: 'Card Usage Report',
+  title: 'Card Usage Report',
     sections: ['overview', 'cards', 'utilization', 'charts'],
     defaultFormat: ReportFormat.EXCEL
   },
   [ReportType.COMPLIANCE]: {
-    title: 'Compliance Report',
+  title: 'Compliance Report',
     sections: ['overview', 'violations', 'risks', 'recommendations'],
     defaultFormat: ReportFormat.PDF
   },
   [ReportType.RECONCILIATION]: {
-    title: 'Reconciliation Report',
+  title: 'Reconciliation Report',
     sections: ['overview', 'transactions', 'discrepancies', 'summary'],
     defaultFormat: ReportFormat.EXCEL
-  };
-
-@Injectable()
+  }
+@Injectable();
 export class ReportGeneratorService {
   private readonly logger = new Logger(ReportGeneratorService.name);
-  private s3: S3;
+  private s3: S3,
   private readonly reportsDir = path.join(process.cwd(), 'temp', 'reports');
-
+;
 export class ReportGeneratorService {
   private templates: Map<string, ReportTemplate> = new Map();
-  private reportCache: NodeCache;
-  private pdfGenerator: PDFDocument | null = null;
-  private excelWorkbook: Excel.Workbook | null = null;
-
+  private reportCache: NodeCache,
+  private pdfGenerator: PDFDocument | null = null,
+  private excelWorkbook: Excel.Workbook | null = null,
   constructor(
     private readonly cardHolderService: CardHolderService,
     private readonly transactionService: TransactionService,
@@ -322,14 +303,14 @@ export class ReportGeneratorService {
     private readonly cacheService: CacheService,
     private readonly logger: Logger
   ) {
-    this.reportCache = new NodeCache({ stdTTL: 3600, checkperiod: 600 });
+    this.reportCache = new NodeCache({ stdTTL: 3600, checkperiod: 600 }),
     this.initializeTemplates();
   }
 
   private initializeTemplates(): void {
     // Transaction Report Template
     this.templates.set('transaction-report', {
-      id: 'transaction-report',
+  id: 'transaction-report',
       name: 'Transaction Report',
       description: 'Detailed transaction history and analytics',
       sections: [
@@ -345,7 +326,7 @@ export class ReportGeneratorService {
 
     // Spending Analysis Template
     this.templates.set('spending-analysis', {
-      id: 'spending-analysis',
+  id: 'spending-analysis',
       name: 'Spending Analysis',
       description: 'Category-wise spending breakdown and insights',
       sections: [
@@ -361,7 +342,7 @@ export class ReportGeneratorService {
 
     // Merchant Activity Template
     this.templates.set('merchant-activity', {
-      id: 'merchant-activity',
+  id: 'merchant-activity',
       name: 'Merchant Activity Report',
       description: 'Merchant transaction summary and performance',
       sections: [
@@ -381,34 +362,38 @@ export class ReportGeneratorService {
       // Validate permissions
       await this.validatePermissions(options.userId, options.templateId);
 
-      // Check cache
-      const cacheKey = this.getCacheKey(options);
+      // Check cache;
+
+const cacheKey = this.getCacheKey(options);
+
       const cachedReport = this.reportCache.get<GeneratedReport>(cacheKey);
       if (cachedReport && !options.forceRegenerate) {
-        this.logger.info('Returning cached report', { reportId: cachedReport.id });
+        this.logger.info('Returning cached report', { reportId: cachedReport.id }),
         return cachedReport;
       }
 
-      // Get template
-      const template = this.templates.get(options.templateId);
+      // Get template;
+
+const template = this.templates.get(options.templateId);
       if (!template) {
-        throw new Error(`Template not found: ${options.templateId}`);
+        throw new Error(`Template not found: ${options.templateId}`),
       }
 
-      // Generate report
-      const report = await this.generateReportFromTemplate(template, options);
+      // Generate report;
+
+const report = await this.generateReportFromTemplate(template, options);
 
       // Cache report
       this.reportCache.set(cacheKey, report);
 
       // Audit log
       await this.auditService.log({
-        action: 'report.generated',
+  action: 'report.generated',
         userId: options.userId,
         resourceId: report.id,
         details: {
-          templateId: options.templateId,)
-          format: options.format || template.defaultFormat,
+  templateId: options.templateId,),
+  format: options.format || template.defaultFormat,
           filters: options.filters
         });
 
@@ -417,21 +402,22 @@ export class ReportGeneratorService {
       this.logger.error('Report generation failed', error as Error);
       throw error;
     }
-
-  private async generateReportFromTemplate(
-    template: ReportTemplate,
+    }
+    private async generateReportFromTemplate(,
+  template: ReportTemplate,
     options: ReportGenerationOptions
   ): Promise<GeneratedReport> {
     const reportId = this.generateReportId();
+
     const format = options.format || template.defaultFormat;
 
-    // Fetch data
-    const data = await this.fetchReportData(template, options);
+    // Fetch data;
 
-    // Generate content based on format
-    let content: Buffer;
-    let mimeType: string;
+const data = await this.fetchReportData(template, options);
 
+    // Generate content based on format;
+let content: Buffer,
+    let mimeType: string,
     switch (format) {
       case 'pdf':
         content = await this.generatePDF(template, data, options);
@@ -444,26 +430,28 @@ export class ReportGeneratorService {
       case 'csv':
         content = await this.generateCSV(template, data, options);
         mimeType = 'text/csv';
-        break;
-      default:
-        throw new Error(`Unsupported format: ${format}`);
+        break;,
+  default: throw new Error(`Unsupported format: ${format}`),
     }
 
-    // Store report
-    const filename = `${template.id}_${reportId}.${format}`;
+    // Store report;
+
+const filename = `${template.id}_${reportId}.${format}`;
+
     const url = await this.storageService.upload({
-      buffer: content,
+  buffer: content,
       filename,
       mimeType,
       metadata: {
         reportId,
         templateId: template.id,
         userId: options.userId,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString();
       });
+;
 
-    const report: GeneratedReport = {
-      id: reportId,
+const report: GeneratedReport = {
+  id: reportId,
       templateId: template.id,
       userId: options.userId,
       filename,
@@ -473,10 +461,10 @@ export class ReportGeneratorService {
       generatedAt: new Date(),
       expiresAt: addDays(new Date(), 30),
       metadata: {
-        filters: options.filters,
+  filters: options.filters,
         dateRange: options.dateRange,
         dataPoints: data.totalRecords
-      };
+      }
 
     // Save to database
     await this.saveReportRecord(report);
@@ -484,15 +472,15 @@ export class ReportGeneratorService {
     return report;
   }
 
-  private async fetchReportData(
-    template: ReportTemplate,
+  private async fetchReportData(,
+  template: ReportTemplate,
     options: ReportGenerationOptions
   ): Promise<ReportData> {
     const data: ReportData = {
-      sections: {},
+  sections: {},
       summary: {},
       totalRecords: 0
-    };
+    }
 
     // Process each section
     for (const section of template.sections) {
@@ -504,11 +492,12 @@ export class ReportGeneratorService {
             options
           );
           break;
-        case 'table':
-          const tableData = await this.fetchTableData(
+        case 'table':;
+
+const tableData = await this.fetchTableData(
             template.id,
             section.config,
-            options
+            options;
           );
           data.sections[section.type] = tableData;
           data.totalRecords += tableData.rows.length;
@@ -532,62 +521,62 @@ export class ReportGeneratorService {
     return data;
   }
 
-  private async fetchSummaryData(
-    templateId: string,
+  private async fetchSummaryData(,
+  templateId: string,
     config: any,
     options: ReportGenerationOptions
   ): Promise<any> {
     switch (templateId) {
       case 'transaction-report':
         return this.transactionService.getSummary({
-          userId: options.filters?.userId,
+  userId: options.filters?.userId,
           cardId: options.filters?.cardId,
           dateRange: options.dateRange
         });
       case 'spending-analysis':
         return this.analyticsService.getSpendingSummary({
-          userId: options.filters?.userId,
+  userId: options.filters?.userId,
           dateRange: options.dateRange
         });
       case 'merchant-activity':
         return this.merchantService.getActivitySummary({
-          merchantId: options.filters?.merchantId,
+  merchantId: options.filters?.merchantId,
           dateRange: options.dateRange
-        });
-      default:
-        return {};
+        });,
+  default: return {},
     }
 
-  private async fetchTableData(
-    templateId: string,
+  private async fetchTableData(,
+  templateId: string,
     config: any,
     options: ReportGenerationOptions
   ): Promise<{ columns: string[]; rows: any[] }> {
-    let rows: any[] = [];
-
+    let rows: any[] = [],
     switch (templateId) {
-      case 'transaction-report':
-        const transactions = await this.transactionService.getTransactions({
-          userId: options.filters?.userId,
+      case 'transaction-report':;
+
+const transactions = await this.transactionService.getTransactions({
+  userId: options.filters?.userId,
           cardId: options.filters?.cardId,
           dateRange: options.dateRange,
-          limit: options.limit || 1000
+          limit: options.limit || 1000;
         });
         rows = transactions.map(t => ({
-          date: format(t.createdAt, 'yyyy-MM-dd HH:mm'),
+  date: format(t.createdAt, 'yyyy-MM-dd HH:mm'),
           merchant: t.merchantName,
           amount: `$${t.amount.toFixed(2)}`,
           status: t.status,
           category: t.category
         }));
         break;
-      case 'merchant-activity':
-        const merchants = await this.merchantService.getActivityReport({
-          dateRange: options.dateRange,
-          limit: options.limit || 100
+      case 'merchant-activity':;
+
+const merchants = await this.merchantService.getActivityReport({
+  dateRange: options.dateRange,
+          limit: options.limit || 100;
         });
         rows = merchants.map(m => ({
-          merchant: m.name,
+  merchant: m.name,
           transactions: m.transactionCount,
           revenue: `$${m.totalRevenue.toFixed(2)}`,
           avgTicket: `$${m.averageTicketSize.toFixed(2)}`
@@ -598,8 +587,8 @@ export class ReportGeneratorService {
     return { columns: config.columns, rows };
   }
 
-  private async fetchChartData(
-    templateId: string,
+  private async fetchChartData(,
+  templateId: string,
     config: any,
     options: ReportGenerationOptions
   ): Promise<any> {
@@ -608,13 +597,13 @@ export class ReportGeneratorService {
     switch (dataSource) {
       case 'transactionTrends':
         return this.analyticsService.getTransactionTrends({
-          userId: options.filters?.userId,
+  userId: options.filters?.userId,
           dateRange: options.dateRange,
           groupBy: 'day
 
   private formatDate(date: Date): string {
     return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
+  year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
@@ -635,6 +624,7 @@ export class ReportGeneratorService {
 
   private calculateAverageOrderValue(orders: any[]): number {
     if (orders.length === 0) return 0;
+
     const total = orders.reduce((sum, order) => sum + (order.total || 0), 0);
     return total / orders.length;
   }
@@ -642,16 +632,16 @@ export class ReportGeneratorService {
   private groupByPeriod(data: any[], period: 'day' | 'week' | 'month'): Map<string, any[]> {
     const grouped = new Map<string, any[]>();
     
-    data.forEach(item => {)
-      const date = new Date(item.createdAt || item.date);
-      let key: string;
-      
+    data.forEach(item => {);
+
+const date = new Date(item.createdAt || item.date);
+      let key: string,
       switch (period) {
-        case 'day':
-          key = date.toISOString().split('T')[0];
+        case 'day': key = date.toISOString().split('T')[0],
           break;
-        case 'week':
-          const weekStart = new Date(date);
+        case 'week':;
+
+const weekStart = new Date(date);
           weekStart.setDate(date.getDate() - date.getDay());
           key = weekStart.toISOString().split('T')[0];
           break;
@@ -659,7 +649,6 @@ export class ReportGeneratorService {
           key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           break;
       }
-      
       if (!grouped.has(key)) {
         grouped.set(key, []);
       }
@@ -670,17 +659,16 @@ export class ReportGeneratorService {
   }
 
   private sanitizeReportData(data: any): any {
-    // Remove sensitive information before storing
-    const sanitized = { ...data };
-    
+    // Remove sensitive information before storing;
+
+const sanitized = { ...data };
     if (sanitized.customers) {
       sanitized.customers = sanitized.customers.map((customer: any) => ({
         ...customer,
         email: customer.email ? '***' : undefined,
-        phone: customer.phone ? '***' : undefined
+        phone: customer.phone ? '***' : undefined;
       }));
     }
-    
     if (sanitized.payments) {
       sanitized.payments = sanitized.payments.map((payment: any) => ({
         ...payment,
@@ -696,27 +684,23 @@ export class ReportGeneratorService {
     if (!request.type || !Object.values(ReportType).includes(request.type)) {
       throw new BadRequestException('Invalid report type');
     }
-
     if (request.dateRange) {
       if (!request.dateRange.startDate || !request.dateRange.endDate) {
         throw new BadRequestException('Invalid date range');
       }
+const start = new Date(request.dateRange.startDate);
 
-      const start = new Date(request.dateRange.startDate);
       const end = new Date(request.dateRange.endDate);
 
       if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         throw new BadRequestException('Invalid date format');
-      }
-
+      };
       if (start > end) {
         throw new BadRequestException('Start date must be before end date');
       }
-
       if (end > new Date()) {
         throw new BadRequestException('End date cannot be in the future');
       }
-
     if (request.format && !Object.values(ReportFormat).includes(request.format)) {
       throw new BadRequestException('Invalid report format');
     }
@@ -727,11 +711,9 @@ export class ReportGeneratorService {
     if (reportId) {
       await this.updateReportStatus(reportId, 'failed', error.message);
     }
-
     if (error instanceof BadRequestException) {
       throw error;
     }
-
     if (error.name === 'MongoError' || error.name === 'MongooseError') {
       throw new InternalServerErrorException('Database error occurred');
     }
@@ -739,8 +721,8 @@ export class ReportGeneratorService {
     throw new InternalServerErrorException('Failed to generate report');
   }
 
-  private async updateReportStatus(
-    reportId: string,
+  private async updateReportStatus(,
+  reportId: string,
     status: string,
     error?: string
   ): Promise<void> {
@@ -753,42 +735,37 @@ export class ReportGeneratorService {
     } catch (err) {
       this.logger.error('Failed to update report status:', err);
     }
-
-  private async cleanupOldReports(): Promise<void> {
+    private async cleanupOldReports(): Promise<void> {
     try {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+;
 
-      const oldReports = await this.reportModel.find({
-        createdAt: { $lt: thirtyDaysAgo });
-
+const oldReports = await this.reportModel.find({
+  createdAt: { $lt: thirtyDaysAgo }),
       for (const report of oldReports) {
         if (report.filePath) {
-          try {
+          try {;
             await fs.unlink(report.filePath);
           } catch (err) {
-            this.logger.warn(`Failed to delete report file: ${report.filePath}`);
+            this.logger.warn(`Failed to delete report file: ${report.filePath}`),
           }
       }
 
       await this.reportModel.deleteMany({
-        createdAt: { $lt: thirtyDaysAgo });
-
+  createdAt: { $lt: thirtyDaysAgo }),
       this.logger.info(`Cleaned up ${oldReports.length} old reports`);
     } catch (error) {
       this.logger.error('Failed to cleanup old reports:', error);
     }
-
-  async onModuleInit() {
+    }
+    async onModuleInit() {
     // Schedule cleanup job to run daily at 2 AM
     cron.schedule('0 2 * * *', () => {
       this.cleanupOldReports();
     });
   }
 
-}
-}
-}
 }
 }
 }

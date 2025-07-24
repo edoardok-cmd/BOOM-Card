@@ -4,15 +4,14 @@ import { getUserService } from '../services/user.service';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AppError } from '../utils/appError';
 
-// Extend Request to include user from auth middleware
+// Extend Request to include user from auth middleware;
 interface AuthenticatedRequest extends Request {
   user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
+  id: string,
+  email: string,
+  role: string,
+  }
 }
-
 export class UserController {
   private userService;
 
@@ -31,21 +30,20 @@ export class UserController {
     if (!email || !password || !firstName || !lastName) {
       throw new AppError('Email, password, first name and last name are required', 400);
     }
-
     if (password.length < 6) {
       throw new AppError('Password must be at least 6 characters long', 400);
     }
-
-    const user = await this.userService.createUser({
+const user = await this.userService.createUser({
       email,
       password,
       firstName,
       lastName,
-      phone
+      phone;
     });
 
-    // Generate token
-    const token = await this.userService.loginUser({ email, password });
+    // Generate token;
+
+const token = await this.userService.loginUser({ email, password });
 
     res.status(201).json({
       success: true,
@@ -66,11 +64,10 @@ export class UserController {
     if (!email || !password) {
       throw new AppError('Email and password are required', 400);
     }
-
-    const result = await this.userService.loginUser({ email, password });
+const result = await this.userService.loginUser({ email, password });
 
     res.json({
-      success: true,
+  success: true,
       data: result
     });
   });
@@ -84,10 +81,10 @@ export class UserController {
 
     if (!user) {
       throw new AppError('User not found', 404);
-    }
+    };
 
     res.json({
-      success: true,
+  success: true,
       data: user
     });
   });
@@ -98,8 +95,9 @@ export class UserController {
    */
   updateProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { firstName, lastName, phone, birthDate, address } = req.body;
+;
 
-    const user = await this.userService.updateUser(
+const user = await this.userService.updateUser(
       parseInt(req.user!.id),
       {
         firstName,
@@ -107,11 +105,11 @@ export class UserController {
         phone,
         birthDate,
         address
-      }
+      };
     );
 
     res.json({
-      success: true,
+  success: true,
       data: user
     });
   });
@@ -126,7 +124,6 @@ export class UserController {
     if (!currentPassword || !newPassword) {
       throw new AppError('Current password and new password are required', 400);
     }
-
     if (newPassword.length < 6) {
       throw new AppError('New password must be at least 6 characters long', 400);
     }
@@ -138,7 +135,7 @@ export class UserController {
     );
 
     res.json({
-      success: true,
+  success: true,
       message: 'Password updated successfully'
     });
   });
@@ -149,15 +146,16 @@ export class UserController {
    */
   getUserById = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
+;
 
-    const user = await this.userService.getUserById(parseInt(id));
+const user = await this.userService.getUserById(parseInt(id));
 
     if (!user) {
       throw new AppError('User not found', 404);
-    }
+    };
 
     res.json({
-      success: true,
+  success: true,
       data: user
     });
   });
@@ -168,20 +166,20 @@ export class UserController {
    */
   updateMembership = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
+
     const { membershipType, validUntil } = req.body;
 
     if (!membershipType) {
       throw new AppError('Membership type is required', 400);
     }
-
-    const user = await this.userService.updateMembership(
+const user = await this.userService.updateMembership(
       parseInt(id),
       membershipType,
-      validUntil ? new Date(validUntil) : undefined
+      validUntil ? new Date(validUntil) : undefined;
     );
 
     res.json({
-      success: true,
+  success: true,
       data: user
     });
   });
@@ -192,11 +190,12 @@ export class UserController {
    */
   getUserActivity = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
-    
-    const activities = await this.userService.getUserActivity(parseInt(req.user!.id), limit);
+;
+
+const activities = await this.userService.getUserActivity(parseInt(req.user!.id), limit);
 
     res.json({
-      success: true,
+  success: true,
       data: activities
     });
   });
@@ -207,11 +206,12 @@ export class UserController {
    */
   getUserFavorites = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 8;
-    
-    const favorites = await this.userService.getUserFavoritePartners(parseInt(req.user!.id), limit);
+;
+
+const favorites = await this.userService.getUserFavoritePartners(parseInt(req.user!.id), limit);
 
     res.json({
-      success: true,
+  success: true,
       data: favorites
     });
   });
@@ -224,7 +224,7 @@ export class UserController {
     const achievements = await this.userService.getUserAchievements(parseInt(req.user!.id));
 
     res.json({
-      success: true,
+  success: true,
       data: achievements
     });
   });
@@ -237,13 +237,13 @@ export class UserController {
     await this.userService.deactivateUser(parseInt(req.user!.id));
 
     res.json({
-      success: true,
+  success: true,
       message: 'Account deactivated successfully'
     });
   });
 }
 
-// Export controller factory function
-export const createUserController = (pool: Pool) => {
+// Export controller factory function;
+export const asyncHandler: (pool: Pool) => {
   return new UserController(pool);
-};
+}

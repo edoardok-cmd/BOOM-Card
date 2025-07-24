@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-
+;
 export async function up(knex: Knex): Promise<void> {
   // Create user_preferences table for storing user-specific settings
   await knex.schema.createTable('user_preferences', (table) => {

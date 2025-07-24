@@ -1,80 +1,87 @@
 import { Knex } from 'knex';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-
+;
 interface User {
   id: string;
-  email: string;
-  password_hash: string;
-  first_name: string;
-  last_name: string;
-  phone: string | null;
-  date_of_birth: Date | null;
-  gender: 'male' | 'female' | 'other' | null;
-  language_preference: 'en' | 'bg';
-  role: 'consumer' | 'partner' | 'admin' | 'super_admin';
-  status: 'active' | 'inactive' | 'suspended' | 'pending_verification';
-  email_verified: boolean;
-  phone_verified: boolean;
-  avatar_url: string | null;
-  address_line1: string | null;
-  address_line2: string | null;
-  city: string | null;
-  state_province: string | null;
-  postal_code: string | null;
-  country: string;
+  email: string,
+  password_hash: string,
+  first_name: string,
+  last_name: string,
+  phone: string | null,
+  date_of_birth: Date | null,
+  gender: 'male' | 'female' | 'other' | null,
+  language_preference: 'en' | 'bg',
+  role: 'consumer' | 'partner' | 'admin' | 'super_admin',
+  status: 'active' | 'inactive' | 'suspended' | 'pending_verification',
+  email_verified: boolean,
+  phone_verified: boolean,
+  avatar_url: string | null,
+  address_line1: string | null,
+  address_line2: string | null,
+  city: string | null,
+  state_province: string | null,
+  postal_code: string | null,
+  country: string,
   notification_preferences: {
-    email_marketing: boolean;
-    sms_marketing: boolean;
-    push_notifications: boolean;
-    partner_updates: boolean;
-    transaction_alerts: boolean;
-    weekly_digest: boolean;
-  };
-  privacy_settings: {
-    profile_visibility: 'public' | 'private' | 'friends_only';
-    show_savings_stats: boolean;
-    allow_reviews_public: boolean;
-  };
-  referral_code: string;
-  referred_by: string | null;
-  total_savings: number;
-  total_transactions: number;
-  member_since: Date;
-  last_login_at: Date | null;
-  last_activity_at: Date | null;
-  password_reset_token: string | null;
-  password_reset_expires: Date | null;
-  two_factor_enabled: boolean;
-  two_factor_secret: string | null;
-  metadata: Record<string, any>;
-  created_at: Date;
-  updated_at: Date;
+  email_marketing: boolean,
+  sms_marketing: boolean,
+  push_notifications: boolean,
+  partner_updates: boolean,
+  transaction_alerts: boolean,
+  weekly_digest: boolean,
+  },
+    privacy_settings: {
+  profile_visibility: 'public' | 'private' | 'friends_only',
+  show_savings_stats: boolean,
+  allow_reviews_public: boolean,
+  },
+    referral_code: string,
+  referred_by: string | null,
+  total_savings: number,
+  total_transactions: number,
+  member_since: Date,
+  last_login_at: Date | null,
+  last_activity_at: Date | null,
+  password_reset_token: string | null,
+  password_reset_expires: Date | null,
+  two_factor_enabled: boolean,
+  two_factor_secret: string | null,
+  metadata: Record<string, any>;,
+  created_at: Date,
+  updated_at: Date,
 }
-
 export async function seed(knex: Knex): Promise<void> {
-  // Check if users table already has data
-  const existingUsers = await knex('users').select('id').limit(1);
+  // Check if users table already has data;
+
+const existingUsers = await knex('users').select('id').limit(1);
   if (existingUsers.length > 0) {
     console.log('Users table already seeded, skipping...');
     return;
-  }
+  };
+const now = new Date();
 
-  const now = new Date();
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+
   const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+
   const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  // Hash passwords for all users (using a common password for seed data)
-  const defaultPassword = await bcrypt.hash('Password123!', 10);
-  const adminPassword = await bcrypt.hash('AdminSecure123!', 10);
+  // Hash passwords for all users (using a common password for seed data);
 
-  const users: Partial<User>[] = [
+const defaultPassword = await bcrypt.hash('Password123!', 10);
+
+  const adminPassword = await bcrypt.hash('AdminSecure123!', 10);
+;
+
+const users: Partial<User>[] = [
     // Super Admin
     {
-      id: uuidv4(),
+  id: uuidv4(),
       email: 'super.admin@boomcard.bg',
       password_hash: adminPassword,
       first_name: 'Super',
@@ -91,7 +98,7 @@ export async function seed(knex: Knex): Promise<void> {
       city: 'Sofia',
       country: 'BG',
       notification_preferences: {
-        email_marketing: false,
+  email_marketing: false,
         sms_marketing: false,
         push_notifications: true,
         partner_updates: true,
@@ -99,7 +106,7 @@ export async function seed(knex: Knex): Promise<void> {
         weekly_digest: false
       },
       privacy_settings: {
-        profile_visibility: 'private',
+  profile_visibility: 'private',
         show_savings_stats: false,
         allow_reviews_public: false
       },
@@ -117,7 +124,7 @@ export async function seed(knex: Knex): Promise<void> {
 
     // Regular Admins
     {
-      id: uuidv4(),
+  id: uuidv4(),
       email: 'admin.operations@boomcard.bg',
       password_hash: adminPassword,
       first_name: 'Maria',
@@ -134,7 +141,7 @@ export async function seed(knex: Knex): Promise<void> {
       city: 'Sofia',
       country: 'BG',
       notification_preferences: {
-        email_marketing: false,
+  email_marketing: false,
         sms_marketing: false,
         push_notifications: true,
         partner_updates: true,
@@ -142,7 +149,7 @@ export async function seed(knex: Knex): Promise<void> {
         weekly_digest: true
       },
       privacy_settings: {
-        profile_visibility: 'private',
+  profile_visibility: 'private',
         show_savings_stats: false,
         allow_reviews_public: false
       },
@@ -159,7 +166,7 @@ export async function seed(knex: Knex): Promise<void> {
     },
 
     {
-      id: uuidv4(),
+  id: uuidv4(),
       email: 'admin.support@boomcard.bg',
       password_hash: adminPassword,
       first_name: 'Ivan',
@@ -176,7 +183,7 @@ export async function seed(knex: Knex): Promise<void> {
       city: 'Plovdiv',
       country: 'BG',
       notification_preferences: {
-        email_marketing: false,
+  email_marketing: false,
         sms_marketing: false,
         push_notifications: true,
         partner_updates: false,
@@ -184,7 +191,7 @@ export async function seed(knex: Knex): Promise<void> {
         weekly_digest: false
       },
       privacy_settings: {
-        profile_visibility: 'private',
+  profile_visibility: 'private',
         show_savings_stats: false,
         allow_reviews_public: false
       },
@@ -202,7 +209,7 @@ export async function seed(knex: Knex): Promise<void> {
 
     // Partner Users
     {
-      id: uuidv4(),
+  id: uuidv4(),
       email: 'restaurant.sofia@partner.com',
       password_hash: defaultPassword,
       first_name: 'Georgi',
@@ -221,7 +228,7 @@ export async function seed(knex: Knex): Promise<void> {
       postal_code: '1000',
       country: 'BG',
       notification_preferences: {
-        email_marketing: true,
+  email_marketing: true,
         sms_marketing: false,
         push_notifications: true,
         partner_updates: true,
@@ -229,7 +236,7 @@ export async function seed(knex: Knex): Promise<void> {
         weekly_digest: true
       },
       privacy_settings: {
-        profile_visibility: 'public',
+  profile_visibility: 'public',
         show_savings_stats: true,
         allow_reviews_public: true
       },
@@ -246,7 +253,7 @@ export async function seed(knex: Knex): Promise<void> {
     },
 
     {
-      id: uuidv4(),
+  id: uuidv4(),
       email: 'hotel.plovdiv@partner.com',
       password_hash: defaultPassword,
       first_name: 'Elena',
@@ -265,7 +272,7 @@ export async function seed(knex: Knex): Promise<void> {
       postal_code: '4000',
       country: 'BG',
       notification_preferences: {
-        email_marketing: true,
+  email_marketing: true,
         sms_marketing: true,
         push_notifications: true,
         partner_updates: true,
@@ -273,7 +280,7 @@ export async function seed(knex: Knex): Promise<void> {
         weekly_digest: false
       },
       privacy_settings: {
-        profile_visibility: 'public',
+  profile_visibility: 'public',
         show_savings_stats: true,
         allow_reviews_public: true
       },
@@ -291,7 +298,7 @@ export async function seed(knex: Knex): Promise<void> {
 
     // Active Consumer Users
     {
-      id: uuidv4(),
+  id: uuidv4(),
       email: 'peter.nikolov@gmail.com',
       password_hash: defaultPassword,
       first_name: 'Peter',
@@ -310,7 +317,7 @@ export async function seed(knex: Knex): Promise<void> {
       postal_code: '1784',
       country: 'BG',
       notification_preferences: {
-        email_marketing: true,
+  email_marketing: true,
         sms_marketing: false,
         push_notifications: true,
         partner_updates: true,
@@ -318,10 +325,12 @@ export async function seed(knex: Knex): Promise<void> {
         weekly_digest: true
       },
       privacy_settings: {
-        profile_visibility: 'public',
+  profile_visibility: 'public',
         show_savings_stats: true,
         allow_reviews_public: true
       },
       referral_code: 'PETER001',
       referred_by: 'PARTNER001'
-}}
+}
+
+}

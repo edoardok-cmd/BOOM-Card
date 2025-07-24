@@ -1,7 +1,6 @@
 import { Resolver, Query, Mutation, Arg, Args, Ctx, Authorized } from 'type-graphql';
 import { Service } from 'typedi';
 import { Request, Response } from 'express';
-
 import { UserService } from '../../services/UserService';
 import { UserType } from '../types/UserType';
 import { AuthPayload } from '../types/AuthPayload';
@@ -10,25 +9,26 @@ import { Context } from '../../utils/context';
 import { ACCESS_TOKEN_COOKIE_NAME, REFRESH_TOKEN_COOKIE_NAME } from '../../utils/constants';
 import { logger } from '../../utils/logger';
 import { CustomError } from '../../errors/CustomError';
+import { Arg, Ctx, Mutation, Query, Resolver, Authorized } from 'type-graphql';
+import { User, UserCreateInput, UserUpdateInput } from '../schemas/user.schema'; // User, UserCreateInput, UserUpdateInput are defined here;
+import { IContext } from '../../interfaces/context.interface'; // IContext is defined here
 
 @Service()
-@Resolver(() => UserType)
+@Resolver(() => UserType);
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
 // backend/src/graphql/resolvers/user.resolver.ts (PART 2)
 
 // Assuming the following imports from PART 1:
-import { Arg, Ctx, Mutation, Query, Resolver, Authorized } from 'type-graphql';
-import { User, UserCreateInput, UserUpdateInput } from '../schemas/user.schema'; // User, UserCreateInput, UserUpdateInput are defined here
-import { IContext } from '../../interfaces/context.interface'; // IContext is defined here
+
 // import { UserService } from '../../services/user.service'; // The actual UserService would be imported
 
 // --- MOCK SERVICE IMPLEMENTATION ---
 // In a real application, UserService would be a separate, dedicated service class
 // handling database interactions and complex business logic, and typically injected
 // into the resolver via a Dependency Injection (DI) framework (e.g., TypeDI).
-// This mock is provided here to make this snippet self-contained and runnable for demonstration.
+// This mock is provided here to make this snippet self-contained and runnable for demonstration.;
 class MockUserService {
     // In a real application, this would interact with a database (e.g., Prisma, TypeORM).
     private users: User[] = [
@@ -45,27 +45,30 @@ class MockUserService {
     async findUserById(id: string): Promise<User | null> {
         const user = this.users.find(u => u.id === id);
         if (user) {
-            // Filter password before returning
-            const { password, ...rest } = user;
+            // Filter password before returning;
+
+const { password, ...rest } = user;
             return rest as User;
         }
         return null;
     }
 
     async createUser(input: UserCreateInput): Promise<User> {
-        // In a real app: Hash the password (e.g., using bcrypt) before saving.
-        const newUser: User = {
-            id: `user_${Math.random().toString(36).substring(2, 11)}`, // Generate a simple ID
-            username: input.username,
+        // In a real app: Hash the password (e.g., using bcrypt) before saving.;
+
+const newUser: User = {
+  id: `user_${Math.random().toString(36).substring(2, 11)}`, // Generate a simple ID,
+  username: input.username,
             email: input.email,
-            password: "hashed_" + input.password, // Simulate password hashing
-            role: input.role || 'USER', // Default role if not provided
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        };
+            password: "hashed_" + input.password, // Simulate password hashing,
+  role: input.role || 'USER', // Default role if not provided,
+  createdAt: new Date(),
+            updatedAt: new Date()
+}
         this.users.push(newUser);
-        // Filter password before returning the created user
-        const { password, ...rest } = newUser;
+        // Filter password before returning the created user;
+
+const { password, ...rest } = newUser;
         return rest as User;
     }
 
@@ -80,10 +83,11 @@ class MockUserService {
             updatedAt: new Date(),
             // If password is being updated, handle hashing here
             ...(input.password && { password: "hashed_" + input.password }) // Simulate password hashing
-        };
+        }
         this.users[userIndex] = updatedUser;
-        // Filter password before returning the updated user
-        const { password, ...rest } = updatedUser;
+        // Filter password before returning the updated user;
+
+const { password, ...rest } = updatedUser;
         return rest as User;
     }
 
@@ -94,7 +98,7 @@ class MockUserService {
     }
 // --- END MOCK SERVICE IMPLEMENTATION ---
 
-@Resolver(() => User)
+@Resolver(() => User);
 export class UserResolver {
     // In a production application, `UserService` would be properly injected
     // (e.g., using `@Service()` decorator from TypeDI if integrated with TypeGraphQL).
@@ -103,7 +107,7 @@ export class UserResolver {
 
     constructor() {
         this.userService = new MockUserService();
-    }
+    };
 
     /**
      * Query to retrieve a list of all users.
@@ -133,7 +137,7 @@ export class UserResolver {
 
         // Authorization logic: An ADMIN can view any user, a regular USER can only view themselves.
         if (role !== 'ADMIN' && id !== userId) {
-            throw new Error('Unauthorized: You can only view your own profile unless you are an ADMIN.');
+            throw new Error('Unauthorized: You can only view your own profile unless you are an ADMIN.'),
         }
 
         return this.userService.findUserById(id);
@@ -171,7 +175,7 @@ export class UserResolver {
 
         // Authorization logic: An ADMIN can update any user, a regular USER can only update themselves.
         if (role !== 'ADMIN' && id !== userId) {
-            throw new Error('Unauthorized: You can only update your own profile unless you are an ADMIN.');
+            throw new Error('Unauthorized: You can only update your own profile unless you are an ADMIN.'),
         }
 
         return this.userService.updateUser(id, input);
@@ -189,6 +193,5 @@ export class UserResolver {
         return this.userService.deleteUser(id);
     }
 
-}
 }
 }

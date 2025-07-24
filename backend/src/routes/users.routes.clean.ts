@@ -1,14 +1,16 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth.middleware.clean';
+;
 
 const router = Router();
 
 // Get user activity (mock data for now)
 router.get('/activity', authenticateToken, (req: any, res: any) => {
-  // Mock activity data
-  const activities = [
+  // Mock activity data;
+
+const activities = [
     {
-      id: 1,
+  id: 1,
       partner: 'The Sofia Grand',
       category: 'Fine Dining',
       icon: '🍽️',
@@ -19,7 +21,7 @@ router.get('/activity', authenticateToken, (req: any, res: any) => {
       bgColor: 'bg-orange-50'
     },
     {
-      id: 2,
+  id: 2,
       partner: 'Emerald Resort & Spa',
       category: 'Luxury Hotels',
       icon: '🏨',
@@ -32,7 +34,7 @@ router.get('/activity', authenticateToken, (req: any, res: any) => {
   ];
 
   res.json({
-    success: true,
+  success: true,
     data: activities
   });
 });
@@ -41,7 +43,7 @@ router.get('/activity', authenticateToken, (req: any, res: any) => {
 router.get('/favorites', authenticateToken, (req: any, res: any) => {
   const favorites = [
     {
-      name: 'The Sofia Grand',
+  name: 'The Sofia Grand',
       slug: 'sofia-grand',
       icon: '🍽️',
       visits: 12,
@@ -50,7 +52,7 @@ router.get('/favorites', authenticateToken, (req: any, res: any) => {
       bgColor: 'bg-orange-50'
     },
     {
-      name: 'Coffee Central',
+  name: 'Coffee Central',
       slug: 'coffee-central',
       icon: '☕',
       visits: 28,
@@ -61,7 +63,7 @@ router.get('/favorites', authenticateToken, (req: any, res: any) => {
   ];
 
   res.json({
-    success: true,
+  success: true,
     data: favorites
   });
 });
@@ -70,7 +72,7 @@ router.get('/favorites', authenticateToken, (req: any, res: any) => {
 router.get('/achievements', authenticateToken, (req: any, res: any) => {
   const achievements = [
     {
-      category: 'savings',
+  category: 'savings',
       titleKey: 'Savings Champion',
       descriptionKey: 'Saved over €1000',
       icon: '🏆',
@@ -78,7 +80,7 @@ router.get('/achievements', authenticateToken, (req: any, res: any) => {
       progress: 100
     },
     {
-      category: 'exploration',
+  category: 'exploration',
       titleKey: 'Explorer',
       descriptionKey: 'Visited 50+ partners',
       icon: '🌍',
@@ -86,7 +88,7 @@ router.get('/achievements', authenticateToken, (req: any, res: any) => {
       progress: 100
     },
     {
-      category: 'vip',
+  category: 'vip',
       titleKey: 'VIP Member',
       descriptionKey: 'Reach VIP status',
       icon: '👑',
@@ -96,7 +98,7 @@ router.get('/achievements', authenticateToken, (req: any, res: any) => {
   ];
 
   res.json({
-    success: true,
+  success: true,
     data: achievements
   });
 });
@@ -104,21 +106,21 @@ router.get('/achievements', authenticateToken, (req: any, res: any) => {
 // Get user statistics (mock data for now)
 router.get('/stats', authenticateToken, (req: any, res: any) => {
   const stats = {
-    totalSaved: 1847,
+  totalSaved: 1847,
     visitsThisYear: 52
   };
 
   res.json({
-    success: true,
-    data: stats
+  success: true,
+    data: stats;
   });
 });
 
 // Download user data (GDPR compliance)
 router.get('/download-data', authenticateToken, (req: any, res: any) => {
   const userData = {
-    user: {
-      id: req.user.id,
+  user: {
+  id: req.user.id,
       email: req.user.email,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
@@ -128,7 +130,7 @@ router.get('/download-data', authenticateToken, (req: any, res: any) => {
     },
     activity: [
       {
-        id: 1,
+  id: 1,
         partner: 'The Sofia Grand',
         category: 'Fine Dining',
         discount: 30,
@@ -136,7 +138,7 @@ router.get('/download-data', authenticateToken, (req: any, res: any) => {
         date: '2024-07-20T19:30:00Z'
       },
       {
-        id: 2,
+  id: 2,
         partner: 'Emerald Resort & Spa',
         category: 'Luxury Hotels',
         discount: 40,
@@ -145,16 +147,16 @@ router.get('/download-data', authenticateToken, (req: any, res: any) => {
       }
     ],
     preferences: {
-      emailNotifications: true,
+  emailNotifications: true,
       smsNotifications: false,
       language: 'en',
       currency: 'EUR'
     },
     exportDate: new Date().toISOString(),
     exportVersion: '1.0'
-  };
+  }
 
-  // Set headers for file download
+  // Set headers for file download;
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Content-Disposition', `attachment; filename="boom-card-data-${req.user.id}-${new Date().toISOString().split('T')[0]}.json"`);
   
@@ -170,7 +172,7 @@ router.delete('/account', authenticateToken, (req: any, res: any) => {
   // 4. Revoke all tokens
   
   res.json({
-    success: true,
+  success: true,
     message: 'Account deletion request submitted. Your account will be permanently deleted within 30 days. You can cancel this request by logging in again.',
     deletionDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
   });
@@ -178,28 +180,29 @@ router.delete('/account', authenticateToken, (req: any, res: any) => {
 
 // Get connected social accounts
 router.get('/connected-accounts', authenticateToken, (req: any, res: any) => {
-  // Mock connected accounts data
-  const connectedAccounts = {
-    facebook: {
-      connected: false,
+  // Mock connected accounts data;
+
+const connectedAccounts = {
+  facebook: {
+  connected: false,
       userId: null,
       connectedAt: null
     },
     instagram: {
-      connected: false,
+  connected: false,
       userId: null,
       connectedAt: null
     },
     google: {
-      connected: true,
+  connected: true,
       userId: 'google_user_123',
       connectedAt: '2024-01-15T10:30:00Z'
     }
-  };
+  }
 
   res.json({
-    success: true,
-    data: connectedAccounts
+  success: true,
+    data: connectedAccounts;
   });
 });
 
@@ -220,7 +223,7 @@ router.post('/connect-social', authenticateToken, (req: any, res: any) => {
   // 3. Store connection in database
   
   res.json({
-    success: true,
+  success: true,
     message: `${provider} account connected successfully`,
     data: {
       provider,
@@ -242,7 +245,7 @@ router.delete('/disconnect-social/:provider', authenticateToken, (req: any, res:
   }
 
   res.json({
-    success: true,
+  success: true,
     message: `${provider} account disconnected successfully`,
     data: {
       provider,
@@ -255,11 +258,11 @@ router.delete('/disconnect-social/:provider', authenticateToken, (req: any, res:
 // Health check for users service
 router.get('/health', (req, res) => {
   res.status(200).json({
-    success: true,
+      success: true,
     message: 'Users service is healthy',
     timestamp: new Date().toISOString(),
     service: 'users'
   });
 });
-
+;
 export default router;

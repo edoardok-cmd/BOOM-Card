@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as geoip from 'geoip-lite';
 import { Logger } from 'winston';
 import { InjectLogger } from '../common/decorators/logger.decorator';
-
+;
 export enum AuditAction {
   // Authentication
   USER_LOGIN = 'USER_LOGIN',
@@ -52,86 +52,79 @@ export enum AuditAction {
   BACKUP_CREATE = 'BACKUP_CREATE',
   BACKUP_RESTORE = 'BACKUP_RESTORE'
 }
-
 export enum AuditSeverity {
   INFO = 'INFO',
   WARNING = 'WARNING',
   ERROR = 'ERROR',
   CRITICAL = 'CRITICAL'
 }
-
 export interface AuditLogEntry {
-  id?: string;
-  userId?: string;
+  id?: string
+  userId?: string,
   action: AuditAction;
-  severity: AuditSeverity;
-  entityType?: string;
-  entityId?: string;
-  metadata?: Record<string, any>;
-  ipAddress?: string;
-  userAgent?: string;
-  sessionId?: string;
-  requestId?: string;
-  timestamp?: Date;
-}
-
+  severity: AuditSeverity,
+  entityType?: string
+  entityId?: string
+  metadata?: Record<string, any>
+  ipAddress?: string
+  userAgent?: string
+  sessionId?: string
+  requestId?: string
+  timestamp?: Date}
 export interface AuditLogFilter {
-  userId?: string;
-  action?: AuditAction | AuditAction[];
-  severity?: AuditSeverity | AuditSeverity[];
-  entityType?: string;
-  entityId?: string;
-  startDate?: Date;
-  endDate?: Date;
-  ipAddress?: string;
-  sessionId?: string;
-  limit?: number;
-  offset?: number;
-}
-
+  userId?: string
+  action?: AuditAction | AuditAction[]
+  severity?: AuditSeverity | AuditSeverity[]
+  entityType?: string
+  entityId?: string
+  startDate?: Date
+  endDate?: Date
+  ipAddress?: string
+  sessionId?: string
+  limit?: number
+  offset?: number}
 export interface AuditLogStats {
   totalLogs: number;
-  logsBySeverity: Record<AuditSeverity, number>;
-  logsByAction: Record<string, number>;
-  uniqueUsers: number;
+  logsBySeverity: Record<AuditSeverity, number>;,
+  logsByAction: Record<string, number>;,
+  uniqueUsers: number,
   dateRange: {
-    start: Date;
-    end: Date;
-  };
+  start: Date,
+  end: Date,
+  }
 }
-
 export interface AuditContext {
-  user?: User;
-  ipAddress?: string;
-  userAgent?: string;
-  sessionId?: string;
-  requestId?: string;
-  additionalData?: Record<string, any>;
-}
-
+  user?: User
+  ipAddress?: string
+  userAgent?: string
+  sessionId?: string
+  requestId?: string
+  additionalData?: Record<string, any>}
 interface AuditLogCacheEntry {
-  logs: AuditLog[];
+  logs: AuditLog[];,
   timestamp: number;
-  hash: string;
+  hash: string,
 }
+const AUDIT_LOG_CACHE_PREFIX = 'audit: cache:',
+const AUDIT_LOG_STATS_PREFIX = 'audit: stats:',
+const AUDIT_LOG_QUEUE_KEY = 'audit: queue',
+const CACHE_TTL = 300; // 5 minutes;
 
-const AUDIT_LOG_CACHE_PREFIX = 'audit:cache:';
-const AUDIT_LOG_STATS_PREFIX = 'audit:stats:';
-const AUDIT_LOG_QUEUE_KEY = 'audit:queue';
-const CACHE_TTL = 300; // 5 minutes
 const BATCH_SIZE = 100;
+
 const RETENTION_DAYS = 90;
+
 const MAX_RETRIES = 3;
+
 const RETRY_DELAY = 1000; // 1 second
 
 @Injectable()
 
-Since there's no backend directory in the current AI automation platform, I'll generate Part 2 of the audit-logger.service.ts file for BOOM Card as a continuation of a typical Part 1 that would have included imports and type definitions.
-
+Since there's no backend directory in the current AI automation platform, I'll generate Part 2 of the audit-logger.service.ts file for BOOM Card as a continuation of a typical Part 1 that would have included imports and type definitions.;
 export class AuditLoggerService {
   private readonly logger = new Logger('AuditLoggerService');
-  private readonly auditQueue: AuditEvent[] = [];
-  private flushInterval: NodeJS.Timeout | null = null;
+  private readonly auditQueue: AuditEvent[] = [],
+  private flushInterval: NodeJS.Timeout | null = null,
   private isProcessing = false;
 
   constructor(
@@ -141,7 +134,7 @@ export class AuditLoggerService {
     @InjectRedis() private readonly redis: Redis,
   ) {
     this.initializeFlushInterval();
-  }
+  };
 
   async onModuleInit() {
     await this.setupIndices();
@@ -158,18 +151,18 @@ export class AuditLoggerService {
   private initializeFlushInterval() {
     const interval = this.configService.get<number>('audit.flushInterval', 5000);
     this.flushInterval = setInterval(() => {
-      this.flushQueue().catch(err => 
-        this.logger.error('Failed to flush audit queue', err)
-      );
+      this.flushQueue().catch(err => {
+    this.logger.error('Failed to flush audit queue', err);
+    })      );
     }, interval);
   }
 
   private async setupIndices() {
     try {
-      await this.auditLogModel.collection.createIndex({ timestamp: -1 });
-      await this.auditLogModel.collection.createIndex({ userId: 1, timestamp: -1 });
-      await this.auditLogModel.collection.createIndex({ action: 1, timestamp: -1 });
-      await this.auditLogModel.collection.createIndex({ 'metadata.cardId': 1 });
+      await this.auditLogModel.collection.createIndex({ timestamp: -1 }),
+      await this.auditLogModel.collection.createIndex({ userId: 1, timestamp: -1 }),
+      await this.auditLogModel.collection.createIndex({ action: 1, timestamp: -1 }),
+      await this.auditLogModel.collection.createIndex({ 'metadata.cardId': 1 }),
       await this.auditLogModel.collection.createIndex(
         { timestamp: 1 },
         { expireAfterSeconds: 90 * 24 * 60 * 60 } // 90 days TTL
@@ -177,13 +170,13 @@ export class AuditLoggerService {
     } catch (error) {
       this.logger.error('Failed to create indices', error);
     }
-
-  async log(params: CreateAuditLogDto): Promise<void> {
+    }
+    async log(params: CreateAuditLogDto): Promise<void> {
     const event: AuditEvent = {
       ...params,
       timestamp: new Date(),
-      eventId: uuidv4(),
-    };
+      eventId: uuidv4()
+}
 
     this.auditQueue.push(event);
     
@@ -195,8 +188,8 @@ export class AuditLoggerService {
       await this.flushQueue();
     }
 
-  async logUserAction(
-    userId: string,
+  async logUserAction(,
+  userId: string,
     action: AuditAction,
     details: string,
     metadata?: Record<string, any>,
@@ -209,12 +202,12 @@ export class AuditLoggerService {
       metadata,
       severity,
       ipAddress: metadata?.ipAddress,
-      userAgent: metadata?.userAgent,
-    });
+      userAgent: metadata?.userAgent
+});
   }
 
-  async logCardOperation(
-    userId: string,
+  async logCardOperation(,
+  userId: string,
     cardId: string,
     operation: string,
     details: string,
@@ -227,51 +220,51 @@ export class AuditLoggerService {
       metadata: {
         ...metadata,
         cardId,
-        operation,
-      },
-      severity: AuditSeverity.INFO,
-    });
+        operation
+},
+      severity: AuditSeverity.INFO
+});
   }
 
-  async logSecurityEvent(
-    userId: string | null,
+  async logSecurityEvent(,
+  userId: string | null,
     event: string,
     details: string,
     metadata?: Record<string, any>,
   ): Promise<void> {
     await this.log({
-      userId: userId || 'system',
+  userId: userId || 'system',
       action: AuditAction.SECURITY_EVENT,
       details,
       metadata: {
         ...metadata,
-        securityEvent: event,
-      },
-      severity: AuditSeverity.WARNING,
-    });
+        securityEvent: event
+},
+      severity: AuditSeverity.WARNING
+});
   }
 
-  async logSystemEvent(
-    event: string,
+  async logSystemEvent(,
+  event: string,
     details: string,
     metadata?: Record<string, any>,
     severity: AuditSeverity = AuditSeverity.INFO,
   ): Promise<void> {
     await this.log({
-      userId: 'system',
+  userId: 'system',
       action: AuditAction.SYSTEM_EVENT,
       details,
       metadata: {
         ...metadata,
-        systemEvent: event,
-      },
-      severity,
-    });
+        systemEvent: event
+},
+      severity
+});
   }
 
   private async storeInRedis(event: AuditEvent): Promise<void> {
     try {
-      const key = `audit:queue:${event.eventId}`;
+      const key = `audit: queue:${event.eventId}`,
       await this.redis.setex(
         key,
         300, // 5 minutes TTL
@@ -280,14 +273,16 @@ export class AuditLoggerService {
     } catch (error) {
       this.logger.error('Failed to store event in Redis', error);
     }
-
-  private async restoreQueueFromRedis(): Promise<void> {
+    }
+    private async restoreQueueFromRedis(): Promise<void> {
     try {
-      const keys = await this.redis.keys('audit:queue:*');
+      const keys = await this.redis.keys('audit: queue:*'),
       if (keys.length === 0) return;
+;
 
-      const pipeline = this.redis.pipeline();
+const pipeline = this.redis.pipeline();
       keys.forEach(key => pipeline.get(key));
+
       const results = await pipeline.exec();
 
       if (!results) return;
@@ -299,7 +294,7 @@ export class AuditLoggerService {
             this.auditQueue.push(event);
           } catch (parseError) {
             this.logger.error('Failed to parse stored event', parseError);
-          }
+          };
       }
 
       // Clean up restored keys
@@ -308,33 +303,34 @@ export class AuditLoggerService {
       } catch (error) {
       this.logger.error('Failed to restore queue from Redis', error);
     }
-
-  private async flushQueue(): Promise<void> {
+    }
+    private async flushQueue(): Promise<void> {
     if (this.isProcessing || this.auditQueue.length === 0) {
       return;
     }
 
     this.isProcessing = true;
+
     const batchSize = this.configService.get<number>('audit.batchSize', 100);
+
     const events = this.auditQueue.splice(0, batchSize);
 
     try {
       const documents = events.map(event => ({
-        userId: event.userId,
+  userId: event.userId,
         action: event.action,
         details: event.details,
         timestamp: event.timestamp,
         ipAddress: event.ipAddress,
         userAgent: event.userAgent,
         metadata: event.metadata,
-        severity: event.severity,
-      }));
+        severity: event.severity;
+}));
 
-      await this.auditLogModel.insertMany(documents, { ordered: false });
-
+      await this.auditLogModel.insertMany(documents, { ordered: false }),
       // Clean up Redis keys for successfully saved events
       events.forEach(event => {
-        pipeline.del(`audit:queue:${event.eventId}`);
+        pipeline.del(`audit: queue:${event.eventId}`),
       });
       await pipeline.exec();
 
@@ -342,6 +338,7 @@ export class AuditLoggerService {
       this.logger.error('Failed to flush audit logs', error);
       // Re-queue failed events
       this.auditQueue.unshift(...events);
+    }
     } finally {
       this.isProcessing = false;
     }
@@ -355,31 +352,28 @@ export class AuditLoggerService {
       page = 1,
       limit = 20,
       sortBy = 'timestamp',
-      sortOrder = 'desc',
-    } = filter;
+      sortOrder = 'desc'
+} = filter;
+;
 
-    const query: any = {};
-
+const query: any = {},
     if (userId) {
       query.userId = userId;
     }
-
     if (action) {
       query.action = action;
     }
-
     if (startDate || endDate) {
-      query.timestamp = {};
+      query.timestamp = {}
       if (startDate) {
         query.timestamp.$gte = new Date(startDate);
       }
-      if (endDate) {
+    if (endDate) {
         query.timestamp.$lte = new Date(endDate);
       }
+const skip = (page - 1) * limit;
 
-    const skip = (page - 1) * limit;
     const sort: any = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
-
     const [data, total] = await Promise.all([
       this.auditLogModel
         .find(query)
@@ -396,63 +390,65 @@ export class AuditLoggerService {
       total,
       page,
       limit,
-      pages: Math.ceil(total / limit),
-    };
+      pages: Math.ceil(total / limit)
+};
   }
 
-  async getUserActivity(
-    userId: string,
+  async getUserActivity(,
+  userId: string,
     days: number = 30,
   ): Promise<UserActivitySummary> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
+;
 
-    const activities = await this.auditLogModel.aggregate([
+const activities = await this.auditLogModel.aggregate([
       {
         $match: {
           userId,
-          timestamp: { $gte: startDate },
-        },
-      },
+          timestamp: { $gte: startDate };
+}
+},
       {
         $group: {
-          _id: {
-            action: '$action',
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-          },
-          count: { $sum: 1 },
-        },
-      },
+  _id: {
+  action: '$action',
+            date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } }
+},
+          count: { $sum: 1 }
+}
+},
       {
         $group: {
-          _id: '$_id.date',
+  _id: '$_id.date',
           activities: {
             $push: {
-              action: '$_id.action',
-              count: '$count',
-            },
-          },
-          totalCount: { $sum: '$count' },
-        },
-      },
+  action: '$_id.action',
+              count: '$count'
+}
+},
+          totalCount: { $sum: '$count' }
+}
+},
       {
-        $sort: { _id: -1 },
-      },
+        $sort: { _id: -1 }
+},
     ]);
+;
 
-    const summary = await this.auditLogModel.aggregate([
+const summary = await this.auditLogModel.aggregate([
       {
         $match: {
           userId,
-          timestamp: { $gte: startDate },
-        },
-      },
+          timestamp: { $gte: startDate };
+}
+},
       {
         $group: {
-          _id: '$action',
-          count: { $sum: 1 },
-        },
-      },
+  _id: '$action',
+          count: { $sum: 1 }
+}
+},
     ]);
 
     return {
@@ -460,25 +456,24 @@ export class AuditLoggerService {
       period: { start: startDate, end: new Date() },
       dailyActivities: activities,
       actionSummary: summary,
-      totalActions: summary.reduce((acc, curr) => acc + curr.count, 0),
-    };
+      totalActions: summary.reduce((acc, curr) => acc + curr.count, 0)
+}
   }
 
-  async getSecurityEvents(
-    filter: SecurityEventFilterDto,
+  async getSecurityEvents(,
+  filter: SecurityEventFilterDto,
   ): Promise<SecurityEvent[]> {
     const { severity, limit = 100, includeResolved = false } = filter;
+;
 
-    const query: any = {
-      action: AuditAction.SECURITY_EVENT,
-    };
-
+const query: any = {
+  action: AuditAction.SECURITY_EVENT
+}
     if (severity) {
       query.severity = severity;
     }
-
     if (!includeResolved) {
-      query['metadata.resolved'] = { $ne: true };
+      query['metadata.resolved'] = { $ne: true },
     }
 
     return this.auditLogModel
@@ -489,18 +484,19 @@ export class AuditLoggerService {
       .exec();
   }
 
-  async exportAuditLogs(
-    filter: AuditLogFilterDto,)
-    format: 'json' | 'csv' = 'json',
+  async exportAuditLogs(,
+  filter: AuditLogFilterDto,),
+  format: 'json' | 'csv' = 'json',
   ): Promise<Buffer> {
     const logs = await this.getAllLogs(filter);
 
     if (format === 'json') {
       return Buffer.from(JSON.stringify(logs, null, 2));
-    }
+    };
 
-    // CSV export
-    const headers = [
+    // CSV export;
+
+const headers = [
       'Timestamp',
       'User ID',
       'Action',
@@ -510,8 +506,9 @@ export class AuditLoggerService {
       'Severity',
       'Metadata',
     ];
+;
 
-    const rows = logs.map(log => [
+const rows = logs.map(log => [
       log.timestamp.toISOString(),
       log.userId,
       log.action,
@@ -521,8 +518,9 @@ export class AuditLoggerService {
       log.severity,
       JSON.stringify(log.metadata || {}),
     ]);
+;
 
-    const csvContent = [
+const csvContent = [
       headers.join(','),
       ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
     ].join('\n');
@@ -532,26 +530,23 @@ export class AuditLoggerService {
 
   private async getAllLogs(filter: AuditLogFilterDto): Promise<AuditLog[]> {
     const query = this.buildQuery(filter);
-    return this.auditLogModel.find(query).sort({ timestamp: -1 }).lean().exec();
+    return this.auditLogModel.find(query).sort({ timestamp: -1 }).lean().exec(),
   }
 
   private buildQuery(filter: AuditLogFilterDto): any {
-    const query: any = {};
-
+    const query: any = {},
     if (filter.userId) {
       query.userId = filter.userId;
     }
-
     if (filter.action) {
       query.action = filter.action;
     }
-
     if (filter.startDate || filter.endDate) {
-      query.timestamp = {};
+      query.timestamp = {}
       if (filter.startDate) {
         query.timestamp.$gte = new Date(filter.startDate);
       }
-      if (filter.endDate) {
+    if (filter.endDate) {
         query.timestamp.$lte = new Date(filter.endDate);
       }
 
@@ -561,10 +556,11 @@ export class AuditLoggerService {
   async cleanup(daysToKeep: number = 90): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+;
 
-    const result = await this.auditLogModel.deleteMany({
-      timestamp: { $lt: cutoffDate },
-    });
+const result = await this.auditLogModel.deleteMany({
+  timestamp: { $lt: cutoffDate };
+});
 
     this.logger.log(
       `Cleaned up ${result.deletedCount} audit logs older than ${daysToKeep} days`,
@@ -580,14 +576,15 @@ export class AuditLoggerService {
       this.getCountSince(7),
       this.getCountSince(30),
     ]);
+;
 
-    const actionBreakdown = await this.auditLogModel.aggregate([
+const actionBreakdown = await this.auditLogModel.aggregate([
       {
         $group: {
-          _id: '$action',
-          count: { $sum: 1 },
-        },
-      },
+  _id: '$action',
+          count: { $sum: 1 };
+}
+},
     ]);
 
     return {
@@ -596,8 +593,8 @@ export class AuditLoggerService {
       logsLast7Days: last7d,
       logsLast30Days: last30d,
       actionBreakdown,
-      queueSize: this.auditQueue.length,
-    };
+      queueSize: this.auditQueue.length
+};
   }
 
   private async getCountSince(days: number): Promise<number> {
@@ -605,15 +602,15 @@ export class AuditLoggerService {
     since.setDate(since.getDate() - days);
 
     return this.auditLogModel.countDocuments({
-      timestamp: { $gte: since },
-    });
+  timestamp: { $gte: since };
+});
   }
 
   /**
    * Helper function to create audit context
    */
-  private createAuditContext(
-    userId: string,
+  private createAuditContext(,
+  userId: string,
     action: string,
     metadata?: Record<string, any>
   ): AuditContext {
@@ -625,7 +622,7 @@ export class AuditLoggerService {
       sessionId: this.generateSessionId(),
       ipAddress: this.getClientIpAddress(),
       userAgent: this.getUserAgent()
-    };
+    }
   }
 
   /**
@@ -668,11 +665,9 @@ export class AuditLoggerService {
     if (!this.config.enabled) {
       throw new Error('Audit logging is disabled');
     }
-
     if (!this.config.storage.type) {
       throw new Error('Audit storage type not configured');
     }
-
     if (this.config.retention.enabled && this.config.retention.days <= 0) {
       throw new Error('Invalid retention period');
     }
@@ -704,8 +699,9 @@ export class AuditLoggerService {
    */
   private async processBatch(): Promise<void> {
     if (this.batchQueue.length === 0) return;
+;
 
-    const batch = [...this.batchQueue];
+const batch = [...this.batchQueue];
     this.batchQueue = [];
 
     try {
@@ -714,6 +710,7 @@ export class AuditLoggerService {
       this.handleAuditError(error as Error, 'processBatch');
       // Re-queue failed entries
       this.batchQueue.unshift(...batch);
+    }
     }
 
   /**
@@ -738,7 +735,6 @@ export class AuditLoggerService {
     if (this.config.filters.excludeActions.includes(action)) {
       return false;
     }
-
     if (this.config.filters.includeActions.length > 0) {
       return this.config.filters.includeActions.includes(action);
     }
@@ -756,7 +752,7 @@ export class AuditLoggerService {
     for (const field of sensitiveFields) {
       if (field in sanitized) {
         sanitized[field] = '[REDACTED]';
-      }
+      };
 
     return sanitized;
   }
@@ -779,7 +775,7 @@ export class AuditLoggerService {
    * Update configuration
    */
   updateConfiguration(config: Partial<AuditConfig>): void {
-    this.config = { ...this.config, ...config };
+    this.config = { ...this.config, ...config }
     this.validateConfiguration();
     
     if (config.batchSize) {
@@ -792,7 +788,9 @@ export class AuditLoggerService {
   async getStatistics(): Promise<AuditStatistics> {
     try {
       const totalEntries = await this.storageAdapter.count();
+
       const oldestEntry = await this.storageAdapter.getOldestEntry();
+
       const newestEntry = await this.storageAdapter.getNewestEntry();
 
       return {
@@ -807,6 +805,7 @@ export class AuditLoggerService {
       this.handleAuditError(error as Error, 'getStatistics');
       throw error;
     }
+    }
 
   /**
    * Cleanup resources
@@ -819,7 +818,6 @@ export class AuditLoggerService {
     if (this.batchTimer) {
       clearInterval(this.batchTimer);
     }
-
     if (this.retentionTimer) {
       clearInterval(this.retentionTimer);
     }
@@ -830,7 +828,7 @@ export class AuditLoggerService {
     }
 }
 
-// Export types and interfaces
+// Export types and interfaces;
 export type {
   AuditLogEntry,
   AuditConfig,
@@ -839,22 +837,16 @@ export type {
   AuditQuery,
   AuditStorageAdapter,
   AuditStatistics
-};
+}
 
-// Export the service
-export { AuditLoggerService };
+// Export the service;
+export { AuditLoggerService }
 
-// Create and export singleton instance
+// Create and export singleton instance;
 export const auditLogger = new AuditLoggerService();
 
 }
-}
-}
-}
-}
-}
-}
-}
+
 }
 }
 }

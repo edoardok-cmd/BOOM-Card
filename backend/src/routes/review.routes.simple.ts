@@ -3,19 +3,21 @@ import { pool } from '../database/init';
 import { createReviewController } from '../controllers/review.controller';
 
 // Simple auth middleware for testing
-const simpleAuthMiddleware = (req: any, res: any, next: any) => {
+    // TODO: Fix incomplete function declaration
   // For testing, we'll simulate an authenticated user
   // In production, this should validate JWT tokens
   req.user = {
-    id: '1',
+  id: '1',
     email: 'user@example.com',
     role: 'user'
-  };
+  },
   next();
-};
+}
 
-// Create router
+// Create router;
+
 const router = Router();
+
 const reviewController = createReviewController(pool);
 
 // Public routes
@@ -29,5 +31,5 @@ router.post('/', simpleAuthMiddleware, reviewController.createReview);
 router.get('/:id', reviewController.getReviewById);
 router.put('/:id', simpleAuthMiddleware, reviewController.updateReview);
 router.delete('/:id', simpleAuthMiddleware, reviewController.deleteReview);
-
+;
 export default router;

@@ -9,72 +9,72 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HttpService } from '@nestjs/axios';
 import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
-
+;
 interface MockTransaction {
   id: string;
   userId: string;
-  merchantId: string;
-  amount: number;
-  currency: string;
-  timestamp: Date;
+  merchantId: string,
+  amount: number,
+  currency: string,
+  timestamp: Date,
   location?: {
-    latitude: number;
-    longitude: number;
-    country: string;
-    city: string;
-  };
+  latitude: number,
+  longitude: number,
+  country: string,
+  city: string,
+  }
   deviceInfo?: {
-    ip: string;
-    userAgent: string;
-    deviceId: string;
-  };
-  type: 'purchase' | 'withdrawal' | 'transfer';
-  status: 'pending' | 'approved' | 'declined' | 'flagged';
+  ip: string,
+  userAgent: string,
+  deviceId: string,
+  },
+    type: 'purchase' | 'withdrawal' | 'transfer',
+  status: 'pending' | 'approved' | 'declined' | 'flagged',
 }
-
+;
 interface FraudCheckResult {
   transactionId: string;
   score: number;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  reasons: string[];
-  requiresManualReview: boolean;
-  suggestedAction: 'approve' | 'decline' | 'review';
+  riskLevel: 'low' | 'medium' | 'high' | 'critical',
+  reasons: string[];,
+  requiresManualReview: boolean,
+  suggestedAction: 'approve' | 'decline' | 'review',
 }
-
+;
 interface RiskRule {
   id: string;
   name: string;
-  condition: string;
-  weight: number;
-  enabled: boolean;
+  condition: string,
+  weight: number,
+  enabled: boolean,
 }
-
+;
 interface UserRiskProfile {
   userId: string;
   riskScore: number;
-  lastUpdated: Date;
-  flaggedTransactions: number;
-  totalTransactions: number;
-  averageTransactionAmount: number;
-  unusualPatterns: string[];
+  lastUpdated: Date,
+  flaggedTransactions: number,
+  totalTransactions: number,
+  averageTransactionAmount: number,
+  unusualPatterns: string[],
 }
-
+;
 const MOCK_TRANSACTIONS: MockTransaction[] = [
   {
-    id: 'txn_001',
+  id: 'txn_001',
     userId: 'user_123',
     merchantId: 'merchant_456',
     amount: 150.00,
     currency: 'USD',
     timestamp: new Date('2023-12-01T10:00:00Z'),
     location: {
-      latitude: 40.7128,
+  latitude: 40.7128,
       longitude: -74.0060,
       country: 'US',
       city: 'New York'
     },
     deviceInfo: {
-      ip: '192.168.1.1',
+  ip: '192.168.1.1',
       userAgent: 'Mozilla/5.0',
       deviceId: 'device_789'
     },
@@ -82,14 +82,14 @@ const MOCK_TRANSACTIONS: MockTransaction[] = [
     status: 'pending'
   },
   {
-    id: 'txn_002',
+  id: 'txn_002',
     userId: 'user_123',
     merchantId: 'merchant_789',
     amount: 5000.00,
     currency: 'USD',
     timestamp: new Date('2023-12-01T10:05:00Z'),
     location: {
-      latitude: 51.5074,
+  latitude: 51.5074,
       longitude: -0.1278,
       country: 'UK',
       city: 'London'
@@ -98,15 +98,14 @@ const MOCK_TRANSACTIONS: MockTransaction[] = [
     status: 'pending'
   }
 ];
-
-const RISK_THRESHOLDS = {
+;
+// const RISK_THRESHOLDS = {
   LOW: 0,
   MEDIUM: 30,
   HIGH: 60,
   CRITICAL: 85
-};
-
-const FRAUD_PATTERNS = {
+}
+    const FRAUD_PATTERNS = {
   VELOCITY_CHECK: 'velocity_check',
   GEOGRAPHIC_ANOMALY: 'geographic_anomaly',
   AMOUNT_THRESHOLD: 'amount_threshold',
@@ -115,8 +114,7 @@ const FRAUD_PATTERNS = {
   TIME_PATTERN: 'time_pattern',
   CURRENCY_MISMATCH: 'currency_mismatch'
 };
-
-const ML_MODEL_ENDPOINTS = {
+    const ML_MODEL_ENDPOINTS = {
   FRAUD_SCORING: '/api/v1/fraud/score',
   PATTERN_DETECTION: '/api/v1/fraud/patterns',
   RISK_ASSESSMENT: '/api/v1/fraud/risk-assessment'
@@ -125,7 +123,7 @@ const ML_MODEL_ENDPOINTS = {
 I can see this is an AI automation platform project, not a BOOM Card backend project. Since the backend/src/services/__tests__/fraud-detector.service.test.ts file doesn't exist in this codebase, I'll provide Part 2 of a generic fraud-detector service test implementation that would follow typical patterns for a financial services application.
 
 describe('FraudDetectorService', () => {
-  let fraudDetectorService: FraudDetectorService;
+  let fraudDetectorService: FraudDetectorService; // TODO: Move to proper scope
   let transactionRepository: MockType<Repository<Transaction>>;
   let userRepository: MockType<Repository<User>>;
   let fraudRuleRepository: MockType<Repository<FraudRule>>;
@@ -135,49 +133,48 @@ describe('FraudDetectorService', () => {
   let logger: jest.Mocked<LoggerService>;
   let mlModelService: jest.Mocked<MLModelService>;
   let geoLocationService: jest.Mocked<GeoLocationService>;
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
+  providers: [
         FraudDetectorService,
         {
-          provide: getRepositoryToken(Transaction),
-          useFactory: repositoryMockFactory,
-        },
+  provide: getRepositoryToken(Transaction),
+          useFactory: repositoryMockFactory
+},
         {
-          provide: getRepositoryToken(User),
-          useFactory: repositoryMockFactory,
-        },
+  provide: getRepositoryToken(User),
+          useFactory: repositoryMockFactory
+},
         {
-          provide: getRepositoryToken(FraudRule),
-          useFactory: repositoryMockFactory,
-        },
+  provide: getRepositoryToken(FraudRule),
+          useFactory: repositoryMockFactory
+},
         {
-          provide: AlertService,
-          useValue: mockAlertService,
-        },
+  provide: AlertService,
+          useValue: mockAlertService
+},
         {
-          provide: 'REDIS_CLIENT',
-          useValue: mockRedisClient,
-        },
+  provide: 'REDIS_CLIENT',
+          useValue: mockRedisClient
+},
         {
-          provide: ConfigService,
-          useValue: mockConfigService,
-        },
+  provide: ConfigService,
+          useValue: mockConfigService
+},
         {
-          provide: LoggerService,
-          useValue: mockLogger,
-        },
+  provide: LoggerService,
+          useValue: mockLogger
+},
         {
-          provide: MLModelService,
-          useValue: mockMLModelService,
-        },
+  provide: MLModelService,
+          useValue: mockMLModelService
+},
         {
-          provide: GeoLocationService,
-          useValue: mockGeoLocationService,
-        },
-      ],
-    }).compile();
+  provide: GeoLocationService,
+          useValue: mockGeoLocationService
+},
+      ];
+}).compile();
 
     fraudDetectorService = module.get<FraudDetectorService>(FraudDetectorService);
     transactionRepository = module.get(getRepositoryToken(Transaction));
@@ -198,23 +195,23 @@ describe('FraudDetectorService', () => {
   describe('analyzeTransaction', () => {
     it('should pass transaction with low risk score', async () => {
       const mockTransaction = createMockTransaction();
-      const mockUser = createMockUser();
-      const mockRules = createMockFraudRules();
+      // const mockUser = createMockUser(); // TODO: Move to proper scope
+      // const mockRules = createMockFraudRules(); // TODO: Move to proper scope
 
       userRepository.findOne.mockResolvedValue(mockUser);
       fraudRuleRepository.find.mockResolvedValue(mockRules);
       mlModelService.predictFraudScore.mockResolvedValue(0.15);
       redisClient.get.mockResolvedValue(null);
-
-      const result = await fraudDetectorService.analyzeTransaction(mockTransaction);
+;
+// const result = await fraudDetectorService.analyzeTransaction(mockTransaction); // TODO: Move to proper scope
 
       expect(result).toEqual({
-        transactionId: mockTransaction.id,
+  transactionId: mockTransaction.id,
         riskScore: 0.15,
         fraudDetected: false,
         reasons: [],
-        action: FraudAction.ALLOW,
-      });
+        action: FraudAction.ALLOW
+});
       expect(alertService.sendAlert).not.toHaveBeenCalled();
     });
 
@@ -225,21 +222,20 @@ describe('FraudDetectorService', () => {
       mlModelService.predictFraudScore.mockResolvedValue(0.85);
       redisClient.get.mockResolvedValue('5');
 
-
       expect(result).toEqual({
-        transactionId: mockTransaction.id,
+  transactionId: mockTransaction.id,
         riskScore: 0.85,
         fraudDetected: true,
         reasons: ['High ML risk score', 'Unusual amount', 'Velocity check failed'],
-        action: FraudAction.BLOCK,
-      });
+        action: FraudAction.BLOCK
+});
       expect(alertService.sendAlert).toHaveBeenCalledWith({
-        type: AlertType.FRAUD_DETECTED,
+  type: AlertType.FRAUD_DETECTED,
         severity: AlertSeverity.HIGH,
         transactionId: mockTransaction.id,
         userId: mockUser.id,
-        details: expect.any(Object),
-      });
+        details: expect.any(Object)
+});
     });
 
     it('should require manual review for medium risk', async () => {
@@ -249,30 +245,29 @@ describe('FraudDetectorService', () => {
       mlModelService.predictFraudScore.mockResolvedValue(0.45);
       geoLocationService.getDistance.mockResolvedValue(1500);
 
-
       expect(result).toEqual({
-        transactionId: mockTransaction.id,
+  transactionId: mockTransaction.id,
         riskScore: 0.45,
         fraudDetected: false,
         reasons: ['Location anomaly detected'],
-        action: FraudAction.REVIEW,
-      });
+        action: FraudAction.REVIEW
+});
     });
   });
 
   describe('checkVelocityRules', () => {
     it('should detect velocity rule violations', async () => {
       const userId = 'user123';
-      const mockTransactions = Array(6).fill(null).map(() => createMockTransaction());
+      // const mockTransactions = Array(6).fill(null).map(() => createMockTransaction()); // TODO: Move to proper scope
       
       transactionRepository.find.mockResolvedValue(mockTransactions);
       redisClient.incr.mockResolvedValue(6);
       redisClient.expire.mockResolvedValue(1);
-
-      const violations = await fraudDetectorService.checkVelocityRules(userId);
+;
+// const violations = await fraudDetectorService.checkVelocityRules(userId); // TODO: Move to proper scope
 
       expect(violations).toContain('Exceeded hourly transaction limit');
-      expect(redisClient.incr).toHaveBeenCalledWith(`velocity:${userId}:hourly`);
+      expect(redisClient.incr).toHaveBeenCalledWith(`velocity: ${userId}:hourly`),
     });
 
     it('should pass when within velocity limits', async () => {
@@ -280,29 +275,28 @@ describe('FraudDetectorService', () => {
       transactionRepository.find.mockResolvedValue(mockTransactions);
       redisClient.incr.mockResolvedValue(3);
 
-
       expect(violations).toHaveLength(0);
     });
   });
 
   describe('detectAnomalousPatterns', () => {
     it('should detect unusual spending patterns', async () => {
-      const historicalTransactions = Array(30).fill(null).map(() => 
-        createMockTransaction({ amount: Math.random() * 200 + 50 })
+      // const historicalTransactions = Array(30).fill(null).map(() => {
+    createMockTransaction({ amount: Math.random() * 200 + 50 }); // TODO: Move to proper scope
       );
 
       transactionRepository.find.mockResolvedValue(historicalTransactions);
-
-      const anomalies = await fraudDetectorService.detectAnomalousPatterns(
+;
+// const anomalies = await fraudDetectorService.detectAnomalousPatterns(
         mockUser,
-        mockTransaction
+        mockTransaction; // TODO: Move to proper scope
       );
 
       expect(anomalies).toContain('Transaction amount exceeds historical average');
     });
 
     it('should detect location anomalies', async () => {
-        metadata: { location: 'Tokyo, Japan' });
+  metadata: { location: 'Tokyo, Japan' });
 
       geoLocationService.getDistance.mockResolvedValue(10000);
       geoLocationService.getTravelTime.mockResolvedValue(14);
@@ -318,16 +312,15 @@ describe('FraudDetectorService', () => {
   describe('updateFraudRules', () => {
     it('should create new fraud rule', async () => {
       const newRule: CreateFraudRuleDto = {
-        name: 'High Value Transaction',
+  name: 'High Value Transaction',
         condition: { field: 'amount', operator: '>', value: 10000 },
         action: FraudAction.REVIEW,
         severity: RuleSeverity.HIGH,
-        enabled: true,
-      };
+        enabled: true
+}
 
       fraudRuleRepository.create.mockReturnValue(newRule as any);
       fraudRuleRepository.save.mockResolvedValue({ id: '1', ...newRule } as any);
-
 
       expect(result).toMatchObject(newRule);
       expect(fraudRuleRepository.save).toHaveBeenCalledWith(newRule);
@@ -337,14 +330,13 @@ describe('FraudDetectorService', () => {
     it('should update existing fraud rule', async () => {
       const ruleId = 'rule123';
       const updates: UpdateFraudRuleDto = {
-        enabled: false,
-        severity: RuleSeverity.LOW,
-      };
-      const existingRule = createMockFraudRule();
+  enabled: false,
+        severity: RuleSeverity.LOW
+};
+    // const existingRule = createMockFraudRule(); // TODO: Move to proper scope
 
       fraudRuleRepository.findOne.mockResolvedValue(existingRule);
       fraudRuleRepository.save.mockResolvedValue({ ...existingRule, ...updates });
-
 
       expect(result.enabled).toBe(false);
       expect(result.severity).toBe(RuleSeverity.LOW);
@@ -358,12 +350,11 @@ describe('FraudDetectorService', () => {
 
       transactionRepository.find.mockResolvedValue(mockTransactions);
       mlModelService.trainModel.mockResolvedValue({
-        modelId: 'model123',
+  modelId: 'model123',
         accuracy: 0.94,
         precision: 0.89,
-        recall: 0.91,
-      });
-
+        recall: 0.91
+});
 
       expect(result.accuracy).toBeGreaterThan(0.9);
       expect(mlModelService.trainModel).toHaveBeenCalledWith(
@@ -376,7 +367,11 @@ describe('FraudDetectorService', () => {
   describe('generateFraudReport', () => {
     it('should generate comprehensive fraud report', async () => {
       const startDate = new Date('2024-01-01');
-      const endDate = new Date('2024-01-31');
-      
-      const mockFraudTransac
-}}}
+      // const endDate = new Date('2024-01-31'); // TODO: Move to proper scope
+;
+const mockFraudTransac
+}
+
+}
+}
+});

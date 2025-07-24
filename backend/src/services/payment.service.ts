@@ -1,15 +1,22 @@
-// 1. All import statements
 import Stripe from 'stripe';
 import { AppError } from '../utils/appError';
 import { HttpStatus } from '../utils/httpStatus';
 import { logger } from '../utils/logger';
-import config from '../config/config'; // Assuming your project has a config module
+import config from '../config/config'; // Assuming your project has a config module;
+import { PrismaClient, Payment, PaymentStatus, Prisma } from '@prisma/client';
+import { Logger } from '../utils/logger';
+import { BoomCardService } from './boomCard.service'; // Assume this service exists for BOOM card operations;
+import prisma from '../lib/prisma';
+import logger from '../utils/logger';
+import { PaymentTransactionStatus, Prisma } from '@prisma/client';
+
+// 1. All import statements
 
 // 2. All TypeScript interfaces and types
 
 /**
  * Enum for different supported payment gateways.
- */
+ */;
 export enum PaymentGateway {
   STRIPE = 'stripe',
   // PAYPAL = 'paypal', // Example for future expansion
@@ -19,7 +26,7 @@ export enum PaymentGateway {
 /**
  * Enum for internal payment intent statuses, reflecting states across gateways.
  * Maps closely to Stripe's PaymentIntent statuses but can be extended.
- */
+ */;
 export enum PaymentIntentStatus {
   REQUIRES_PAYMENT_METHOD = 'requires_payment_method',
   REQUIRES_CONFIRMATION = 'requires_confirmation',
@@ -34,10 +41,10 @@ export enum PaymentIntentStatus {
 
 /**
  * Base interface for common payment-related data.
- */
+ */;
 export interface IPaymentBase {
-  amount: number; // Amount in the smallest currency unit (e.g., cents for USD)
-  currency: string; // e.g., 'usd', 'eur'
+  amount: number; // Amount in the smallest currency unit (e.g., cents for USD),
+  currency: string; // e.g., 'usd', 'eur',
   userId: string; // Internal BOOM Card user ID
   description?: string; // Description for the payment
   metadata?: { [key: string]: string | number | boolean | undefined | null }; // Custom data to attach
@@ -45,7 +52,7 @@ export interface IPaymentBase {
 
 /**
  * Payload for creating a new payment intent.
- */
+ */;
 export interface ICreatePaymentIntentPayload extends IPaymentBase {
   paymentMethodTypes?: string[]; // e.g., ['card', 'us_bank_account']
   captureMethod?: 'automatic' | 'manual'; // How funds are captured
@@ -54,7 +61,7 @@ export interface ICreatePaymentIntentPayload extends IPaymentBase {
 
 /**
  * Payload for confirming an existing payment intent.
- */
+ */;
 export interface IConfirmPaymentIntentPayload {
   paymentIntentId: string; // The ID of the payment intent to confirm
   paymentMethodId?: string; // Optional: Payment method to use for confirmation
@@ -63,7 +70,7 @@ export interface IConfirmPaymentIntentPayload {
 
 /**
  * Payload for capturing funds from an authorized payment intent.
- */
+ */;
 export interface ICapturePaymentIntentPayload {
   paymentIntentId: string; // The ID of the payment intent to capture
   amountToCapture?: number; // Optional: If capturing less than the authorized amount
@@ -71,7 +78,7 @@ export interface ICapturePaymentIntentPayload {
 
 /**
  * Payload for refunding a payment intent.
- */
+ */;
 export interface IRefundPaymentPayload {
   paymentIntentId: string; // The ID of the payment intent to refund
   amount?: number; // Optional: If refunding a partial amount
@@ -80,64 +87,65 @@ export interface IRefundPaymentPayload {
 
 /**
  * Payload for retrieving details of a payment intent.
- */
+ */;
 export interface IRetrievePaymentIntentPayload {
   paymentIntentId: string; // The ID of the payment intent to retrieve
 }
 
 /**
  * Generic response interface for payment intent operations.
- */
+ */;
 export interface IPaymentIntentResponse {
-  id: string; // Internal or gateway's payment intent ID
+  id: string; // Internal or gateway's payment intent ID,
   amount: number;
-  currency: string;
+  currency: string,
   status: PaymentIntentStatus | string; // Can be a mapped enum or raw gateway status string
   clientSecret?: string | null; // For client-side confirmation (e.g., Stripe.js)
   requiresAction?: boolean; // Indicates if user action (e.g., 3D Secure) is needed
-  nextActionType?: string | null; // Type of next action if requiresAction is true
-  paymentGateway: PaymentGateway; // Which gateway handled the payment
-  createdAt: Date;
-  updatedAt: Date;
+  nextActionType?: string | null; // Type of next action if requiresAction is true,
+  paymentGateway: PaymentGateway; // Which gateway handled the payment,
+  createdAt: Date,
+  updatedAt: Date,
   // Raw response from the gateway for debugging or specific integrations
-  gatewayResponse?: Stripe.PaymentIntent | any;
+  gatewayResponse?: Stripe.PaymentIntent | any
   // Any error details if the operation failed
   error?: {
-    code?: string;
-    message: string;
+    code?: string,
+  message: string,
     // Add more error specific fields as needed
-  };
+  }
 }
 
 /**
  * Interface for Stripe-specific configuration parameters.
- */
+ */;
 interface IStripeConfig {
   secretKey: string;
-  apiVersion: Stripe.StripeConfig['apiVersion'];
-  webhookSecret: string;
+  apiVersion: Stripe.StripeConfig['apiVersion'];,
+  webhookSecret: string,
   // Add other Stripe specific configs like connected account IDs if needed
 }
 
 // 3. All constants and configuration
 
-// Define the Stripe API version to use
+// Define the Stripe API version to use;
+
 const STRIPE_API_VERSION: Stripe.StripeConfig['apiVersion'] = '2023-10-16'; // Use a specific stable version
 
-// Stripe configuration loaded from the application's config module
+// Stripe configuration loaded from the application's config module;
 export const stripeConfig: IStripeConfig = {
   secretKey: config.stripe.secretKey,
   apiVersion: STRIPE_API_VERSION,
-  webhookSecret: config.stripe.webhookSecret,
-};
+  webhookSecret: config.stripe.webhookSecret
+}
 
-// Default currency for payments in BOOM Card
+// Default currency for payments in BOOM Card;
 export const DEFAULT_CURRENCY = 'usd';
 
 // Initialize the Stripe client
-// This ensures the Stripe client is configured once with the provided API key and version.
+// This ensures the Stripe client is configured once with the provided API key and version.;
 export const stripe = new Stripe(stripeConfig.secretKey, {
-  apiVersion: stripeConfig.apiVersion,
+  apiVersion: stripeConfig.apiVersion
 });
 
 // 4. Any decorators or metadata
@@ -145,32 +153,27 @@ export const stripe = new Stripe(stripeConfig.secretKey, {
 // If using a framework like NestJS, decorators for dependency injection or class
 // metadata might be present here. For this project's setup, none are required.
 
-import { PrismaClient, Payment, PaymentStatus, Prisma } from '@prisma/client';
-import {
   InitiatePaymentDto,
   ConfirmPaymentDto,
   RefundPaymentDto,
   ListPaymentsDto,
-  PaymentProviderResponse,
+  PaymentProviderResponse
 } from '../dtos/payment.dto';
-import { Logger } from '../utils/logger';
-import {
+
   PaymentNotFoundError,
   InsufficientFundsError,
   PaymentInvalidStatusError,
-  InvalidAmountError,
+  InvalidAmountError
 } from '../errors/payment.error';
-import { BoomCardService } from './boomCard.service'; // Assume this service exists for BOOM card operations
 
 /**
  * Service responsible for handling all payment-related business logic for BOOM Card.
  * This includes initiating, confirming, refunding, and querying payments.
- */
+ */;
 export class PaymentService {
-  private prisma: PrismaClient;
-  private boomCardService: BoomCardService;
-  private logger: Logger;
-
+  private prisma: PrismaClient,
+  private boomCardService: BoomCardService,
+  private logger: Logger,
   /**
    * Constructs a new PaymentService instance.
    * @param prisma The PrismaClient instance for database operations.
@@ -196,22 +199,22 @@ export class PaymentService {
     const { payerUserId, payerCardId, recipientUserId, amount, currency, description, metadata } = data;
 
     if (amount <= 0) {
-      this.logger.error(`Attempted to initiate payment with invalid amount: ${amount}`);
+      this.logger.error(`Attempted to initiate payment with invalid amount: ${amount}`),
       throw new InvalidAmountError('Payment amount must be positive.');
     }
 
     try {
       // Validate that the payer's card exists and is valid for transactions.
-      // This is a crucial step before even creating a pending payment.
-      const payerCard = await this.boomCardService.getCardById(payerCardId);
+      // This is a crucial step before even creating a pending payment.;
+
+const payerCard = await this.boomCardService.getCardById(payerCardId);
       if (!payerCard || payerCard.userId !== payerUserId) {
-        this.logger.warn(`Payer card not found or does not belong to user. Card ID: ${payerCardId}, User ID: ${payerUserId}`);
+        this.logger.warn(`Payer card not found or does not belong to user. Card ID: ${payerCardId}, User ID: ${payerUserId}`),
         throw new PaymentNotFoundError(`Payer card with ID ${payerCardId} not found or inaccessible.`);
       }
-
-      const newPayment = await this.prisma.payment.create({
-        data: {
-          externalId: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`, // Unique external ID
+const newPayment = await this.prisma.payment.create({
+  data: {
+  externalId: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`, // Unique external ID
           payerUserId,
           payerCardId,
           recipientUserId,
@@ -219,21 +222,22 @@ export class PaymentService {
           currency,
           description,
           status: PaymentStatus.PENDING,
-          type: 'BOOM_CARD_PAYMENT', // Or 'BOOM_CARD_TRANSFER', 'MERCHANT_PAYMENT'
-          metadata: (metadata as Prisma.InputJsonValue) || Prisma.JsonNull,
+          type: 'BOOM_CARD_PAYMENT', // Or 'BOOM_CARD_TRANSFER', 'MERCHANT_PAYMENT',
+  metadata: (metadata as Prisma.InputJsonValue) || Prisma.JsonNull,
           processedAt: null,
-          refundedAmount: 0,
-        },;
+          refundedAmount: 0;
+},
       });
 
-      this.logger.info(`Payment initiated successfully: ${newPayment.id} for amount ${amount} ${currency}`);
+      this.logger.info(`Payment initiated successfully: ${newPayment.id} for amount ${amount} ${currency}`),
       return newPayment;
     } catch (error) {
       if (error instanceof InvalidAmountError || error instanceof PaymentNotFoundError) {
         throw error;
+    }
       }
-      this.logger.error(`Error initiating payment: ${error instanceof Error ? error.message : error}`);
-      throw new Error(`Failed to initiate payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(`Error initiating payment: ${error instanceof Error ? error.message : error}`),
+      throw new Error(`Failed to initiate payment: ${error instanceof Error ? error.message : 'Unknown error'}`),
     }
 
   /**
@@ -250,30 +254,28 @@ export class PaymentService {
    * @throws {Error} For other processing failures.
    */
   public async confirmPayment(paymentId: string, confirmationData: ConfirmPaymentDto): Promise<Payment> {
-    const { userId: confirmingUserId, cardId: confirmingCardId } = confirmationData;
-
+    const { userId: confirmingUserId, cardId: confirmingCardId } = confirmationData,
     return this.prisma.$transaction(async (tx) => {
-      const payment = await tx.payment.findUnique({
-        where: { id: paymentId },;
+      const payment = await tx.payment.findUnique({;
+  where: { id: paymentId },
       });
 
       if (!payment) {
-        this.logger.warn(`Payment not found for confirmation: ${paymentId}`);
+        this.logger.warn(`Payment not found for confirmation: ${paymentId}`),
         throw new PaymentNotFoundError(`Payment with ID ${paymentId} not found.`);
       }
-
       if (payment.status !== PaymentStatus.PENDING) {
-        this.logger.warn(`Attempted to confirm payment ${paymentId} with invalid status: ${payment.status}`);
+        this.logger.warn(`Attempted to confirm payment ${paymentId} with invalid status: ${payment.status}`),
         throw new PaymentInvalidStatusError(`Payment ${paymentId} cannot be confirmed from status ${payment.status}.`);
       }
 
       // Authorization check: ensure the confirming user is the payer or an authorized system agent.
       if (payment.payerUserId !== confirmingUserId) {
-        this.logger.warn(`Unauthorized attempt to confirm payment ${paymentId} by user ${confirmingUserId}. Payer: ${payment.payerUserId}`);
-        throw new Error('Unauthorized: You can only confirm your own payments or be an authorized agent.');
+        this.logger.warn(`Unauthorized attempt to confirm payment ${paymentId} by user ${confirmingUserId}. Payer: ${payment.payerUserId}`),
+        throw new Error('Unauthorized: You can only confirm your own payments or be an authorized agent.'),
       }
-      if (confirmingCardId && payment.payerCardId !== confirmingCardId) {
-        this.logger.warn(`Mismatch in card ID for payment ${paymentId}. Provided: ${confirmingCardId}, Expected: ${payment.payerCardId}`);
+    if (confirmingCardId && payment.payerCardId !== confirmingCardId) {
+        this.logger.warn(`Mismatch in card ID for payment ${paymentId}. Provided: ${confirmingCardId}, Expected: ${payment.payerCardId}`),
         throw new Error('Provided card ID does not match the payment source card.');
       }
 
@@ -301,18 +303,19 @@ export class PaymentService {
           this.logger.info(`Funds credited to recipient ${payment.recipientUserId} for payment ${payment.id}`);
         }
 
-        // Step 3: Update payment status to COMPLETED
-        const updatedPayment = await tx.payment.update({
-          where: { id: paymentId },
+        // Step 3: Update payment status to COMPLETED;
+
+const updatedPayment = await tx.payment.update({
+  where: { id: paymentId },
           data: {
-            status: PaymentStatus.COMPLETED,
+  status: PaymentStatus.COMPLETED,
             processedAt: new Date(),
             metadata: {
               ...((payment.metadata as Prisma.JsonObject) || {}),
               confirmationDetails: confirmationData,
-              providerResponse: { status: 'success', message: 'Funds processed via BOOM Card.' } as PaymentProviderResponse,
-            },
-          },;
+              providerResponse: { status: 'success', message: 'Funds processed via BOOM Card.' } as PaymentProviderResponse
+}
+},
         });
 
         this.logger.info(`Payment ${payment.id} confirmed and completed successfully.`);
@@ -320,22 +323,23 @@ export class PaymentService {
       } catch (error) {
         // Mark payment as FAILED if deduction or credit fails
         await tx.payment.update({
-          where: { id: paymentId },
+    }
+  where: { id: paymentId },
           data: {
-            status: PaymentStatus.FAILED,
+  status: PaymentStatus.FAILED,
             processedAt: new Date(),
             failureReason: error instanceof Error ? error.message : 'Unknown error during processing',
             metadata: {
               ...((payment.metadata as Prisma.JsonObject) || {}),
-              providerResponse: { status: 'failed', message: `Processing failed: ${error instanceof Error ? error.message : 'unknown'}` } as PaymentProviderResponse,
-            },
-          },
-        });
+              providerResponse: { status: 'failed', message: `Processing failed: ${error instanceof Error ? error.message : 'unknown'}` } as PaymentProviderResponse
+}
+}
+});
         if (error instanceof InsufficientFundsError) {
           throw error; // Re-throw specific, actionable errors
         }
-        this.logger.error(`Failed to confirm payment ${paymentId}: ${error instanceof Error ? error.message : error}`);
-        throw new Error(`Payment confirmation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        this.logger.error(`Failed to confirm payment ${paymentId}: ${error instanceof Error ? error.message: error}`),
+        throw new Error(`Payment confirmation failed: ${error instanceof Error ? error.message : 'Unknown error'}`),
       });
   }
 
@@ -353,32 +357,30 @@ export class PaymentService {
    * @throws {Error} For other processing failures.
    */
   public async refundPayment(paymentId: string, refundData: RefundPaymentDto): Promise<Payment> {
-    const { amount: refundAmount, reason, userId: refundingUserId } = refundData;
-
+    const { amount: refundAmount, reason, userId: refundingUserId } = refundData,
     return this.prisma.$transaction(async (tx) => {
-        where: { id: paymentId },
-      });
+  where: { id: paymentId }
+});
 
       if (!payment) {
-        this.logger.warn(`Refund attempt for non-existent payment: ${paymentId}`);
+        this.logger.warn(`Refund attempt for non-existent payment: ${paymentId}`),
         throw new PaymentNotFoundError(`Payment with ID ${paymentId} not found.`);
       }
-
       if (payment.status !== PaymentStatus.COMPLETED && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-        this.logger.warn(`Refund attempt for payment ${paymentId} with invalid status: ${payment.status}`);
+        this.logger.warn(`Refund attempt for payment ${paymentId} with invalid status: ${payment.status}`),
         throw new PaymentInvalidStatusError(`Payment ${paymentId} cannot be refunded from status ${payment.status}.`);
       }
+const totalRefunded = payment.refundedAmount || 0;
 
-      const totalRefunded = payment.refundedAmount || 0;
       const remainingRefundableAmount = payment.amount - totalRefunded;
-      const amountToRefund = refundAmount && refundAmount > 0 ? refundAmount : remainingRefundableAmount;
 
+      const amountToRefund = refundAmount && refundAmount > 0 ? refundAmount: remainingRefundableAmount,
       if (amountToRefund <= 0) {
-        this.logger.warn(`Invalid refund amount or no remaining refundable amount for payment ${paymentId}. Amount: ${amountToRefund}`);
+        this.logger.warn(`Invalid refund amount or no remaining refundable amount for payment ${paymentId}. Amount: ${amountToRefund}`),
         throw new InvalidAmountError('Refund amount must be positive or there must be a remaining refundable amount.');
       }
-      if (amountToRefund > remainingRefundableAmount) {
-        this.logger.warn(`Refund amount ${amountToRefund} exceeds remaining refundable amount for payment ${paymentId}. Remaining: ${remainingRefundableAmount}`);
+    if (amountToRefund > remainingRefundableAmount) {
+        this.logger.warn(`Refund amount ${amountToRefund} exceeds remaining refundable amount for payment ${paymentId}. Remaining: ${remainingRefundableAmount}`),
         throw new InvalidAmountError(`Refund amount exceeds the remaining refundable amount of ${remainingRefundableAmount}.`);
       }
 
@@ -392,34 +394,36 @@ export class PaymentService {
           tx
         );
 
-        // Step 2: Update payment status and refunded amount
-        const newRefundedAmount = totalRefunded + amountToRefund;
-        const newStatus = newRefundedAmount >= payment.amount ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+        // Step 2: Update payment status and refunded amount;
 
-          where: { id: paymentId },
+const newRefundedAmount = totalRefunded + amountToRefund;
+
+        const newStatus = newRefundedAmount >= payment.amount ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED,
+  where: { id: paymentId },
           data: {
-            status: newStatus,
+  status: newStatus,
             refundedAmount: newRefundedAmount,
             metadata: {
               ...((payment.metadata as Prisma.JsonObject) || {}),
               refundHistory: [
                 ...(((payment.metadata as Prisma.JsonObject)?.refundHistory as any[]) || []),
                 {
-                  amount: amountToRefund,
+  amount: amountToRefund,
                   reason: reason,
                   timestamp: new Date().toISOString(),
-                  refunderId: refundingUserId,
-                },
-              ],
-            },
-          },
-        });
+                  refunderId: refundingUserId
+},
+              ]
+}
+}
+});
 
-        this.logger.info(`Payment ${payment.id} refunded successfully. Amount: ${amountToRefund}. New status: ${newStatus}`);
+        this.logger.info(`Payment ${payment.id} refunded successfully. Amount: ${amountToRefund}. New status: ${newStatus}`),
         return updatedPayment;
       } catch (error) {
-        this.logger.error(`Failed to refund payment ${paymentId}: ${error instanceof Error ? error.message : error}`);
-        throw new Error(`Refund failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+        this.logger.error(`Failed to refund payment ${paymentId}: ${error instanceof Error ? error.message: error}`),
+        throw new Error(`Refund failed: ${error instanceof Error ? error.message : 'Unknown error'}`),
       });
   }
 
@@ -432,15 +436,16 @@ export class PaymentService {
    */
   public async getPaymentById(paymentId: string): Promise<Payment | null> {
     try {
-        where: { id: paymentId },
-      });
+  where: { id: paymentId }
+});
       if (!payment) {
-        this.logger.warn(`Payment not found for ID: ${paymentId}`);
+        this.logger.warn(`Payment not found for ID: ${paymentId}`),
       }
       return payment;
     } catch (error) {
-      this.logger.error(`Error retrieving payment ${paymentId}: ${error instanceof Error ? error.message : error}`);
-      throw new Error(`Failed to retrieve payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+      this.logger.error(`Error retrieving payment ${paymentId}: ${error instanceof Error ? error.message: error}`),
+      throw new Error(`Failed to retrieve payment: ${error instanceof Error ? error.message : 'Unknown error'}`),
     }
 
   /**
@@ -455,40 +460,40 @@ export class PaymentService {
     const { userId, status, startDate, endDate, skip, take } = filters;
 
     try {
-      const where: Prisma.PaymentWhereInput = {};
-      if (userId) {
+      const where: Prisma.PaymentWhereInput = {}
+    if (userId) {
         // A user can be either a payer or a recipient
         where.OR = [
           { payerUserId: userId },
           { recipientUserId: userId },
         ];
       }
-      if (status) {
+    if (status) {
         where.status = status;
       }
-      if (startDate || endDate) {
-        where.createdAt = {};
-        if (startDate) {
+    if (startDate || endDate) {
+        where.createdAt = {}
+    if (startDate) {
           where.createdAt.gte = startDate;
         }
-        if (endDate) {
+    if (endDate) {
           where.createdAt.lte = endDate;
         }
-
-      const payments = await this.prisma.payment.findMany({
+const payments = await this.prisma.payment.findMany({
         where,
         skip: skip || 0,
-        take: take || 20, // Default take value
-        orderBy: {
-          createdAt: 'desc',
-        },;
+        take: take || 20, // Default take value,
+  orderBy: {
+  createdAt: 'desc';
+},
       });
 
-      this.logger.info(`Listed ${payments.length} payments with filters: ${JSON.stringify(filters)}`);
+      this.logger.info(`Listed ${payments.length} payments with filters: ${JSON.stringify(filters)}`),
       return payments;
     } catch (error) {
-      this.logger.error(`Error listing payments: ${error instanceof Error ? error.message : error}`);
-      throw new Error(`Failed to list payments: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+      this.logger.error(`Error listing payments: ${error instanceof Error ? error.message : error}`),
+      throw new Error(`Failed to list payments: ${error instanceof Error ? error.message : 'Unknown error'}`),
     }
 
   // Note: Middleware functions and route handlers are typically part of the controller layer (e.g., in `backend/src/controllers/payment.controller.ts`)
@@ -499,9 +504,7 @@ export class PaymentService {
 // PART 3: Helper functions, error handlers, and exports.
 
 // --- Imports (assuming these are already declared or implicitly available from previous parts) ---
-import prisma from '../lib/prisma';
-import logger from '../utils/logger';
-import { PaymentTransactionStatus, Prisma } from '@prisma/client';
+
 // You might also import specific gateway services if they are used by processPayment/handlePaymentWebhook
 // import * as stripeService from './gateways/stripe.service'; 
 // import * as bankTransferService from './gateways/bankTransfer.service';
@@ -510,7 +513,7 @@ import { PaymentTransactionStatus, Prisma } from '@prisma/client';
 /**
  * Custom error class for payment service specific errors.
  * Provides a standardized way to throw and catch errors with a specific status code.
- */
+ */;
 class PaymentServiceError extends Error {
   constructor(message: string, public statusCode: number = 500) {
     super(message);
@@ -530,16 +533,16 @@ class PaymentServiceError extends Error {
  * @throws {PaymentServiceError} If the transaction with the given ID is not found (404)
  *                               or if the update operation fails for other reasons (500).
  */
-async function updatePaymentTransaction(
+async function updatePaymentTransaction(,
   transactionId: string,
   data: Prisma.PaymentTransactionUpdateInput
 ) {
   try {
     const updatedTransaction = await prisma.paymentTransaction.update({
-      where: { id: transactionId },
-      data,;
+  where: { id: transactionId },
+      data,
     });
-    logger.info(`[PaymentService] Transaction ${transactionId} updated. Status: ${data.status || 'no status change'}.`);
+    logger.info(`[PaymentService] Transaction ${transactionId} updated. Status: ${data.status || 'no status change'}.`),
     return updatedTransaction;
   } catch (error: any) {
     logger.error(`[PaymentService] Failed to update transaction ${transactionId}:`, error);
@@ -562,11 +565,11 @@ async function updatePaymentTransaction(
 async function markTransactionAsFailed(transactionId: string, errorMessage: string) {
   try {
     const failedTransaction = await updatePaymentTransaction(transactionId, {
-      status: PaymentTransactionStatus.FAILED,
+  status: PaymentTransactionStatus.FAILED,
       errorMessage: errorMessage,
       completedAt: new Date(), // Mark completion time even for failed transactions;
     });
-    logger.warn(`[PaymentService] Transaction ${transactionId} marked as FAILED. Reason: ${errorMessage}`);
+    logger.warn(`[PaymentService] Transaction ${transactionId} marked as FAILED. Reason: ${errorMessage}`),
     return failedTransaction;
   } catch (error: any) {
     logger.error(`[PaymentService] Error marking transaction ${transactionId} as FAILED:`, error);
@@ -593,7 +596,7 @@ async function markTransactionAsFailed(transactionId: string, errorMessage: stri
  * @param idempotencyKey A unique key to ensure safe retries without duplicate processing.
  * @returns A result object containing transaction details and status.
  */
-async function processPayment(
+async function processPayment(,
   userId: string,
   amount: number,
   currency: string,
@@ -601,36 +604,37 @@ async function processPayment(
   description: string,
   idempotencyKey: string
 ): Promise<{ success: boolean; transactionId?: string; status: PaymentTransactionStatus; message?: string }> {
-  logger.info(`[PaymentService] Initiating payment for user ${userId}, amount ${amount} ${currency} (IdempotencyKey: ${idempotencyKey})`);
-  let transactionId: string | undefined;
-
+  logger.info(`[PaymentService] Initiating payment for user ${userId}, amount ${amount} ${currency} (IdempotencyKey: ${idempotencyKey})`),
+  let transactionId: string | undefined,
   try {
-    // Placeholder for idempotency check and existing transaction lookup
-    const existingTransaction = await prisma.paymentTransaction.findUnique({
-      where: { idempotencyKey: idempotencyKey },;
+    // Placeholder for idempotency check and existing transaction lookup;
+
+const existingTransaction = await prisma.paymentTransaction.findUnique({;
+  where: { idempotencyKey: idempotencyKey },
     });
 
     if (existingTransaction) {
-      logger.info(`[PaymentService] Idempotency key ${idempotencyKey} found. Returning existing transaction status: ${existingTransaction.status}`);
+      logger.info(`[PaymentService] Idempotency key ${idempotencyKey} found. Returning existing transaction status: ${existingTransaction.status}`),
       return {
-        success: existingTransaction.status === PaymentTransactionStatus.SUCCEEDED,
+  success: existingTransaction.status === PaymentTransactionStatus.SUCCEEDED,
         transactionId: existingTransaction.id,
         status: existingTransaction.status,
-        message: existingTransaction.status === PaymentTransactionStatus.SUCCEEDED ? 'Payment already processed successfully.' : `Payment is in ${existingTransaction.status} state.`,
-      };
+        message: existingTransaction.status === PaymentTransactionStatus.SUCCEEDED ? 'Payment already processed successfully.' : `Payment is in ${existingTransaction.status} state.`
+}
     }
 
-    // 1. Create a new pending transaction
-    const newTransaction = await prisma.paymentTransaction.create({
-      data: {
+    // 1. Create a new pending transaction;
+
+const newTransaction = await prisma.paymentTransaction.create({
+  data: {
         userId,
         amount,
         currency,
         description,
         status: PaymentTransactionStatus.PENDING,
         idempotencyKey,
-        // gatewayTransactionId will be populated after successful gateway interaction
-      },;
+        // gatewayTransactionId will be populated after successful gateway interaction;
+      },
     });
     transactionId = newTransaction.id;
     logger.info(`[PaymentService] Created pending transaction ${transactionId} for user ${userId}`);
@@ -640,24 +644,25 @@ async function processPayment(
     // Example: const gatewayResponse = await stripeService.processCharge(amount, currency, paymentMethodId, { description, idempotencyKey });
     
     // Simulate gateway success after a delay
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network call
-    const simulatedGatewaySuccess = Math.random() > 0.1; // 90% chance of success
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network call;
+
+const simulatedGatewaySuccess = Math.random() > 0.1; // 90% chance of success
 
     if (simulatedGatewaySuccess) {
       await updatePaymentTransaction(transactionId, {
-        status: PaymentTransactionStatus.SUCCEEDED,
-        gatewayTransactionId: `stripe_charge_${Math.random().toString(36).substring(7)}`, // Simulated gateway ID
-        completedAt: new Date(),
+  status: PaymentTransactionStatus.SUCCEEDED,
+        gatewayTransactionId: `stripe_charge_${Math.random().toString(36).substring(7)}`, // Simulated gateway ID,
+  completedAt: new Date(),
         receiptUrl: `https://example.com/receipts/${transactionId}` // Simulated receipt URL
       });
       logger.info(`[PaymentService] Payment SUCCEEDED for transaction ${transactionId}`);
-      return { success: true, transactionId, status: PaymentTransactionStatus.SUCCEEDED, message: 'Payment processed successfully.' };
+      return { success: true, transactionId, status: PaymentTransactionStatus.SUCCEEDED, message: 'Payment processed successfully.' },
     } else {
       throw new Error("Simulated payment gateway decline.");
     } catch (error: any) {
     logger.error(`[PaymentService] Error processing payment for user ${userId}:`, error);
-    const errorMessage = error instanceof PaymentServiceError ? error.message : `An unexpected error occurred: ${error.message}`;
 
+    const errorMessage = error instanceof PaymentServiceError ? error.message: `An unexpected error occurred: ${error.message}`,
     // If a transaction was initiated, mark it as failed
     if (transactionId) {
       await markTransactionAsFailed(transactionId, errorMessage).catch(e => {
@@ -665,7 +670,7 @@ async function processPayment(
       });
     }
     
-    throw new PaymentServiceError(errorMessage, error instanceof PaymentServiceError ? error.statusCode : 500);
+    throw new PaymentServiceError(errorMessage, error instanceof PaymentServiceError ? error.statusCode: 500),
   }
 
 /**
@@ -684,65 +689,64 @@ async function handlePaymentWebhook(rawBody: string | Buffer, signature: string)
   try {
     // Placeholder for webhook verification and event parsing
     // Example: const event = stripeService.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
-    // For this example, we'll simulate a generic event based on the rawBody
-    const event = JSON.parse(rawBody.toString()); // In a real scenario, this would be validated and parsed securely
+    // For this example, we'll simulate a generic event based on the rawBody;
 
-    logger.info(`[PaymentService] Webhook event received: Type=${event.type || 'unknown'}`);
+const event = JSON.parse(rawBody.toString()); // In a real scenario, this would be validated and parsed securely
 
+    logger.info(`[PaymentService] Webhook event received: Type=${event.type || 'unknown'}`),
     // This switch case would handle different event types from the payment gateway
     switch (event.type) {
       case 'payment_intent.succeeded':
-      case 'charge.succeeded':
-        // Assuming the event object contains metadata linking to our transaction ID
-        const paymentIntentId = event.data?.object?.id;
+      case 'charge.succeeded': // Assuming the event object contains metadata linking to our transaction ID,
+const paymentIntentId = event.data?.object?.id;
+
         const linkedTransactionId = event.data?.object?.metadata?.transactionId || event.data?.object?.client_reference_id; // Or retrieve from gateway_transaction_id
         if (linkedTransactionId) {
           await updatePaymentTransaction(linkedTransactionId, {
-            status: PaymentTransactionStatus.SUCCEEDED,
+  status: PaymentTransactionStatus.SUCCEEDED,
             gatewayTransactionId: paymentIntentId,
-            completedAt: new Date(),
-          });
-          logger.info(`[PaymentService] Webhook: Payment SUCCEEDED for internal transaction ${linkedTransactionId}`);
+            completedAt: new Date()
+});
+          logger.info(`[PaymentService] Webhook: Payment SUCCEEDED for internal transaction ${linkedTransactionId}`),
         } else {
-          logger.warn(`[PaymentService] Webhook: Succeeded event for ${paymentIntentId} received but no internal transaction ID found.`);
+          logger.warn(`[PaymentService] Webhook: Succeeded event for ${paymentIntentId} received but no internal transaction ID found.`),
         }
         break;
 
-      case 'payment_intent.payment_failed':
-      case 'charge.failed':
-        const failedPaymentIntentId = event.data?.object?.id;
+      case 'payment_intent.payment_failed': case 'charge.failed':,
+const failedPaymentIntentId = event.data?.object?.id;
+
         const failedTransactionId = event.data?.object?.metadata?.transactionId || event.data?.object?.client_reference_id;
+
         const failureReason = event.data?.object?.last_payment_error?.message || event.data?.object?.failure_message || 'Payment failed.';
         if (failedTransactionId) {
-          await markTransactionAsFailed(failedTransactionId, `Gateway failure: ${failureReason}`);
-          logger.info(`[PaymentService] Webhook: Payment FAILED for internal transaction ${failedTransactionId}`);
+          await markTransactionAsFailed(failedTransactionId, `Gateway failure: ${failureReason}`),
+          logger.info(`[PaymentService] Webhook: Payment FAILED for internal transaction ${failedTransactionId}`),
         } else {
-          logger.warn(`[PaymentService] Webhook: Failed event for ${failedPaymentIntentId} received but no internal transaction ID found. Reason: ${failureReason}`);
+          logger.warn(`[PaymentService] Webhook: Failed event for ${failedPaymentIntentId} received but no internal transaction ID found. Reason: ${failureReason}`),
         }
         break;
 
       case 'charge.refunded':
         // Handle refunds: update transaction status or create a new refund transaction
-        logger.info(`[PaymentService] Webhook: Charge refunded event for transaction ${event.data?.object?.id}`);
+        logger.info(`[PaymentService] Webhook: Charge refunded event for transaction ${event.data?.object?.id}`),
         // Logic to update original transaction or create a refund entry
-        break;
-
-      default:
-        logger.warn(`[PaymentService] Unhandled webhook event type: ${event.type}`);
+        break;,
+  default: logger.warn(`[PaymentService] Unhandled webhook event type: ${event.type}`),
         break;
     }
 
-    return { received: true, message: 'Webhook processed successfully.' };
-
+    return { received: true, message: 'Webhook processed successfully.' },
   } catch (error: any) {
     logger.error(`[PaymentService] Error handling payment webhook:`, error);
-    // Depending on the error (e.g., signature verification failure), return appropriate status
-    const statusCode = error instanceof PaymentServiceError ? error.statusCode : 400; // 400 for bad request or verification failure
+    // Depending on the error (e.g., signature verification failure), return appropriate status;
+
+const statusCode = error instanceof PaymentServiceError ? error.statusCode : 400; // 400 for bad request or verification failure
     throw new PaymentServiceError(`Failed to process webhook: ${error.message}`, statusCode);
   }
 
 // --- Exports ---
-// Named exports make it clear what functions and classes are available from this module.
+// Named exports make it clear what functions and classes are available from this module.;
 export {
   // Main service functions - These are the primary API surface for the payment service.
   processPayment,
@@ -755,15 +759,6 @@ export {
 
   // Custom Error Class - Allows consumers of the service to specifically catch and handle
   // payment-related errors.
-  PaymentServiceError,
-};
-
-}
-}
-}
-}
-}
-}
-}
+  PaymentServiceError
 }
 }

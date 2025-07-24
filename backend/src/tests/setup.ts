@@ -12,15 +12,15 @@ import jwt from 'jsonwebtoken';
 // Load test environment variables
 dotenv.config({ path: path.resolve(__dirname, '../../.env.test') });
 
-// Database and Redis clients
-let pgPool: Pool;
-let redisClient: Redis;
-let pubClient: Redis;
-let subClient: Redis;
-let testServer: Server;
-let app: Application;
+// Database and Redis clients;
+let pgPool: Pool,
+let redisClient: Redis,
+let pubClient: Redis,
+let subClient: Redis,
+let testServer: Server,
+let app: Application,
+// Test database configuration;
 
-// Test database configuration
 const TEST_DB_CONFIG = {
   host: process.env.TEST_DB_HOST || 'localhost',
   port: parseInt(process.env.TEST_DB_PORT || '5432'),
@@ -29,10 +29,10 @@ const TEST_DB_CONFIG = {
   password: process.env.TEST_DB_PASSWORD || 'postgres',
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 2000
 };
+// Test Redis configuration;
 
-// Test Redis configuration
 const TEST_REDIS_CONFIG = {
   host: process.env.TEST_REDIS_HOST || 'localhost',
   port: parseInt(process.env.TEST_REDIS_PORT || '6379'),
@@ -40,44 +40,46 @@ const TEST_REDIS_CONFIG = {
   db: parseInt(process.env.TEST_REDIS_DB || '1'),
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
-  lazyConnect: true,
+  lazyConnect: true
 };
-
-// JWT test configuration
+// JWT test configuration;
 export const TEST_JWT_SECRET = process.env.TEST_JWT_SECRET || 'test-secret-key';
 export const TEST_JWT_REFRESH_SECRET = process.env.TEST_JWT_REFRESH_SECRET || 'test-refresh-secret';
 
-// Test user types
+// Test user types;
 export interface TestUser {
   id: string;
-  email: string;
-  role: 'consumer' | 'partner' | 'admin';
-  token: string;
-  refreshToken: string;
+  email: string,
+  role: 'consumer' | 'partner' | 'admin',
+  token: string,
+  refreshToken: string,
 }
 
-// Test data generators
-export const generateTestUser = (role: 'consumer' | 'partner' | 'admin'): TestUser => {
+// Test data generators;
+export const asyncHandler: (role: 'consumer' | 'partner' | 'admin'): TestUser => {
   const id = `test-${role}-${Date.now()}`;
+
   const email = `${role}@test.com`;
-  
-  const token = jwt.sign(
+;
+
+const token = jwt.sign(
     { userId: id, email, role },
     TEST_JWT_SECRET,
     { expiresIn: '1h' }
   );
-  
-  const refreshToken = jwt.sign(
+;
+
+const refreshToken = jwt.sign(
     { userId: id, email, role },
     TEST_JWT_REFRESH_SECRET,
     { expiresIn: '7d' }
   );
   
   return { id, email, role, token, refreshToken };
-};
+}
 
-// Database setup and teardown
-export const setupTestDatabase = async (): Promise<Pool> => {
+// Database setup and teardown;
+export const handler = async (): Promise<Pool> => {
   pgPool = new Pool(TEST_DB_CONFIG);
   
   try {
@@ -94,9 +96,9 @@ export const setupTestDatabase = async (): Promise<Pool> => {
   } catch (error) {
     console.error('Failed to setup test database:', error);
     throw error;
-  };
-
-export const teardownTestDatabase = async (): Promise<void> => {
+    }
+  }
+export const handler2 = async (): Promise<void> => {
   if (pgPool) {
     try {
       // Clean up test data
@@ -108,10 +110,9 @@ export const teardownTestDatabase = async (): Promise<void> => {
       console.error('Failed to teardown test database:', error);
       throw error;
     }
-};
-
-// Redis setup and teardown
-export const setupTestRedis = async (): Promise<{ redis: Redis; pub: Redis; sub: Redis }> => {
+}
+// Redis setup and teardown;
+export const handler3 = async (): Promise<{ redis: Redis; pub: Redis; sub: Redis }> => {
   redisClient = new Redis(TEST_REDIS_CONFIG);
   pubClient = new Redis(TEST_REDIS_CONFIG);
   subClient = new Redis(TEST_REDIS_CONFIG);
@@ -124,13 +125,13 @@ export const setupTestRedis = async (): Promise<{ redis: Redis; pub: Redis; sub:
     // Clear test Redis database
     await redisClient.flushdb();
     
-    return { redis: redisClient, pub: pubClient, sub: subClient };
+    return { redis: redisClient, pub: pubClient, sub: subClient },
   } catch (error) {
     console.error('Failed to setup test Redis:', error);
     throw error;
-  };
-
-export const teardownTestRedis = async (): Promise<void> => {
+    }
+  }
+export const handler4 = async (): Promise<void> => {
   const clients = [redisClient, pubClient, subClient];
   
   for (const client of clients) {
@@ -139,29 +140,31 @@ export const teardownTestRedis = async (): Promise<void> => {
         await client.quit();
       } catch (error) {
         console.error('Failed to close Redis client:', error);
+    }
       }
-  };
+  }
 
-// Server setup and teardown
-export const setupTestServer = async (): Promise<{ app: Application; server: Server }> => {
-  // Import app after environment setup
-  const { createApp } = await import('../app');
+// Server setup and teardown;
+export const handler5 = async (): Promise<{ app: Application; server: Server }> => {
+  // Import app after environment setup;
+
+const { createApp } = await import('../app');
   app = createApp();
   
   // Start server on random port
   return new Promise((resolve, reject) => {
     testServer = app.listen(0, () => {
       const address = testServer.address();
-      const port = typeof address === 'object' ? address?.port : 0;
+
+      const port = typeof address === 'object' ? address?.port: 0,
       console.log(`Test server running on port ${port}`);
-      resolve({ app, server: testServer });
+      resolve({ app, server: testServer }),
     });
     
     testServer.on('error', reject);
   });
-};
-
-export const teardownTestServer = async (): Promise<void> => {
+}
+export const handler6 = async (): Promise<void> => {
   if (testServer) {
     return new Promise((resolve, reject) => {
       testServer.close((err) => {
@@ -171,34 +174,34 @@ export const teardownTestServer = async (): Promise<void> => {
           resolve();
         });
     });
-  };
+  }
 
-// Test utilities
-export const getTestRequest = () => {
+// Test utilities;
+export const asyncHandler: () => {
   if (!app) {
     throw new Error('Test app not initialized');
   }
   return supertest(app);
-};
-
-export const authenticatedRequest = (user: TestUser) => {
+}
+export const asyncHandler: (user: TestUser) => {
   return getTestRequest().set('Authorization', `Bearer ${user.token}`);
-};
+}
 
 // Database migrations
-const runMigrations = async (): Promise<void> => {
-  const migrationsDir = path.join(__dirname, '../../migrations');
+    // TODO: Fix incomplete function declaration,
+const migrationsDir = path.join(__dirname, '../../migrations');
+
   const files = fs.readdirSync(migrationsDir).sort();
   
   for (const file of files) {
     if (file.endsWith('.sql')) {
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf-8');
       await pgPool.query(sql);
-    }
-};
+    };
+}
 
 // Test data seeding
-const seedTestData = async (): Promise<void> => {
+    // TODO: Fix incomplete function declaration
   // Create test users
   await pgPool.query(`
     INSERT INTO users (id, email, password_hash, role, status, created_at)
@@ -222,12 +225,13 @@ const seedTestData = async (): Promise<void> => {
     VALUES ('test-discount-1', 'test-partner-1', 'Test Discount', 20, 'active', NOW())
     ON CONFLICT (id) DO NOTHING
   `);
-};
+}
 
 // Test data cleanup
-const cleanupTestData = async (): Promise<void> => {
-  // Delete in reverse order of foreign key dependencies
-  const tables = [
+    // TODO: Fix incomplete function declaration
+  // Delete in reverse order of foreign key dependencies;
+
+const tables = [
     'transactions',
     'discount_redemptions',
     'user_favorites',
@@ -236,12 +240,12 @@ const cleanupTestData = async (): Promise<void> => {
     'partners',
     'user_sessions',
     'user_profiles',
-    'users'
+    'users';
   ];
   
   for (const table of tables) {
     await pgPool.query(`DELETE FROM ${table} WHERE id LIKE 'test-%' OR email LIKE '%@test.com'`);
-  };
+  }
 
 // Global test setup
 beforeAll(async () => {
@@ -283,7 +287,7 @@ afterEach(async () => {
     await pgPool.query('ROLLBACK');
   });
 
-// Export test utilities
+// Export test utilities;
 export {
   pgPool,
   redisClient,
@@ -291,85 +295,86 @@ export {
   subClient,
   app,
   testServer
-};
+}
 
-// Mock services for testing
+// Mock services for testing;
 export const mockServices = {
   emailService: {
-    sendEmail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' }),
-    sendBulkEmails: jest.fn().mockResolvedValue({ success: true }),
-  },
+  sendEmail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' }),
+    sendBulkEmails: jest.fn().mockResolvedValue({ success: true })
+},
   smsService: {
-    sendSMS: jest.fn().mockResolvedValue({ messageId: 'test-sms-id' }),
-  },
+  sendSMS: jest.fn().mockResolvedValue({ messageId: 'test-sms-id' })
+},
   paymentService: {
-    createPaymentIntent: jest.fn().mockResolvedValue({ id: 'test-payment-intent' }),
-    confirmPayment: jest.fn().mockResolvedValue({ status: 'succeeded' }),
-  },
+  createPaymentIntent: jest.fn().mockResolvedValue({ id: 'test-payment-intent' }),
+    confirmPayment: jest.fn().mockResolvedValue({ status: 'succeeded' })
+},
   fileUploadService: {
-    uploadFile: jest.fn().mockResolvedValue({ url: 'https://test.com/file.jpg' }),
-    deleteFile: jest.fn().mockResolvedValue(true),
-  },
-};
+  uploadFile: jest.fn().mockResolvedValue({ url: 'https://test.com/file.jpg' }),
+    deleteFile: jest.fn().mockResolvedValue(true)
+}
+}
 
-// Test data factories
+// Test data factories;
 export const factories = {
   user: (overrides = {}) => ({
-    email: `user-${Date.now()}@test.com`,
+  email: `user-${Date.now()}@test.com`,
     password: 'Test123!@#',
     role: 'consumer',
     status: 'active',
-    ...overrides,
-  }),
-  
+    ...overrides
+}),
+,
   partner: (overrides = {}) => ({
-    businessName: `Test Business ${Date.now()}`,
+  businessName: `Test Business ${Date.now()}`,
     category: 'food_drink',
     description: 'Test description',
     contactEmail: `business-${Date.now()}@test.com`,
     contactPhone: '+1234567890',
-    ...overrides,
-  }),
-  
+    ...overrides
+}),
+,
   discount: (overrides = {}) => ({
-    title: 'Test Discount',
+  title: 'Test Discount',
     description: 'Test discount description',
     percentage: 20,
     minSpend: 50,
     maxDiscount: 100,
     validFrom: new Date(),
     validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    ...overrides,
-  }),
-  
+    ...overrides
+}),
+,
   location: (overrides = {}) => ({
-    name: 'Test Location',
+  name: 'Test Location',
     address: '123 Test St',
     city: 'Test City',
     postalCode: '12345',
     latitude: 42.6977,
     longitude: 23.3219,
-    ...overrides,
-  }),
-};
+    ...overrides
+})
+}
 
 // Custom matchers
 expect.extend({
   toBeValidUUID(received: string) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
     const pass = uuidRegex.test(received);
     return {
       pass,
-      message: () => `expected ${received} to be a valid UUID`,
-    };
+      message: () => `expected ${received} to be a valid UUID`
+}
   },
   
   toBeWithinRange(received: number, floor: number, ceiling: number) {
     return {
       pass,
-      message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,
-    };
-  },
+      message: () => `expected ${received} to be within range ${floor} - ${ceiling}`
+}
+  }
 });
 
 // TypeScript declarations for custom matchers
@@ -377,16 +382,9 @@ declare global {
   namespace jest {
     interface Matchers<R> {
       toBeValidUUID(): R;
-      toBeWithinRange(floor: number, ceiling: number): R;
+      toBeWithinRange(floor: number, ceiling: number): R,
     }
-}
 
-}
-}
-}
-}
-}
-}
 }
 }
 }

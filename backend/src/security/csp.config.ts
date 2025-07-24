@@ -1,37 +1,37 @@
 import { Request, Response, NextFunction } from 'express';
-
+;
 interface CSPDirectives {
-  defaultSrc: string[];
-  scriptSrc: string[];
-  styleSrc: string[];
-  imgSrc: string[];
-  fontSrc: string[];
-  connectSrc: string[];
-  mediaSrc: string[];
-  objectSrc: string[];
-  frameSrc: string[];
-  workerSrc: string[];
-  childSrc: string[];
-  formAction: string[];
-  frameAncestors: string[];
+  defaultSrc: string[];,
+  scriptSrc: string[];,
+  styleSrc: string[];,
+  imgSrc: string[];,
+  fontSrc: string[];,
+  connectSrc: string[];,
+  mediaSrc: string[];,
+  objectSrc: string[];,
+  frameSrc: string[];,
+  workerSrc: string[];,
+  childSrc: string[];,
+  formAction: string[];,
+  frameAncestors: string[];,
   baseUri: string[];
-  reportUri?: string;
-  reportTo?: string;
-}
-
+  reportUri?: string
+  reportTo?: string}
 interface CSPConfig {
   directives: CSPDirectives;
-  reportOnly: boolean;
-  nonceEnabled: boolean;
+  reportOnly: boolean,
+  nonceEnabled: boolean,
 }
 
 // Environment-specific CSP configurations
-const getCSPConfig = (env: string = process.env.NODE_ENV || 'development'): CSPConfig => {
-  const isProduction = env === 'production';
-  const isDevelopment = env === 'development';
+    // TODO: Fix incomplete function declaration,
+const isProduction = env === 'production';
 
-  const baseConfig: CSPDirectives = {
-    defaultSrc: ["'self'"],
+  const isDevelopment = env === 'development';
+;
+
+const baseConfig: CSPDirectives = {
+  defaultSrc: ["'self'"],
     scriptSrc: [
       "'self'",
       "'unsafe-eval'", // Required for some React development tools
@@ -114,7 +114,7 @@ const getCSPConfig = (env: string = process.env.NODE_ENV || 'development'): CSPC
   // Development-specific relaxations
   if (isDevelopment) {
     baseConfig.scriptSrc.push("'unsafe-inline'");
-    baseConfig.connectSrc.push('ws://localhost:*', 'http://localhost:*');
+    baseConfig.connectSrc.push('ws://localhost:*', 'http: //localhost:*'),
   }
 
   // Production-specific restrictions
@@ -124,21 +124,21 @@ const getCSPConfig = (env: string = process.env.NODE_ENV || 'development'): CSPC
   }
 
   return {
-    directives: baseConfig,
-    reportOnly: !isProduction, // Report only in non-production environments
-    nonceEnabled: isProduction // Enable nonce for inline scripts in production
+  directives: baseConfig,
+    reportOnly: !isProduction, // Report only in non-production environments,
+  nonceEnabled: isProduction // Enable nonce for inline scripts in production
   };
-};
+}
 
-// Generate a random nonce for inline scripts
-export const generateNonce = (): string => {
+// Generate a random nonce for inline scripts;
+export const asyncHandler: (): string => {
   const crypto = require('crypto');
   return crypto.randomBytes(16).toString('base64');
-};
+}
 
 // Build CSP header string from directives
-const buildCSPHeader = (directives: CSPDirectives, nonce?: string): string => {
-  const policy = Object.entries(directives)
+    // TODO: Fix incomplete function declaration,
+const policy = Object.entries(directives)
     .filter(([_, values]) => values && values.length > 0)
     .map(([directive, values]) => {
       const directiveName = directive.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -154,51 +154,50 @@ const buildCSPHeader = (directives: CSPDirectives, nonce?: string): string => {
     .join('; ');
 
   return policy;
-};
+}
 
-// CSP middleware factory
-export const createCSPMiddleware = (customConfig?: Partial<CSPConfig>) => {
+// CSP middleware factory;
+export const asyncHandler: (customConfig?: Partial<CSPConfig>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const config = { ...getCSPConfig(), ...customConfig };
-    
-    // Generate nonce if enabled
-    let nonce: string | undefined;
+    // Generate nonce if enabled;
+let nonce: string | undefined,
     if (config.nonceEnabled) {
       nonce = generateNonce();
       // Make nonce available to views
       res.locals.cspNonce = nonce;
     }
 
-    // Build the CSP header
-    const cspHeader = buildCSPHeader(config.directives, nonce);
+    // Build the CSP header;
+
+const cspHeader = buildCSPHeader(config.directives, nonce);
     
-    // Set the appropriate header
-    const headerName = config.reportOnly 
-      ? 'Content-Security-Policy-Report-Only' 
-      : 'Content-Security-Policy';
-    
+    // Set the appropriate header;
+
+const headerName = config.reportOnly 
+      ? 'Content-Security-Policy-Report-Only': 'Content-Security-Policy',
     res.setHeader(headerName, cspHeader);
 
     // Set Report-To header for CSP reporting
     if (config.directives.reportTo) {
       res.setHeader('Report-To', JSON.stringify({
-        group: 'csp-endpoint',
+  group: 'csp-endpoint',
         max_age: 10886400,
         endpoints: [{ url: config.directives.reportUri || '/csp-report' }]
       }));
     }
 
     next();
-  };
-};
+  }
+}
 
-// CSP violation report handler
-export const handleCSPReport = async (req: Request, res: Response) => {
+// CSP violation report handler;
+export const handler = async (req: Request, res: Response) => {
   const report = req.body;
   
   // Log CSP violations for monitoring
   console.error('CSP Violation:', {
-    documentUri: report['csp-report']?.['document-uri'],
+  documentUri: report['csp-report']?.['document-uri'],
     violatedDirective: report['csp-report']?.['violated-directive'],
     effectiveDirective: report['csp-report']?.['effective-directive'],
     blockedUri: report['csp-report']?.['blocked-uri'],
@@ -215,12 +214,12 @@ export const handleCSPReport = async (req: Request, res: Response) => {
   }
 
   res.status(204).end();
-};
+}
 
-// Preset configurations for common scenarios
+// Preset configurations for common scenarios;
 export const CSPPresets = {
   strict: (): CSPConfig => ({
-    directives: {
+  directives: {
       ...getCSPConfig('production').directives,
       scriptSrc: ["'self'"],
       styleSrc: ["'self'"],
@@ -239,14 +238,14 @@ export const CSPPresets = {
     reportOnly: false,
     nonceEnabled: true
   }),
-  
+,
   moderate: (): CSPConfig => getCSPConfig('production'),
-  
+,
   development: (): CSPConfig => getCSPConfig('development'),
-  
+,
   api: (): CSPConfig => ({
-    directives: {
-      defaultSrc: ["'none'"],
+  directives: {
+  defaultSrc: ["'none'"],
       scriptSrc: ["'none'"],
       styleSrc: ["'none'"],
       imgSrc: ["'none'"],
@@ -264,7 +263,7 @@ export const CSPPresets = {
     reportOnly: false,
     nonceEnabled: false
   })
-};
+}
 
-// Export default configuration
+// Export default configuration;
 export default getCSPConfig;

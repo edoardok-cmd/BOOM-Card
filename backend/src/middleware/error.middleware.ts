@@ -5,19 +5,17 @@ import winston from 'winston';
 import { AppError } from '../utils/errors';
 import { ErrorCode, ErrorSeverity } from '../constants/errors';
 import { config } from '../config';
-
+;
 interface ErrorResponse {
   success: false;
   error: {
-    code: string;
-    message: string;
-    details?: any;
-    stack?: string;
-    timestamp: string;
-    requestId?: string;
-  };
+  code: string,
+  message: string,
+    details?: any
+    stack?: string,
+  timestamp: string,
+    requestId?: string}
 }
-
 interface CustomError extends Error {
   statusCode?: number;
   code?: string;
@@ -25,16 +23,18 @@ interface CustomError extends Error {
   isOperational?: boolean;
   severity?: ErrorSeverity;
 }
-
-type ErrorHandler = (
+type AsyncFunction: (,
   error: CustomError,
   req: Request,
   res: Response,
   next: NextFunction
 ) => void;
+;
 
 const isDevelopment = config.NODE_ENV === 'development';
+
 const isProduction = config.NODE_ENV === 'production';
+;
 
 const ERROR_MESSAGES = {
   INTERNAL_SERVER_ERROR: 'An internal server error occurred',
@@ -47,8 +47,9 @@ const ERROR_MESSAGES = {
   SERVICE_UNAVAILABLE: 'Service temporarily unavailable',
   DATABASE_ERROR: 'Database operation failed',
   REDIS_ERROR: 'Cache operation failed',
-  EXTERNAL_SERVICE_ERROR: 'External service error',
+  EXTERNAL_SERVICE_ERROR: 'External service error';
 } as const;
+;
 
 const HTTP_STATUS_CODES = {
   BAD_REQUEST: 400,
@@ -59,23 +60,24 @@ const HTTP_STATUS_CODES = {
   UNPROCESSABLE_ENTITY: 422,
   TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
-  SERVICE_UNAVAILABLE: 503,
+  SERVICE_UNAVAILABLE: 503;
 } as const;
+;
 
 const logger = winston.createLogger({
   level: isDevelopment ? 'debug' : 'error',
   format: winston.format.json(),
   transports: [
     new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  ],
+  format: winston.format.simple()
+}),
+  ];
 });
 
 /**
  * Global error handler middleware
- */
-export const globalErrorHandler: ErrorRequestHandler = (
+ */;
+export const globalErrorHandler: : (,
   err: any,
   req: Request,
   res: Response,
@@ -83,7 +85,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
 ): void => {
   // Log error details
   logger.error('Error occurred:', {
-    error: err.message,
+  error: err.message,
     stack: err.stack,
     path: req.path,
     method: req.method,
@@ -97,9 +99,9 @@ export const globalErrorHandler: ErrorRequestHandler = (
   // Handle known error types
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
-      success: false,
+  success: false,
       error: {
-        message: err.message,
+  message: err.message,
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
       });
     return;
@@ -108,14 +110,14 @@ export const globalErrorHandler: ErrorRequestHandler = (
   // Handle Joi validation errors
   if (err.name === 'ValidationError' && err.details) {
     const errors = err.details.map((detail: any) => ({
-      field: detail.path.join('.'),
-      message: detail.message
+  field: detail.path.join('.'),
+      message: detail.message;
     }));
 
     res.status(400).json({
       success: false,
       error: {
-        message: 'Validation failed',
+  message: 'Validation failed',
         errors
       });
     return;
@@ -127,7 +129,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
     res.status(409).json({
       success: false,
       error: {
-        message: `${field} already exists`
+  message: `${field} already exists`
       });
     return;
   }
@@ -137,7 +139,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
     res.status(400).json({
       success: false,
       error: {
-        message: `Invalid ${err.path}: ${err.value}`
+  message: `Invalid ${err.path}: ${err.value}`
       });
     return;
   }
@@ -147,16 +149,15 @@ export const globalErrorHandler: ErrorRequestHandler = (
     res.status(401).json({
       success: false,
       error: {
-        message: 'Invalid token'
+  message: 'Invalid token'
       });
     return;
   }
-
   if (err.name === 'TokenExpiredError') {
     res.status(401).json({
       success: false,
       error: {
-        message: 'Token expired'
+  message: 'Token expired'
       });
     return;
   }
@@ -174,52 +175,54 @@ export const globalErrorHandler: ErrorRequestHandler = (
 
     res.status(400).json({
       success: false,
-      error: { message });
+      error: { message }),
     return;
   }
 
-  // Default error response
-  const statusCode = err.statusCode || 500;
+  // Default error response;
+
+const statusCode = err.statusCode || 500;
+
   const message = err.message || 'Internal server error';
 
   res.status(statusCode).json({
-    success: false,
+  success: false,
     error: {
-      message: process.env.NODE_ENV === 'production' && statusCode === 500 
+  message: process.env.NODE_ENV === 'production' && statusCode === 500 
         ? 'Something went wrong' 
         : message,
-      ...(process.env.NODE_ENV === 'development' && { 
-        stack: err.stack,
+      ...(process.env.NODE_ENV === 'development' && {
+  stack: err.stack,
         error: err 
       })
     });
-};
+}
 
 /**
  * Not found handler middleware
- */
-export const notFoundHandler = (
+ */;
+export const asyncHandler: (,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   const error = new AppError(`Route ${req.originalUrl} not found`, 404);
   next(error);
-};
+}
 
 /**
  * Async error wrapper to catch errors in async route handlers
- */
-export const asyncHandler = (fn: Function) => {
+ */;
+export const asyncHandler: (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
+  }
+}
 
 /**
  * Validation error formatter for express-validator
- */
-export const validationErrorHandler = (
+ */;
+export const asyncHandler: (,
   req: Request,
   res: Response,
   next: NextFunction
@@ -227,70 +230,70 @@ export const validationErrorHandler = (
   
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map(err => ({
-      field: err.param,
-      message: err.msg
+  field: err.param,
+      message: err.msg;
     }));
 
     res.status(400).json({
       success: false,
       error: {
-        message: 'Validation failed',
+  message: 'Validation failed',
         errors: formattedErrors
       });
     return;
   }
   
   next();
-};
+}
 
 /**
  * Rate limit error handler
- */
-export const rateLimitHandler = (
+ */;
+export const asyncHandler: (,
   req: Request,
   res: Response,
   next: NextFunction,
   options: any
 ): void => {
   res.status(429).json({
-    success: false,
+      success: false,
     error: {
-      message: 'Too many requests, please try again later',
+  message: 'Too many requests, please try again later',
       retryAfter: options.windowMs
     });
-};
+}
 
 /**
  * MongoDB connection error handler
- */
-export const dbErrorHandler = (error: Error): void => {
+ */;
+export const asyncHandler: (error: Error): void => {
   logger.error('Database connection error:', error);
   process.exit(1);
-};
+}
 
 /**
  * Unhandled rejection handler
- */
-export const unhandledRejectionHandler = (
+ */;
+export const asyncHandler: (,
   reason: any,
   promise: Promise<any>
 ): void => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // Close server & exit process
   process.exit(1);
-};
+}
 
 /**
  * Uncaught exception handler
- */
-export const uncaughtExceptionHandler = (error: Error): void => {
+ */;
+export const asyncHandler: (error: Error): void => {
   logger.error('Uncaught Exception:', error);
   // Close server & exit process
   process.exit(1);
-};
+}
 
 }
-}
+
 }
 }
 }

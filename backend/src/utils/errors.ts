@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import winston from 'winston';
 import { v4 as uuidv4 } from 'uuid';
 
-// Error severity levels
+// Error severity levels;
 export enum ErrorSeverity {
   LOW = 'low',
   MEDIUM = 'medium',
@@ -10,7 +10,7 @@ export enum ErrorSeverity {
   CRITICAL = 'critical'
 }
 
-// Error categories
+// Error categories;
 export enum ErrorCategory {
   VALIDATION = 'VALIDATION',
   AUTHENTICATION = 'AUTHENTICATION',
@@ -26,7 +26,7 @@ export enum ErrorCategory {
   NETWORK = 'NETWORK'
 }
 
-// HTTP status codes mapping
+// HTTP status codes mapping;
 export const ERROR_STATUS_CODES: Record<ErrorCategory, number> = {
   [ErrorCategory.VALIDATION]: 400,
   [ErrorCategory.AUTHENTICATION]: 401,
@@ -40,102 +40,93 @@ export const ERROR_STATUS_CODES: Record<ErrorCategory, number> = {
   [ErrorCategory.BUSINESS_LOGIC]: 422,
   [ErrorCategory.PAYMENT]: 402,
   [ErrorCategory.NETWORK]: 503
-};
+}
 
-// Error metadata interface
+// Error metadata interface;
 export interface ErrorMetadata {
-  timestamp: Date;
-  requestId?: string;
-  userId?: string;
-  path?: string;
-  method?: string;
-  ip?: string;
-  userAgent?: string;
-  stack?: string;
-  context?: Record<string, any>;
+  timestamp: Date,
+  requestId?: string
+  userId?: string
+  path?: string
+  method?: string
+  ip?: string
+  userAgent?: string
+  stack?: string
+  context?: Record<string, any>}
 }
-
-// Error details interface
+// Error details interface;
 export interface ErrorDetails {
-  field?: string;
-  value?: any;
-  constraint?: string;
-  message: string;
+  field?: string
+  value?: any
+  constraint?: string,
+  message: string,
+  }
 }
-
-// Custom error options
+// Custom error options;
 export interface CustomErrorOptions {
-  statusCode?: number;
-  category?: ErrorCategory;
-  severity?: ErrorSeverity;
-  details?: ErrorDetails[];
-  metadata?: Partial<ErrorMetadata>;
-  isOperational?: boolean;
-  shouldLog?: boolean;
-  originalError?: Error;
+  statusCode?: number
+  category?: ErrorCategory
+  severity?: ErrorSeverity
+  details?: ErrorDetails[]
+  metadata?: Partial<ErrorMetadata>
+  isOperational?: boolean
+  shouldLog?: boolean
+  originalError?: Error}
 }
-
-// Error response interface
+// Error response interface;
 export interface ErrorResponse {
   error: {
-    id: string;
-    code: string;
-    message: string;
-    category: ErrorCategory;
-    timestamp: Date;
-    details?: ErrorDetails[];
-    path?: string;
-    requestId?: string;
-  };
+  id: string,
+  code: string,
+  message: string,
+  category: ErrorCategory,
+  timestamp: Date,
+    details?: ErrorDetails[]
+    path?: string
+    requestId?: string}
 }
-
-// Validation error options
+// Validation error options;
 export interface ValidationErrorOptions {
-  field: string;
-  value?: any;
-  constraint?: string;
-  message?: string;
+  field: string,
+  value?: any
+  constraint?: string
+  message?: string}
 }
-
-// Database error options
+// Database error options;
 export interface DatabaseErrorOptions {
-  operation?: string;
-  table?: string;
-  constraint?: string;
-  originalError?: Error;
+  operation?: string
+  table?: string
+  constraint?: string
+  originalError?: Error}
 }
-
-// External service error options
+// External service error options;
 export interface ExternalServiceErrorOptions {
-  service: string;
-  endpoint?: string;
-  statusCode?: number;
-  responseTime?: number;
-  originalError?: Error;
+  service: string,
+  endpoint?: string
+  statusCode?: number
+  responseTime?: number
+  originalError?: Error}
 }
-
-// Rate limit error options
+// Rate limit error options;
 export interface RateLimitErrorOptions {
-  limit: number;
-  windowMs: number;
-  retryAfter?: number;
-  identifier?: string;
+  limit: number,
+  windowMs: number,
+  retryAfter?: number
+  identifier?: string}
 }
-
-// Error handler middleware type
-export type ErrorHandlerMiddleware = (
+// Error handler middleware type;
+export type AsyncFunction = (,
   error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) => void;
 
-// Error logger interface
+// Error logger interface;
 export interface ErrorLogger {
-  log(error: Error, metadata?: ErrorMetadata): void;
+  log(error: Error, metadata?: ErrorMetadata): void}
 }
-
-// Constants
+// Constants;
 export const DEFAULT_ERROR_MESSAGE = 'An unexpected error occurred';
 export const DEFAULT_VALIDATION_MESSAGE = 'Validation failed';
 export const DEFAULT_AUTH_MESSAGE = 'Authentication required';
@@ -144,7 +135,7 @@ export const DEFAULT_NOT_FOUND_MESSAGE = 'Resource not found';
 export const DEFAULT_CONFLICT_MESSAGE = 'Resource conflict';
 export const DEFAULT_RATE_LIMIT_MESSAGE = 'Too many requests';
 
-// Error code prefixes
+// Error code prefixes;
 export const ERROR_CODE_PREFIXES: Record<ErrorCategory, string> = {
   [ErrorCategory.VALIDATION]: 'VAL',
   [ErrorCategory.AUTHENTICATION]: 'AUTH',
@@ -158,6 +149,6 @@ export const ERROR_CODE_PREFIXES: Record<ErrorCategory, string> = {
   [ErrorCategory.BUSINESS_LOGIC]: 'BUSINESS',
   [ErrorCategory.PAYMENT]: 'PAYMENT',
   [ErrorCategory.NETWORK]: 'NETWORK'
-};
+}
 
 Execution error

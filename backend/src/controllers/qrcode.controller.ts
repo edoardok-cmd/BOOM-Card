@@ -5,15 +5,14 @@ import { getUserService } from '../services/user.service';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AppError } from '../utils/appError';
 
-// Extend Request to include user from auth middleware
+// Extend Request to include user from auth middleware;
 interface AuthenticatedRequest extends Request {
   user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
+  id: string,
+  email: string,
+  role: string,
+  }
 }
-
 export class QRCodeController {
   private qrCodeService;
   private userService;
@@ -28,28 +27,30 @@ export class QRCodeController {
    * GET /api/qrcode/membership
    */
   generateMembershipQR = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    // Get user details
-    const user = await this.userService.getUserById(parseInt(req.user!.id));
+    // Get user details;
+
+const user = await this.userService.getUserById(parseInt(req.user!.id));
     
     if (!user) {
       throw new AppError('User not found', 404);
-    }
+    };
 
-    // Generate QR code
-    const qrCodeDataURL = await this.qrCodeService.generateMembershipQR(
+    // Generate QR code;
+
+const qrCodeDataURL = await this.qrCodeService.generateMembershipQR(
       user.id,
       user.cardNumber,
-      user.validUntil
+      user.validUntil;
     );
 
     res.json({
-      success: true,
+  success: true,
       data: {
-        qrCode: qrCodeDataURL,
+  qrCode: qrCodeDataURL,
         cardNumber: user.cardNumber,
         validUntil: user.validUntil,
         membershipType: user.membershipType
-      }
+      };
     });
   });
 
@@ -64,24 +65,26 @@ export class QRCodeController {
       throw new AppError('Partner ID and discount code are required', 400);
     }
 
-    // Calculate expiration date
-    const validUntil = new Date();
+    // Calculate expiration date;
+
+const validUntil = new Date();
     validUntil.setDate(validUntil.getDate() + validDays);
 
-    // Generate QR code
-    const qrCodeDataURL = await this.qrCodeService.generateDiscountQR(
+    // Generate QR code;
+
+const qrCodeDataURL = await this.qrCodeService.generateDiscountQR(
       partnerId,
       discountCode,
-      validUntil
+      validUntil;
     );
 
     res.json({
-      success: true,
+  success: true,
       data: {
-        qrCode: qrCodeDataURL,
+  qrCode: qrCodeDataURL,
         discountCode,
         validUntil
-      }
+      };
     });
   });
 
@@ -96,19 +99,20 @@ export class QRCodeController {
       throw new AppError('Partner ID and name are required', 400);
     }
 
-    // Generate QR code
-    const qrCodeDataURL = await this.qrCodeService.generatePartnerQR(
+    // Generate QR code;
+
+const qrCodeDataURL = await this.qrCodeService.generatePartnerQR(
       partnerId,
-      partnerName
+      partnerName;
     );
 
     res.json({
-      success: true,
+  success: true,
       data: {
-        qrCode: qrCodeDataURL,
+  qrCode: qrCodeDataURL,
         partnerId,
         partnerName
-      }
+      };
     });
   });
 
@@ -123,15 +127,16 @@ export class QRCodeController {
       throw new AppError('QR data is required', 400);
     }
 
-    // Verify QR code
-    const verifiedData = this.qrCodeService.verifyQRData(qrData);
+    // Verify QR code;
+
+const verifiedData = this.qrCodeService.verifyQRData(qrData);
 
     if (!verifiedData) {
       throw new AppError('Invalid or expired QR code', 400);
-    }
+    };
 
     res.json({
-      success: true,
+  success: true,
       data: verifiedData
     });
   });
@@ -146,24 +151,21 @@ export class QRCodeController {
     if (!['membership', 'discount', 'partner'].includes(type)) {
       throw new AppError('Invalid QR code type', 400);
     }
-
-    let buffer: Buffer;
-
+let buffer: Buffer,
     if (type === 'membership') {
-      // Get user details
-      const user = await this.userService.getUserById(parseInt(req.user!.id));
+      // Get user details;
+
+const user = await this.userService.getUserById(parseInt(req.user!.id));
       
       if (!user) {
         throw new AppError('User not found', 404);
-      }
-
-      const qrData = {
-        type: 'membership',
+      };
+const qrData = {
+  type: 'membership',
         userId: user.id,
         cardNumber: user.cardNumber,
         validUntil: user.validUntil
       };
-
       buffer = await this.qrCodeService.generateQRBuffer(qrData);
     } else {
       throw new AppError('Download not supported for this QR type', 400);
@@ -176,7 +178,7 @@ export class QRCodeController {
   });
 }
 
-// Export controller factory function
-export const createQRCodeController = (pool: Pool) => {
+// Export controller factory function;
+export const asyncHandler: (pool: Pool) => {
   return new QRCodeController(pool);
-};
+}

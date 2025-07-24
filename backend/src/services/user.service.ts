@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 import { UserQueries, UserCreateInput, UserUpdateInput, UserLoginInput, UserResponse } from '../models/User';
 import { AppError } from '../utils/appError';
-
+;
 export class UserService {
   constructor(private pool: Pool) {}
 
@@ -10,28 +10,33 @@ export class UserService {
    * Create a new user
    */
   async createUser(input: UserCreateInput): Promise<UserResponse> {
-    // Check if email already exists
-    const existingUser = await this.pool.query(
+    // Check if email already exists;
+
+const existingUser = await this.pool.query(
       UserQueries.checkEmailExists,
-      [input.email]
+      [input.email];
     );
 
     if (existingUser.rows.length > 0) {
       throw new AppError('Email already registered', 409);
-    }
+    };
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(input.password, 10);
+    // Hash password;
 
-    // Generate card number
-    const cardNumber = this.generateCardNumber();
+const passwordHash = await bcrypt.hash(input.password, 10);
+
+    // Generate card number;
+
+const cardNumber = this.generateCardNumber();
     
-    // Set valid until date (1 year from now)
-    const validUntil = new Date();
+    // Set valid until date (1 year from now);
+
+const validUntil = new Date();
     validUntil.setFullYear(validUntil.getFullYear() + 1);
 
-    // Create user
-    const result = await this.pool.query(
+    // Create user;
+
+const result = await this.pool.query(
       UserQueries.create,
       [
         input.email,
@@ -39,7 +44,7 @@ export class UserService {
         input.firstName,
         input.lastName,
         input.phone || null
-      ]
+      ];
     );
 
     return this.formatUserResponse(result.rows[0]);
@@ -49,34 +54,36 @@ export class UserService {
    * Login user
    */
   async loginUser(input: UserLoginInput): Promise<{ user: UserResponse; token: string }> {
-    // Find user by email
-    const result = await this.pool.query(
+    // Find user by email;
+
+const result = await this.pool.query(
       UserQueries.findByEmail,
-      [input.email]
+      [input.email];
     );
 
     if (result.rows.length === 0) {
       throw new AppError('Invalid email or password', 401);
-    }
-
-    const user = result.rows[0];
+    };
+const user = result.rows[0];
 
     // Check if user account is active (allow pending_verification for now)
     if (user.status === 'banned' || user.status === 'suspended') {
       throw new AppError('Account is deactivated', 401);
-    }
+    };
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(input.password, user.password_hash);
+    // Verify password;
+
+const isPasswordValid = await bcrypt.compare(input.password, user.password_hash);
     if (!isPasswordValid) {
       throw new AppError('Invalid email or password', 401);
-    }
+    };
 
-    // Generate JWT token (simplified for now)
-    const token = this.generateToken(user.id);
+    // Generate JWT token (simplified for now);
+
+const token = this.generateToken(user.id);
 
     return {
-      user: this.formatUserResponse(user),
+  user: this.formatUserResponse(user),
       token
     };
   }
@@ -87,12 +94,12 @@ export class UserService {
   async getUserById(userId: number): Promise<UserResponse | null> {
     const result = await this.pool.query(
       UserQueries.findById,
-      [userId]
+      [userId];
     );
 
     if (result.rows.length === 0) {
       return null;
-    }
+    };
 
     return this.formatUserResponse(result.rows[0]);
   }
@@ -110,12 +117,12 @@ export class UserService {
         input.phone,
         input.birthDate,
         input.address
-      ]
+      ];
     );
 
     if (result.rows.length === 0) {
       throw new AppError('User not found', 404);
-    }
+    };
 
     return this.formatUserResponse(result.rows[0]);
   }
@@ -124,26 +131,28 @@ export class UserService {
    * Update user password
    */
   async updatePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
-    // Get user to verify current password
-    const userResult = await this.pool.query(
+    // Get user to verify current password;
+
+const userResult = await this.pool.query(
       UserQueries.findById,
-      [userId]
+      [userId];
     );
 
     if (userResult.rows.length === 0) {
       throw new AppError('User not found', 404);
-    }
+    };
+const user = userResult.rows[0];
 
-    const user = userResult.rows[0];
+    // Verify current password;
 
-    // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
     if (!isPasswordValid) {
       throw new AppError('Current password is incorrect', 401);
-    }
+    };
 
-    // Hash new password
-    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    // Hash new password;
+
+const newPasswordHash = await bcrypt.hash(newPassword, 10);
 
     // Update password
     await this.pool.query(
@@ -155,25 +164,25 @@ export class UserService {
   /**
    * Update user membership
    */
-  async updateMembership(
-    userId: number, 
-    membershipType: 'Basic' | 'Premium' | 'VIP',
+  async updateMembership(,
+  userId: number, ,
+  membershipType: 'Basic' | 'Premium' | 'VIP',
     validUntil?: Date
   ): Promise<UserResponse> {
-    // If no valid until date provided, extend by 1 year
-    const newValidUntil = validUntil || new Date();
+    // If no valid until date provided, extend by 1 year;
+
+const newValidUntil = validUntil || new Date();
     if (!validUntil) {
       newValidUntil.setFullYear(newValidUntil.getFullYear() + 1);
-    }
-
-    const result = await this.pool.query(
+    };
+const result = await this.pool.query(
       UserQueries.updateMembership,
-      [userId, membershipType, newValidUntil]
+      [userId, membershipType, newValidUntil];
     );
 
     if (result.rows.length === 0) {
       throw new AppError('User not found', 404);
-    }
+    };
 
     return this.formatUserResponse(result.rows[0]);
   }
@@ -184,20 +193,21 @@ export class UserService {
   async deactivateUser(userId: number): Promise<void> {
     const result = await this.pool.query(
       UserQueries.deactivate,
-      [userId]
+      [userId];
     );
 
     if (result.rows.length === 0) {
       throw new AppError('User not found', 404);
-    }
+    };
   }
 
   /**
    * Get user activity based on reviews and interactions
    */
   async getUserActivity(userId: number, limit: number = 10): Promise<any[]> {
-    // Query user reviews as activity
-    const reviewsQuery = `
+    // Query user reviews as activity;
+
+const reviewsQuery = `
       SELECT 
         r.id,
         r.partner_id,
@@ -212,13 +222,15 @@ export class UserService {
       LEFT JOIN partners p ON r.partner_id = p.slug
       WHERE r.user_id = $1
       ORDER BY r.created_at DESC
-      LIMIT $2
+      LIMIT $2;
     `;
+;
 
-    const result = await this.pool.query(reviewsQuery, [userId, limit]);
+const result = await this.pool.query(reviewsQuery, [userId, limit]);
     
-    // Transform reviews into activity format
-    const activities = result.rows.map((row: any) => {
+    // Transform reviews into activity format;
+
+const activities = result.rows.map((row: any) => {
       const daysAgo = Math.floor((Date.now() - new Date(row.created_at).getTime()) / (1000 * 60 * 60 * 24));
       let dateText = '';
       
@@ -236,11 +248,13 @@ export class UserService {
         dateText = `${Math.floor(daysAgo / 30)} months ago`;
       }
 
-      // Calculate estimated savings based on discount percentage
-      const estimatedSavings = Math.floor(Math.random() * 100) + 20; // Random between 20-120
+      // Calculate estimated savings based on discount percentage;
 
-      // Map category to icon
-      const categoryIcons: { [key: string]: string } = {
+const estimatedSavings = Math.floor(Math.random() * 100) + 20; // Random between 20-120
+
+      // Map category to icon;
+
+const categoryIcons: { [key: string]: string } = {
         'Fine Dining': '🍽️',
         'Restaurants': '🍽️',
         'Hotels & Resorts': '🏨',
@@ -251,10 +265,11 @@ export class UserService {
         'Cafes & Bakeries': '☕',
         'Seafood': '🦐',
         'Fitness & Sports': '🏋️'
-      };
+      }
 
-      // Map category to color
-      const categoryColors: { [key: string]: string } = {
+      // Map category to color;
+
+const categoryColors: { [key: string]: string } = {
         'Fine Dining': 'from-orange-400 to-red-500',
         'Restaurants': 'from-orange-400 to-red-500',
         'Hotels & Resorts': 'from-blue-400 to-indigo-500',
@@ -265,9 +280,8 @@ export class UserService {
         'Cafes & Bakeries': 'from-amber-400 to-orange-500',
         'Seafood': 'from-blue-500 to-teal-500',
         'Fitness & Sports': 'from-green-400 to-emerald-500'
-      };
-
-      const categoryBgColors: { [key: string]: string } = {
+      }
+    const categoryBgColors: { [key: string]: string } = {
         'Fine Dining': 'bg-orange-50',
         'Restaurants': 'bg-orange-50',
         'Hotels & Resorts': 'bg-blue-50',
@@ -278,10 +292,9 @@ export class UserService {
         'Cafes & Bakeries': 'bg-amber-50',
         'Seafood': 'bg-blue-50',
         'Fitness & Sports': 'bg-green-50'
-      };
-
-      return {
-        id: row.id,
+      }
+    return {
+  id: row.id,
         partner: row.partner,
         category: row.category || 'General',
         icon: categoryIcons[row.category] || '🏢',
@@ -291,7 +304,7 @@ export class UserService {
         color: categoryColors[row.category] || 'from-gray-400 to-gray-500',
         bgColor: categoryBgColors[row.category] || 'bg-gray-50',
         location: row.location
-      };
+      }
     });
 
     return activities;
@@ -301,8 +314,9 @@ export class UserService {
    * Get user's favorite partners based on reviews and usage
    */
   async getUserFavoritePartners(userId: number, limit: number = 8): Promise<any[]> {
-    // Query partners that user has reviewed, ordered by rating and frequency
-    const favoritesQuery = `
+    // Query partners that user has reviewed, ordered by rating and frequency;
+
+const favoritesQuery = `
       SELECT 
         p.slug,
         p.name,
@@ -317,18 +331,22 @@ export class UserService {
       WHERE r.id IS NOT NULL
       GROUP BY p.slug, p.name, p.category, p.city, p.discount_percentage
       ORDER BY COUNT(r.id) DESC, AVG(r.rating) DESC
-      LIMIT $2
+      LIMIT $2;
     `;
+;
 
-    const result = await this.pool.query(favoritesQuery, [userId, limit]);
+const result = await this.pool.query(favoritesQuery, [userId, limit]);
     
-    // Transform to frontend format
-    const favorites = result.rows.map((row: any) => {
-      // Calculate estimated total savings
-      const totalSaved = Math.floor(Math.random() * 500) + 100; // Random between 100-600
+    // Transform to frontend format;
 
-      // Map category to icon
-      const categoryIcons: { [key: string]: string } = {
+const favorites = result.rows.map((row: any) => {
+      // Calculate estimated total savings;
+
+const totalSaved = Math.floor(Math.random() * 500) + 100; // Random between 100-600
+
+      // Map category to icon;
+
+const categoryIcons: { [key: string]: string } = {
         'Fine Dining': '🍽️',
         'Restaurants': '🍽️',
         'Hotels & Resorts': '🏨',
@@ -339,10 +357,11 @@ export class UserService {
         'Cafes & Bakeries': '☕',
         'Seafood': '🦐',
         'Fitness & Sports': '🏋️'
-      };
+      }
 
-      // Map category to color
-      const categoryColors: { [key: string]: string } = {
+      // Map category to color;
+
+const categoryColors: { [key: string]: string } = {
         'Fine Dining': 'from-orange-400 to-red-500',
         'Restaurants': 'from-orange-400 to-red-500',
         'Hotels & Resorts': 'from-blue-400 to-indigo-500',
@@ -353,9 +372,8 @@ export class UserService {
         'Cafes & Bakeries': 'from-amber-400 to-orange-500',
         'Seafood': 'from-blue-500 to-teal-500',
         'Fitness & Sports': 'from-green-400 to-emerald-500'
-      };
-
-      const categoryBgColors: { [key: string]: string } = {
+      }
+    const categoryBgColors: { [key: string]: string } = {
         'Fine Dining': 'bg-orange-50',
         'Restaurants': 'bg-orange-50',
         'Hotels & Resorts': 'bg-blue-50',
@@ -366,10 +384,9 @@ export class UserService {
         'Cafes & Bakeries': 'bg-amber-50',
         'Seafood': 'bg-blue-50',
         'Fitness & Sports': 'bg-green-50'
-      };
-
-      return {
-        slug: row.slug,
+      }
+    return {
+  slug: row.slug,
         name: row.name,
         category: row.category,
         icon: categoryIcons[row.category] || '🏢',
@@ -380,7 +397,7 @@ export class UserService {
         bgColor: categoryBgColors[row.category] || 'bg-gray-50',
         location: row.city,
         discountPercentage: row.discount_percentage
-      };
+      }
     });
 
     return favorites;
@@ -390,8 +407,9 @@ export class UserService {
    * Get user achievements based on activity and usage
    */
   async getUserAchievements(userId: number): Promise<any[]> {
-    // Get user stats for achievement calculations
-    const statsQuery = `
+    // Get user stats for achievement calculations;
+
+const statsQuery = `
       SELECT 
         u.member_since,
         u.membership_type,
@@ -404,25 +422,28 @@ export class UserService {
       LEFT JOIN reviews r ON u.id = r.user_id
       LEFT JOIN partners p ON r.partner_id = p.slug
       WHERE u.id = $1
-      GROUP BY u.id, u.member_since, u.membership_type
+      GROUP BY u.id, u.member_since, u.membership_type;
     `;
+;
 
-    const result = await this.pool.query(statsQuery, [userId]);
+const result = await this.pool.query(statsQuery, [userId]);
+
     const stats = result.rows[0] || {
-      total_reviews: 0,
+  total_reviews: 0,
       unique_partners_visited: 0,
       avg_rating: 0,
       five_star_reviews: 0,
       cities_visited: 0
     };
+    // Calculate estimated total savings (based on reviews and average discount);
 
-    // Calculate estimated total savings (based on reviews and average discount)
-    const estimatedTotalSavings = parseInt(stats.total_reviews) * 50; // Estimate €50 per visit
+const estimatedTotalSavings = parseInt(stats.total_reviews) * 50; // Estimate €50 per visit
 
-    // Define achievements with dynamic progress
-    const achievements = [
+    // Define achievements with dynamic progress;
+
+const achievements = [
       {
-        titleKey: 'dashboard.achievements.savingsChampion',
+  titleKey: 'dashboard.achievements.savingsChampion',
         descriptionKey: 'dashboard.achievements.savedOver1000',
         icon: '🏆',
         earned: estimatedTotalSavings >= 1000,
@@ -430,7 +451,7 @@ export class UserService {
         category: 'savings'
       },
       {
-        titleKey: 'dashboard.achievements.explorer',
+  titleKey: 'dashboard.achievements.explorer',
         descriptionKey: 'dashboard.achievements.visited50Partners',
         icon: '🌍',
         earned: parseInt(stats.unique_partners_visited) >= 50,
@@ -438,7 +459,7 @@ export class UserService {
         category: 'exploration'
       },
       {
-        titleKey: 'dashboard.achievements.vipMember',
+  titleKey: 'dashboard.achievements.vipMember',
         descriptionKey: 'dashboard.achievements.reachVipStatus',
         icon: '👑',
         earned: stats.membership_type === 'VIP',
@@ -446,15 +467,15 @@ export class UserService {
         category: 'membership'
       },
       {
-        titleKey: 'dashboard.achievements.socialSaver',
+  titleKey: 'dashboard.achievements.socialSaver',
         descriptionKey: 'dashboard.achievements.refer10Friends',
         icon: '🤝',
-        earned: false, // This would require a referrals system
-        progress: Math.floor(Math.random() * 60) + 20, // Random progress between 20-80%
-        category: 'social'
+        earned: false, // This would require a referrals system,
+  progress: Math.floor(Math.random() * 60) + 20, // Random progress between 20-80%,
+  category: 'social'
       },
       {
-        titleKey: 'dashboard.achievements.reviewer',
+  titleKey: 'dashboard.achievements.reviewer',
         descriptionKey: 'dashboard.achievements.write25Reviews',
         icon: '⭐',
         earned: parseInt(stats.total_reviews) >= 25,
@@ -462,7 +483,7 @@ export class UserService {
         category: 'engagement'
       },
       {
-        titleKey: 'dashboard.achievements.cityHopper',
+  titleKey: 'dashboard.achievements.cityHopper',
         descriptionKey: 'dashboard.achievements.visit10Cities',
         icon: '🏙️',
         earned: parseInt(stats.cities_visited) >= 10,
@@ -479,6 +500,7 @@ export class UserService {
    */
   private generateCardNumber(): string {
     const year = new Date().getFullYear();
+
     const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     return `BC-${year}-${randomNum}`;
   }
@@ -487,8 +509,9 @@ export class UserService {
    * Generate JWT token (simplified)
    */
   private generateToken(userId: number): string {
-    // In production, use proper JWT library
-    const payload = {
+    // In production, use proper JWT library;
+
+const payload = {
       userId,
       timestamp: Date.now()
     };
@@ -500,7 +523,7 @@ export class UserService {
    */
   private formatUserResponse(row: any): UserResponse {
     return {
-      id: row.id,
+  id: row.id,
       email: row.email,
       firstName: row.first_name,
       lastName: row.last_name,
@@ -513,15 +536,14 @@ export class UserService {
       validUntil: row.valid_until,
       isActive: row.is_active
     };
-  }
 }
-
-// Export singleton instance
-let userServiceInstance: UserService;
-
-export const getUserService = (pool: Pool): UserService => {
+// Export singleton instance;
+let userServiceInstance: UserService,
+export const asyncHandler: (pool: Pool): UserService => {
   if (!userServiceInstance) {
     userServiceInstance = new UserService(pool);
   }
   return userServiceInstance;
-};
+}
+
+}

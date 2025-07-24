@@ -1,48 +1,41 @@
-// Subscription/Membership model for PostgreSQL
+// Subscription/Membership model for PostgreSQL;
 export interface SubscriptionPlan {
-  id?: number;
-  name: string;
-  type: 'Basic' | 'Premium' | 'VIP';
-  price: number;
-  currency: string;
-  duration_days: number;
-  features: string[];
-  discount_percentage: number;
-  is_active: boolean;
-  created_at?: Date;
-  updated_at?: Date;
-}
-
+  id?: number,
+  name: string,
+  type: 'Basic' | 'Premium' | 'VIP',
+  price: number,
+  currency: string,
+  duration_days: number,
+  features: string[];,
+  discount_percentage: number,
+  is_active: boolean,
+  created_at?: Date
+  updated_at?: Date}
 export interface UserSubscription {
-  id?: number;
-  user_id: string; // UUID
-  plan_id: number;
-  status: 'active' | 'expired' | 'cancelled';
-  start_date: Date;
-  end_date: Date;
-  auto_renew: boolean;
-  payment_method?: string;
-  last_payment_date?: Date;
-  next_payment_date?: Date;
-  created_at?: Date;
-  updated_at?: Date;
-}
-
+  id?: number,
+  user_id: string; // UUID,
+  plan_id: number,
+  status: 'active' | 'expired' | 'cancelled',
+  start_date: Date,
+  end_date: Date,
+  auto_renew: boolean,
+  payment_method?: string
+  last_payment_date?: Date
+  next_payment_date?: Date
+  created_at?: Date
+  updated_at?: Date}
 export interface SubscriptionCreateInput {
-  userId: string; // UUID
-  planId: number;
-  paymentMethod?: string;
-  autoRenew?: boolean;
-}
-
+  userId: string; // UUID,
+  planId: number,
+  paymentMethod?: string
+  autoRenew?: boolean}
 export interface SubscriptionUpdateInput {
-  autoRenew?: boolean;
-  paymentMethod?: string;
-}
+  autoRenew?: boolean
+  paymentMethod?: string}
 
-// SQL queries for Subscription operations
+// SQL queries for Subscription operations;
 export const SubscriptionQueries = {
-  // Get all subscription plans
+  // Get all subscription plans,
   getAllPlans: `
     SELECT * FROM subscription_plans
     WHERE is_active = true
@@ -54,20 +47,20 @@ export const SubscriptionQueries = {
       END
   `,
 
-  // Get plan by ID
+  // Get plan by ID,
   getPlanById: `
     SELECT * FROM subscription_plans
     WHERE id = $1
   `,
 
-  // Get plan by type
+  // Get plan by type,
   getPlanByType: `
     SELECT * FROM subscription_plans
     WHERE type = $1 AND is_active = true
     LIMIT 1
   `,
 
-  // Create user subscription
+  // Create user subscription,
   createSubscription: `
     INSERT INTO user_subscriptions (user_id, plan_id, status, start_date, end_date, 
                                    auto_renew, payment_method, last_payment_date, next_payment_date)
@@ -76,7 +69,7 @@ export const SubscriptionQueries = {
               auto_renew, payment_method, last_payment_date, next_payment_date, created_at
   `,
 
-  // Get user's active subscription
+  // Get user's active subscription,
   getActiveSubscription: `
     SELECT us.*, sp.name as plan_name, sp.type as plan_type, sp.price, sp.features, sp.discount_percentage
     FROM user_subscriptions us
@@ -86,7 +79,7 @@ export const SubscriptionQueries = {
     LIMIT 1
   `,
 
-  // Get user's subscription history
+  // Get user's subscription history,
   getSubscriptionHistory: `
     SELECT us.*, sp.name as plan_name, sp.type as plan_type, sp.price
     FROM user_subscriptions us
@@ -95,7 +88,7 @@ export const SubscriptionQueries = {
     ORDER BY us.created_at DESC
   `,
 
-  // Update subscription
+  // Update subscription,
   updateSubscription: `
     UPDATE user_subscriptions
     SET auto_renew = COALESCE($2, auto_renew),
@@ -106,7 +99,7 @@ export const SubscriptionQueries = {
               auto_renew, payment_method, last_payment_date, next_payment_date
   `,
 
-  // Cancel subscription
+  // Cancel subscription,
   cancelSubscription: `
     UPDATE user_subscriptions
     SET status = 'cancelled',
@@ -116,7 +109,7 @@ export const SubscriptionQueries = {
     RETURNING id
   `,
 
-  // Renew subscription
+  // Renew subscription,
   renewSubscription: `
     UPDATE user_subscriptions
     SET end_date = $2,
@@ -127,7 +120,7 @@ export const SubscriptionQueries = {
     RETURNING id, user_id, plan_id, status, start_date, end_date
   `,
 
-  // Check expired subscriptions
+  // Check expired subscriptions,
   checkExpiredSubscriptions: `
     UPDATE user_subscriptions
     SET status = 'expired',
@@ -138,7 +131,7 @@ export const SubscriptionQueries = {
     RETURNING id, user_id
   `,
 
-  // Update user membership type based on subscription
+  // Update user membership type based on subscription,
   updateUserMembership: `
     UPDATE users
     SET membership_type = $2,
@@ -146,15 +139,15 @@ export const SubscriptionQueries = {
         updated_at = NOW()
     WHERE id = $1
   `
-};
+}
 
-// Database migration for subscription tables
+// Database migration for subscription tables;
 export const SubscriptionMigration = `
   -- Create subscription plans table
   CREATE TABLE IF NOT EXISTS subscription_plans (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('Basic', 'Premium', 'VIP')),
+type VARCHAR(20) NOT NULL CHECK (type IN ('Basic', 'Premium', 'VIP')),
     price DECIMAL(10,2) NOT NULL,
     currency VARCHAR(3) DEFAULT 'BGN',
     duration_days INTEGER NOT NULL,

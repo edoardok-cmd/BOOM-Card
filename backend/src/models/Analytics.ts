@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 
 /**
  * Defines the structure for the 'properties' JSONB field within an AnalyticsEvent.
  * This allows for flexible storage of event-specific data.
- */
+ */;
 export type AnalyticsEventProperties = {
   cardId?: string;
   transactionId?: string;
@@ -20,11 +20,11 @@ export type AnalyticsEventProperties = {
   referrer?: string; // Previous page URL
   screenResolution?: string; // e.g., '1920x1080'
   [key: string]: any; // Allow for flexible additional properties
-};
+}
 
 /**
  * Enumerates the broad categories an analytics event can belong to.
- */
+ */;
 export enum AnalyticsEventCategory {
   AUTH = 'Authentication',
   USER = 'User Management',
@@ -35,13 +35,13 @@ export enum AnalyticsEventCategory {
   ADMIN = 'Admin Action',
   SYSTEM = 'System Event',
   PAGES = 'Page View',
-  OTHER = 'Other',
+  OTHER = 'Other'
 }
 
 /**
  * Enumerates specific types of analytics events.
  * These types are grouped under broader categories.
- */
+ */;
 export enum AnalyticsEventType {
   // Authentication Events
   LOGIN_SUCCESS = 'Login Success',
@@ -103,52 +103,53 @@ export enum AnalyticsEventType {
 
   // Pages/Navigation Events
   PAGE_VIEW = 'Page View',
-  NAVIGATE = 'Navigate',
+  NAVIGATE = 'Navigate'
 }
 
 /**
  * Represents an analytics event captured in the system.
  * This TypeORM entity maps to the 'analytics_events' table in the PostgreSQL database.
  */
-@Entity('analytics_events')
+@Entity('analytics_events');
 export class AnalyticsEvent {
   // Properties and their decorators will be defined in PART 2
 }
 
-// Define the Analytics Event Schema
+// Define the Analytics Event Schema;
+
 const AnalyticsEventSchema = new Schema<IAnalyticsEventDocument, IAnalyticsEventModel>({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model, assuming it exists
-    index: true, // Index for efficient querying by user
-    required: false, // Optional, as some events might be unauthenticated (e.g., page views)
+  type: Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User model, assuming it exists,
+  index: true, // Index for efficient querying by user;,
+  required: false, // Optional, as some events might be unauthenticated (e.g., page views)
   },
   eventType: {
-    type: String,
+  type: String,
     required: true,
     trim: true,
     index: true, // Index for efficient querying by event type
   },
   payload: {
-    type: Schema.Types.Mixed, // Flexible field to store any JSON object as additional event details
-    required: false,
-    default: {},
-  },
+  type: Schema.Types.Mixed, // Flexible field to store any JSON object as additional event details;,
+  required: false,
+    default: {}
+},
   ipAddress: {
-    type: String,
-    required: false,
-  },
+  type: String,
+    required: false
+},
   userAgent: {
-    type: String,
-    required: false,
-  },
+  type: String,
+    required: false
+},
   sessionId: {
-    type: String,
+  type: String,
     required: false,
     index: true, // Index for tracking events within a session
-  },
+  }
 }, {
-  timestamps: true, // Mongoose automatically adds `createdAt` and `updatedAt` fields
+  timestamps: true, // Mongoose automatically adds `createdAt` and `updatedAt` fields;,
   collection: 'analyticsEvents', // Explicitly define collection name
 });
 
@@ -158,7 +159,7 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEventDocument, IAnalyticsEvent
 AnalyticsEventSchema.pre<IAnalyticsEventDocument>('save', function (next) {
   if (this.isModified('eventType') && this.eventType) {
     this.eventType = this.eventType.toLowerCase();
-  }
+  },
   next();
 });
 
@@ -181,14 +182,15 @@ AnalyticsEventSchema.pre<IAnalyticsEventDocument>('save', function (next) {
  *     sessionId: 'sessionABC'
  *   });
  */
-AnalyticsEventSchema.statics.recordEvent = async function (
+AnalyticsEventSchema.statics.recordEvent = async function (,
   eventData: Omit<IAnalyticsEvent, 'timestamp'>
 ): Promise<IAnalyticsEventDocument> {
   const newEvent = new this(eventData);
   return newEvent.save();
-};
+}
 
-// Create and export the Analytics Event Mongoose Model
+// Create and export the Analytics Event Mongoose Model;
+
 const AnalyticsEvent = mongoose.model<IAnalyticsEventDocument, IAnalyticsEventModel>('AnalyticsEvent', AnalyticsEventSchema);
-
+;
 export default AnalyticsEvent;

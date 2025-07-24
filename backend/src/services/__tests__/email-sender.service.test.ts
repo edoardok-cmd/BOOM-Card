@@ -21,10 +21,10 @@ import { Pool } from 'pg';
 import { EmailTemplate, EmailStatus, EmailPriority } from '../../types/email.types';
 import { ServiceError, ValidationError, RateLimitError } from '../../errors';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
-
+;
 interface EmailSendOptions {
   to: string | string[];
-  from?: string;
+  from?: string,
   subject: string;
   template?: string;
   templateData?: Record<string, any>;
@@ -40,7 +40,7 @@ interface EmailSendOptions {
   replyTo?: string;
   headers?: Record<string, string>;
 }
-
+;
 interface EmailAttachment {
   filename: string;
   content?: Buffer | string;
@@ -49,7 +49,7 @@ interface EmailAttachment {
   encoding?: string;
   cid?: string;
 }
-
+;
 interface EmailResult {
   messageId: string;
   status: EmailStatus;
@@ -58,73 +58,73 @@ interface EmailResult {
   attempts?: number;
   provider?: string;
 }
-
+;
 interface EmailBatch {
   batchId: string;
-  emails: EmailSendOptions[];
+  emails: EmailSendOptions[];,
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  totalEmails: number;
-  sentEmails: number;
-  failedEmails: number;
-  createdAt: Date;
+  totalEmails: number,
+  sentEmails: number,
+  failedEmails: number,
+  createdAt: Date,
   completedAt?: Date;
 }
-
+;
 interface EmailMetrics {
   sent: number;
   failed: number;
-  bounced: number;
-  opened: number;
-  clicked: number;
-  unsubscribed: number;
-  complained: number;
-  delivered: number;
-  deferred: number;
-  rejected: number;
+  bounced: number,
+  opened: number,
+  clicked: number,
+  unsubscribed: number,
+  complained: number,
+  delivered: number,
+  deferred: number,
+  rejected: number,
 }
-
+;
 interface EmailProviderConfig {
   name: string;
   type: 'smtp' | 'api';
-  priority: number;
-  enabled: boolean;
+  priority: number,
+  enabled: boolean,
   config: SMTPTransport.Options | Record<string, any>;
   rateLimit?: {
-    maxPerSecond: number;
-    maxPerMinute: number;
-    maxPerHour: number;
-    maxPerDay: number;
-  };
+  maxPerSecond: number,
+  maxPerMinute: number,
+  maxPerHour: number,
+  maxPerDay: number,
+  }
   healthCheck?: {
-    enabled: boolean;
-    interval: number;
-    timeout: number;
+  enabled: boolean,
+  interval: number,
+  timeout: number,
     url?: string;
-  };
+  }
 }
-
+;
 interface EmailQueueJob {
   id: string;
   email: EmailSendOptions;
-  attempts: number;
-  maxAttempts: number;
-  priority: number;
-  scheduledAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  attempts: number,
+  maxAttempts: number,
+  priority: number,
+  scheduledAt?: Date,
+  createdAt: Date,
+  updatedAt: Date,
   error?: string;
   provider?: string;
 }
-
+;
 interface EmailWebhookPayload {
   event: 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'complained' | 'unsubscribed';
   messageId: string;
-  recipient: string;
-  timestamp: Date;
+  recipient: string,
+  timestamp: Date,
   metadata?: Record<string, any>;
   error?: string;
 }
-
+;
 type MockedConfigService = DeepMockProxy<ConfigService>;
 type MockedLoggerService = DeepMockProxy<LoggerService>;
 type MockedMetricsService = DeepMockProxy<MetricsService>;
@@ -140,26 +140,26 @@ type MockedHealthCheckService = DeepMockProxy<HealthCheckService>;
 type MockedTransporter = DeepMockProxy<Mail>;
 type MockedRedis = DeepMockProxy<Redis>;
 type MockedPool = DeepMockProxy<Pool>;
-
-const DEFAULT_FROM_EMAIL = 'noreply@boomcard.com';
-const DEFAULT_FROM_NAME = 'BOOM Card';
-const DEFAULT_REPLY_TO = 'support@boomcard.com';
-const MAX_BATCH_SIZE = 1000;
-const MAX_RETRY_ATTEMPTS = 3;
-const RETRY_DELAY_MS = 5000;
-const EMAIL_CACHE_TTL = 3600;
-const EMAIL_QUEUE_NAME = 'email-queue';
-const EMAIL_DEAD_LETTER_QUEUE = 'email-dlq';
-const EMAIL_WEBHOOK_SECRET = 'test-webhook-secret';
-const EMAIL_TRACKING_PIXEL_URL = 'https://api.boomcard.com/email/track';
-const EMAIL_UNSUBSCRIBE_URL = 'https://boomcard.com/unsubscribe';
-
+;
+// const DEFAULT_FROM_EMAIL = 'noreply@boomcard.com'; // TODO: Move to proper scope
+// const DEFAULT_FROM_NAME = 'BOOM Card'; // TODO: Move to proper scope
+// const DEFAULT_REPLY_TO = 'support@boomcard.com'; // TODO: Move to proper scope
+// const MAX_BATCH_SIZE = 1000; // TODO: Move to proper scope
+// const MAX_RETRY_ATTEMPTS = 3; // TODO: Move to proper scope
+// const RETRY_DELAY_MS = 5000; // TODO: Move to proper scope
+// const EMAIL_CACHE_TTL = 3600; // TODO: Move to proper scope
+// const EMAIL_QUEUE_NAME = 'email-queue'; // TODO: Move to proper scope
+// const EMAIL_DEAD_LETTER_QUEUE = 'email-dlq'; // TODO: Move to proper scope
+// const EMAIL_WEBHOOK_SECRET = 'test-webhook-secret'; // TODO: Move to proper scope
+// const EMAIL_TRACKING_PIXEL_URL = 'https: //api.boomcard.com/email/track',
+const EMAIL_UNSUBSCRIBE_URL = 'https: //boomcard.com/unsubscribe',; // TODO: Move to proper scope
+;
 const SMTP_CONFIG: SMTPTransport.Options = {
   host: 'smtp.test.com',
   port: 587,
   secure: false,
   auth: {
-    user: 'test@boomcard.com',
+  user: 'test@boomcard.com',
     pass: 'test-password'
   },
   pool: true,
@@ -167,9 +167,8 @@ const SMTP_CONFIG: SMTPTransport.Options = {
   maxMessages: 100,
   rateDelta: 1000,
   rateLimit: 10
-};
-
-const EMAIL_TEMPLATES = {
+}
+    // const EMAIL_TEMPLATES = {
   WELCOME: 'welcome',
   PASSWORD_RESET: 'password-reset',
   EMAIL_VERIFICATION: 'email-verification',
@@ -186,72 +185,69 @@ const EMAIL_TEMPLATES = {
   ANALYTICS_REPORT: 'analytics-report',
   SECURITY_ALERT: 'security-alert',
   SYSTEM_NOTIFICATION: 'system-notification'
-};
-
-const EMAIL_PROVIDERS: EmailProviderConfig[] = [
+}
+    const EMAIL_PROVIDERS: EmailProviderConfig[] = [
   {
-    name: 'primary-smtp',
+  name: 'primary-smtp',
     type: 'smtp',
     priority: 1,
     enabled: true,
     config: SMTP_CONFIG,
     rateLimit: {
-      maxPerSecond: 10,
+  maxPerSecond: 10,
       maxPerMinute: 500,
       maxPerHour: 10000,
       maxPerDay: 100000
     },
     healthCheck: {
-      enabled: true,
+  enabled: true,
       interval: 60000,
       timeout: 5000
     },
   {
-    name: 'sendgrid',
+  name: 'sendgrid',
     type: 'api',
     priority: 2,
     enabled: true,
     config: {
-      apiKey: 'test-sendgrid-api-key',
+  apiKey: 'test-sendgrid-api-key',
       endpoint: 'https://api.sendgrid.com/v3'
     },
     rateLimit: {
-      maxPerSecond: 100,
+  maxPerSecond: 100,
       maxPerMinute: 6000,
       maxPerHour: 100000,
       maxPerDay: 1000000
     },
     healthCheck: {
-      enabled: true,
+  enabled: true,
       interval: 60000,
       timeout: 5000,
       url: 'https://api.sendgrid.com/v3/health'
-    }
+    }; // TODO: Move to proper scope
 ];
-
+;
 const MOCK_EMAIL_OPTIONS: EmailSendOptions = {
   to: 'test@example.com',
   subject: 'Test Email',
   template: EMAIL_TEMPLATES.WELCOME,
   templateData: {
-    name: 'Test User',
+  name: 'Test User',
     cardUrl: 'https://boomcard.com/cards/test-card'
   },
   priority: EmailPriority.HIGH,
   tags: ['test', 'welcome'],
   metadata: {
-    userId: 'user-123',
+  userId: 'user-123',
     source: 'test'
-  };
-
-const MOCK_EMAIL_RESULT: EmailResult = {
+  }
+    const MOCK_EMAIL_RESULT: EmailResult = {
   messageId: 'test-message-id',
   status: EmailStatus.SENT,
   sentAt: new Date(),
   provider: 'primary-smtp'
-};
-
-const MOCK_EMAIL_BATCH: EmailBatch = {
+}
+    const MOCK_EMAIL_BATCH: EmailBatch = {
   batchId: 'batch-123',
   emails: [MOCK_EMAIL_OPTIONS],
   status: 'completed',
@@ -260,9 +256,8 @@ const MOCK_EMAIL_BATCH: EmailBatch = {
   failedEmails: 0,
   createdAt: new Date(),
   completedAt: new Date()
-};
-
-const MOCK_EMAIL_METRICS: EmailMetrics = {
+}
+    const MOCK_EMAIL_METRICS: EmailMetrics = {
   sent: 1000,
   failed: 10,
   bounced: 5,
@@ -273,7 +268,7 @@ const MOCK_EMAIL_METRICS: EmailMetrics = {
   delivered: 985,
   deferred: 0,
   rejected: 5
-};
+}
 
 describe('EmailSenderService', () => {
   let service: EmailSenderService;
@@ -285,37 +280,36 @@ describe('EmailSenderService', () => {
   let encryptionService: EncryptionService;
   let emailQueue: Queue;
   let mockTransporter: any;
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
+  providers: [
         EmailSenderService,
         {
-          provide: ConfigService,
+  provide: ConfigService,
           useValue: mockConfigService
         },
         {
-          provide: getRepositoryToken(EmailLog),
+  provide: getRepositoryToken(EmailLog),
           useValue: mockEmailLogRepository
         },
         {
-          provide: getRepositoryToken(EmailTemplate),
+  provide: getRepositoryToken(EmailTemplate),
           useValue: mockEmailTemplateRepository
         },
         {
-          provide: RedisService,
+  provide: RedisService,
           useValue: mockRedisService
         },
         {
-          provide: MetricsService,
+  provide: MetricsService,
           useValue: mockMetricsService
         },
         {
-          provide: EncryptionService,
+  provide: EncryptionService,
           useValue: mockEncryptionService
         },
         {
-          provide: getQueueToken(EMAIL_QUEUE_NAME),
+  provide: getQueueToken(EMAIL_QUEUE_NAME),
           useValue: mockEmailQueue
         }
       ]
@@ -332,10 +326,10 @@ describe('EmailSenderService', () => {
 
     // Create mock transporter
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(mockEmailResult),
+  sendMail: jest.fn().mockResolvedValue(mockEmailResult),
       verify: jest.fn().mockResolvedValue(true),
       close: jest.fn()
-    };
+    }
 
     // Mock nodemailer
     (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
@@ -351,18 +345,17 @@ describe('EmailSenderService', () => {
   describe('sendEmail', () => {
     it('should send email successfully', async () => {
       const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>',
         text: 'Test'
-      };
-
-      const result = await service.sendEmail(emailOptions);
+      }
+    // const result = await service.sendEmail(emailOptions); // TODO: Move to proper scope
 
       expect(result).toEqual(mockEmailResult);
       expect(mockTransporter.sendMail).toHaveBeenCalledWith(
         expect.objectContaining({
-          to: emailOptions.to,
+  to: emailOptions.to,
           subject: emailOptions.subject,
           html: emailOptions.html,
           text: emailOptions.text
@@ -375,37 +368,36 @@ describe('EmailSenderService', () => {
     it('should send email with template', async () => {
       const template = createMockEmailTemplate();
       mockEmailTemplateRepository.findOne.mockResolvedValue(template);
-
-      const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+;
+const emailOptions: EmailOptions = {
+  to: 'test@example.com',
         subject: 'Test Email',
         template: 'welcome',
         templateData: {
-          userName: 'John Doe',
+  userName: 'John Doe',
           companyName: 'BOOM Card'
         };
 
-
       expect(result).toEqual(mockEmailResult);
       expect(mockEmailTemplateRepository.findOne).toHaveBeenCalledWith({
-        where: { name: 'welcome', active: true });
+  where: { name: 'welcome', active: true }),
       expect(handlebars.compile).toHaveBeenCalled();
     });
 
     it('should handle multiple recipients', async () => {
       const emailOptions: EmailOptions = {
-        to: ['user1@example.com', 'user2@example.com'],
+  to: ['user1@example.com', 'user2@example.com'],
         cc: ['cc@example.com'],
         bcc: ['bcc@example.com'],
         subject: 'Test Email',
         html: '<p>Test</p>'
-      };
+      }
 
       await service.sendEmail(emailOptions);
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith(
         expect.objectContaining({
-          to: emailOptions.to,
+  to: emailOptions.to,
           cc: emailOptions.cc,
           bcc: emailOptions.bcc
         })
@@ -415,26 +407,26 @@ describe('EmailSenderService', () => {
     it('should handle attachments', async () => {
       const attachments: EmailAttachment[] = [
         {
-          filename: 'test.pdf',
+  filename: 'test.pdf',
           content: Buffer.from('test'),
           contentType: 'application/pdf'
         }
       ];
-
-      const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+;
+const emailOptions: EmailOptions = {
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>',
         attachments
-      };
+      }
 
       await service.sendEmail(emailOptions);
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith(
         expect.objectContaining({
-          attachments: expect.arrayContaining([
+  attachments: expect.arrayContaining([
             expect.objectContaining({
-              filename: 'test.pdf'
+  filename: 'test.pdf'
             })
           ])
         })
@@ -442,22 +434,21 @@ describe('EmailSenderService', () => {
     });
 
     it('should enforce rate limits', async () => {
-      mockRedisService.get.mockResolvedValue('100'); // Max limit reached
-
-      const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+      mockRedisService.get.mockResolvedValue('100'); // Max limit reached;
+const emailOptions: EmailOptions = {
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>'
-      };
+      }
 
       await expect(service.sendEmail(emailOptions)).rejects.toThrow('Rate limit exceeded');
       expect(mockTransporter.sendMail).not.toHaveBeenCalled();
     });
 
     it('should queue email if scheduled', async () => {
-      const scheduledAt = new Date(Date.now() + 3600000); // 1 hour from now
-      const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+      const scheduledAt = new Date(Date.now() + 3600000); // 1 hour from now;
+const emailOptions: EmailOptions = {
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>',
         scheduledAt
@@ -469,7 +460,7 @@ describe('EmailSenderService', () => {
         'send-email',
         expect.objectContaining({ options: emailOptions }),
         expect.objectContaining({
-          delay: expect.any(Number)
+  delay: expect.any(Number)
         })
       );
       expect(mockTransporter.sendMail).not.toHaveBeenCalled();
@@ -478,9 +469,9 @@ describe('EmailSenderService', () => {
     it('should handle sending failures', async () => {
       const error = new Error('SMTP connection failed');
       mockTransporter.sendMail.mockRejectedValue(error);
-
-      const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+;
+const emailOptions: EmailOptions = {
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>'
       };
@@ -488,7 +479,7 @@ describe('EmailSenderService', () => {
       await expect(service.sendEmail(emailOptions)).rejects.toThrow(error);
       expect(mockEmailLogRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          status: EmailStatus.FAILED,
+  status: EmailStatus.FAILED,
           error: error.message
         })
       );
@@ -497,37 +488,37 @@ describe('EmailSenderService', () => {
 
     it('should add tracking pixel when enabled', async () => {
       const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>',
         trackOpens: true
-      };
+      }
 
       await service.sendEmail(emailOptions);
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('<img')
+  html: expect.stringContaining('<img')
         })
       );
     });
 
     it('should encrypt sensitive data in logs', async () => {
       const emailOptions: EmailOptions = {
-        to: 'test@example.com',
+  to: 'test@example.com',
         subject: 'Test Email',
         html: '<p>Test</p>',
         metadata: {
-          userId: '123',
+  userId: '123',
           sensitive: true
-        };
+        }
 
       await service.sendEmail(emailOptions);
 
       expect(mockEncryptionService.encrypt).toHaveBeenCalled();
       expect(mockEmailLogRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.any(String) // Encrypted
+  metadata: expect.any(String) // Encrypted
         })
       );
     });
@@ -535,12 +526,11 @@ describe('EmailSenderService', () => {
 
   describe('sendBulkEmail', () => {
     it('should send bulk emails in batches', async () => {
-      const recipients = Array.from({ length: 25 }, (_, i) => ({
-        to: `user${i}@example.com`,
+      // const recipients = Array.from({ length: 25 }, (_, i) => ({
+  to: `user${i}@example.com`,
         subject: 'Bulk Email',
-        html: '<p>Test</p>'
+        html: '<p>Test</p>'; // TODO: Move to proper scope
       }));
-
 
       expect(result.total).toBe(25);
       expect(result.sent).toBe(25);
@@ -559,40 +549,41 @@ describe('EmailSenderService', () => {
         { to: 'user3@example.com', subject: 'Test', html: '<p>Test</p>' }
       ];
 
-
       expect(result.total).toBe(3);
       expect(result.sent).toBe(2);
       expect(result.failed).toBe(1);
       expect(result.failures).toContainEqual(
         expect.objectContaining({
-          recipient: 'user2@example.com',
+  recipient: 'user2@example.com',
           error: 'Failed'
         })
       );
     });
 
     it('should respect rate limits in bulk send', async () => {
-        to: `user${i}@example.com`,
+  to: `user${i}@example.com`,
         subject: 'Bulk Email',
         html: '<p>Test</p>'
       }));
 
-      // Mock rate limit reached after 100 emails
-      let callCount = 0;
+      // Mock rate limit reached after 100 emails;
+let callCount = 0;
       mockRedisService.incr.mockImplementation(async () => {
         callCount++;
         return callCount;
       });
       mockRedisService.get.mockImplementation(async (key) => {
-        if (key.includes('minute')) return callCount > 100 ? '101' : String(callCount);
+        if (key.includes('minute')) return callCount > 100 ? '101': String(callCount),
         return '0';
       });
 
-
       expect(res
-}}}
+}
+
 }
 }
 }
 }
 }
+}
+});

@@ -8,26 +8,24 @@ import { CardType } from '../models/Card';
 declare global {
   namespace Express {
     interface User {
-      id: string;
-      email: string;
-      role: UserRole;
-      businessId?: string;
-      permissions?: string[];
-    }
+      id: string
+      email: string
+      role: UserRole
+      businessId?: string
+      permissions?: string[]}
 
     interface Request {
-      user?: User;
+      user?: User
       session: Session & {
-        userId?: string;
-        businessId?: string;
-        deviceId?: string;
-        lastActivity?: Date;
-      };
+        userId?: string
+        businessId?: string
+        deviceId?: string
+        lastActivity?: Date}
       rateLimitInfo?: {
         limit: number;
         remaining: number;
         resetTime: Date;
-      };
+      }
       analytics?: {
         requestId: string;
         startTime: number;
@@ -37,22 +35,22 @@ declare global {
           country?: string;
           region?: string;
           city?: string;
-        };
-      };
+        }
+      }
       pagination?: {
         page: number;
         limit: number;
         offset: number;
-      };
+      }
       filters?: {
         dateRange?: {
           start: Date;
           end: Date;
-        };
+        }
         status?: string[];
         categories?: string[];
         searchTerm?: string;
-      };
+      }
     }
 }
 
@@ -61,29 +59,27 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export interface BusinessContext {
-  businessId: string;
-  tier: BusinessTier;
-  features: string[];
+  businessId: string
+  tier: BusinessTier
+  features: string[]
   limits: {
-    cards: number;
-    users: number;
-    storage: number;
-    apiCalls: number;
-  };
+    cards: number
+    users: number
+    storage: number
+    apiCalls: number}
 }
 
 export interface CardContext {
-  cardId: string;
-  type: CardType;
-  ownerId: string;
-  businessId?: string;
-  isActive: boolean;
+  cardId: string
+  type: CardType
+  ownerId: string
+  businessId?: string
+  isActive: boolean
   permissions: {
-    canEdit: boolean;
-    canDelete: boolean;
-    canShare: boolean;
-    canAnalytics: boolean;
-  };
+    canEdit: boolean
+    canDelete: boolean
+    canShare: boolean
+    canAnalytics: boolean}
 }
 
 export interface ApiResponse<T = any> {
@@ -93,52 +89,48 @@ export interface ApiResponse<T = any> {
     code: string;
     message: string;
     details?: any;
-  };
+  }
   meta?: {
     timestamp: Date;
     version: string;
     requestId: string;
-  };
+  }
   pagination?: {
     page: number;
     limit: number;
     total: number;
     pages: number;
-  };
+  }
 }
 
 export interface ValidationError {
-  field: string;
-  message: string;
-  code: string;
-  value?: any;
-}
+  field: string
+  message: string
+  code: string
+  value?: any}
 
 export interface FileUpload {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  size: number;
-  buffer?: Buffer;
-  path?: string;
-  url?: string;
-}
+  fieldname: string
+  originalname: string
+  encoding: string
+  mimetype: string
+  size: number
+  buffer?: Buffer
+  path?: string
+  url?: string}
 
 export interface WebhookPayload {
-  event: string;
-  timestamp: Date;
-  data: any;
-  signature: string;
-  retryCount?: number;
-}
+  event: string
+  timestamp: Date
+  data: any
+  signature: string
+  retryCount?: number}
 
 export interface CacheOptions {
-  ttl?: number;
-  key?: string;
-  tags?: string[];
-  compress?: boolean;
-}
+  ttl?: number
+  key?: string
+  tags?: string[]
+  compress?: boolean}
 
 export interface QueueJob<T = any> {
   id: string;
@@ -150,49 +142,45 @@ export interface QueueJob<T = any> {
   backoff?: {
     type: 'fixed' | 'exponential';
     delay: number;
-  };
+  }
 }
 
 export interface MetricsData {
-  endpoint: string;
-  method: string;
-  statusCode: number;
-  responseTime: number;
-  timestamp: Date;
-  userId?: string;
-  businessId?: string;
-  error?: boolean;
-}
+  endpoint: string
+  method: string
+  statusCode: number
+  responseTime: number
+  timestamp: Date
+  userId?: string
+  businessId?: string
+  error?: boolean}
 
 export interface SecurityContext {
-  ipAddress: string;
-  userAgent: string;
-  fingerprint?: string;
-  riskScore?: number;
-  flags?: string[];
-}
+  ipAddress: string
+  userAgent: string
+  fingerprint?: string
+  riskScore?: number
+  flags?: string[]}
 
 export interface FeatureFlag {
-  name: string;
-  enabled: boolean;
-  rolloutPercentage?: number;
-  targetUsers?: string[];
-  targetBusinesses?: string[];
-  metadata?: Record<string, any>;
-}
+  name: string
+  enabled: boolean
+  rolloutPercentage?: number
+  targetUsers?: string[]
+  targetBusinesses?: string[]
+  metadata?: Record<string, any>}
 
 export interface AuditLog {
-  userId: string;
-  action: string;
-  resource: string;
-  resourceId: string;
-  timestamp: Date;
-  ipAddress: string;
-  userAgent: string;
+  userId: string
+  action: string
+  resource: string
+  resourceId: string
+  timestamp: Date
+  ipAddress: string
+  userAgent: string
   changes?: {
-    before: any;
-    after: any;
-  };
+    before: any
+    after: any}
   metadata?: Record<string, any>;
 }
 
@@ -247,13 +235,11 @@ declare global {
   namespace Express {
     interface Request {
       // Session and authentication
-      sessionId?: string;
-      startTime?: number;
-      
+      sessionId?: string
+      startTime?: number
       // File upload
-      file?: Multer.File;
-      files?: Multer.File[] | { [fieldname: string]: Multer.File[] };
-      
+      file?: Multer.File
+      files?: Multer.File[] | { [fieldname: string]: Multer.File[] }
       // Parsed body and query
       body: any;
       query: any;
@@ -267,15 +253,13 @@ declare global {
         'x-forwarded-for'?: string;
         'user-agent'?: string;
         [key: string]: string | string[] | undefined;
-      };
-      
+      }
       // Pagination
       pagination?: {
         page: number;
         limit: number;
         offset: number;
-      };
-      
+      }
       // Search and filters
       filters?: SearchFilters;
       
@@ -285,47 +269,40 @@ declare global {
         current: number;
         remaining: number;
         resetTime: Date;
-      };
-      
+      }
       // POS integration
       posTerminal?: {
         id: string;
         locationId: string;
         isActive: boolean;
-      };
-      
+      }
       // Partner context
       partner?: {
         id: string;
         businessName: string;
         locations: string[];
         permissions: PartnerPermission[];
-      };
-      
+      }
       // Analytics tracking
       analytics?: {
         sessionId: string;
         userId?: string;
         events: AnalyticsEvent[];
-      };
+      }
     }
     
     interface Response {
       // Custom response methods
-      sendSuccess<T>(data: T, metadata?: ResponseMetadata): void;
-      sendError(error: ApiError | string, statusCode?: number): void;
-      sendPaginated<T>(data: T[], totalCount: number, page: number, pageSize: number): void;
-      
+      sendSuccess<T>(data: T, metadata?: ResponseMetadata): void
+      sendError(error: ApiError | string, statusCode?: number): void
+      sendPaginated<T>(data: T[], totalCount: number, page: number, pageSize: number): void
       // Cache control
-      setCache(duration: number, isPrivate?: boolean): void;
-      noCache(): void;
-      
+      setCache(duration: number, isPrivate?: boolean): void
+      noCache(): void
       // Security headers
-      setSecurityHeaders(): void;
-      
+      setSecurityHeaders(): void
       // Analytics
-      trackEvent(eventName: string, properties?: Record<string, any>): void;
-    }
+      trackEvent(eventName: string, properties?: Record<string, any>): void}
 
 // Middleware function types
 export type AsyncRequestHandler = (
@@ -348,18 +325,16 @@ export type ValidationMiddleware = (
 
 // Controller method decorators
 export interface ControllerMetadata {
-  basePath: string;
-  middlewares?: RequestHandler[];
-  version?: string;
-}
+  basePath: string
+  middlewares?: RequestHandler[]
+  version?: string}
 
 export interface RouteMetadata {
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
-  path: string;
-  middlewares?: RequestHandler[];
-  description?: string;
-  tags?: string[];
-}
+  method: 'get' | 'post' | 'put' | 'patch' | 'delete'
+  path: string
+  middlewares?: RequestHandler[]
+  description?: string
+  tags?: string[]}
 
 // Partner permissions
 export type PartnerPermission = 
@@ -373,19 +348,17 @@ export type PartnerPermission =
 
 // WebSocket types for real-time features
 export interface SocketUser {
-  userId: string;
-  socketId: string;
-  partnerId?: string;
-  connectedAt: Date;
-}
+  userId: string
+  socketId: string
+  partnerId?: string
+  connectedAt: Date}
 
 export interface SocketMessage {
-  type: SocketMessageType;
-  payload: any;
-  timestamp: Date;
-  from?: string;
-  to?: string | string[];
-}
+  type: SocketMessageType
+  payload: any
+  timestamp: Date
+  from?: string
+  to?: string | string[]}
 
 export type SocketMessageType = 
   | 'notification'
@@ -396,30 +369,27 @@ export type SocketMessageType =
 
 // Rate limiting configurations
 export interface RateLimitConfig {
-  windowMs: number;
-  max: number;
-  message?: string;
-  skipSuccessfulRequests?: boolean;
-  keyGenerator?: (req: Request) => string;
-}
+  windowMs: number
+  max: number
+  message?: string
+  skipSuccessfulRequests?: boolean
+  keyGenerator?: (req: Request) => string}
 
 export interface RateLimitRule {
-  endpoint: string;
-  method?: string;
+  endpoint: string
+  method?: string
   limits: {
-    authenticated: RateLimitConfig;
-    unauthenticated: RateLimitConfig;
-    partner?: RateLimitConfig;
-  };
+    authenticated: RateLimitConfig
+    unauthenticated: RateLimitConfig
+    partner?: RateLimitConfig}
 }
 
 // Cache configurations
 export interface CacheConfig {
   ttl: number; // seconds
-  key: string | ((req: Request) => string);
-  condition?: (req: Request) => boolean;
-  tags?: string[];
-}
+  key: string | ((req: Request) => string)
+  condition?: (req: Request) => boolean
+  tags?: string[]}
 
 // Queue job types
 export interface QueueJob<T = any> {
@@ -432,7 +402,7 @@ export interface QueueJob<T = any> {
   backoff?: {
     type: 'fixed' | 'exponential';
     delay: number;
-  };
+  }
 }
 
 export interface EmailJob extends QueueJob {
@@ -447,7 +417,7 @@ export interface EmailJob extends QueueJob {
       content: Buffer | string;
       contentType?: string;
     }>;
-  };
+  }
 }
 
 export interface NotificationJob extends QueueJob {
@@ -459,7 +429,7 @@ export interface NotificationJob extends QueueJob {
     message: string;
     channels: ('email' | 'sms' | 'push')[];
     data?: Record<string, any>;
-  };
+  }
 }
 
 export interface AnalyticsJob extends QueueJob {
@@ -470,7 +440,7 @@ export interface AnalyticsJob extends QueueJob {
     startDate: Date;
     endDate: Date;
     metrics: string[];
-  };
+  }
 }
 
 // Service response types
@@ -490,35 +460,31 @@ export interface PaginatedResponse<T> extends ServiceResponse<T[]> {
 
 // Validation schemas
 export interface ValidationRule {
-  field: string;
-  rules: string[];
-  messages?: Record<string, string>;
-}
+  field: string
+  rules: string[]
+  messages?: Record<string, string>}
 
 export interface ValidationSchema {
-  [key: string]: ValidationRule | ValidationSchema;
-}
+  [key: string]: ValidationRule | ValidationSchema}
 
 // Database query builders
 export interface QueryOptions {
-  select?: string[];
-  include?: string[];
-  where?: Record<string, any>;
-  orderBy?: Record<string, 'asc' | 'desc'>;
-  limit?: number;
-  offset?: number;
-  transaction?: any;
-}
+  select?: string[]
+  include?: string[]
+  where?: Record<string, any>
+  orderBy?: Record<string, 'asc' | 'desc'>
+  limit?: number
+  offset?: number
+  transaction?: any}
 
 export interface AggregateOptions {
-  groupBy?: string[];
-  having?: Record<string, any>;
-  count?: boolean;
-  sum?: string[];
-  avg?: string[];
-  min?: string[];
-  max?: string[];
-}
+  groupBy?: string[]
+  having?: Record<string, any>
+  count?: boolean
+  sum?: string[]
+  avg?: string[]
+  min?: string[]
+  max?: string[]}
 
 // Export all type modules
 export * from './auth.types';

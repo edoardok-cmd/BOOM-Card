@@ -19,29 +19,29 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
-
-const gunzip = promisify(zlib.gunzip);
-const gzip = promisify(zlib.gzip);
-
+;
+// const gunzip = promisify(zlib.gunzip); // TODO: Move to proper scope
+// const gzip = promisify(zlib.gzip); // TODO: Move to proper scope
+;
 interface RestoreData {
-  users: User[];
-  cards: Card[];
-  transactions: Transaction[];
+  users: User[];,
+  cards: Card[];,
+  transactions: Transaction[];,
   metadata: RestoreMetadata;
 }
-
+;
 interface RestoreMetadata {
   version: string;
   timestamp: Date;
   entityCounts: {
-    users: number;
-    cards: number;
-    transactions: number;
-  };
-  checksum: string;
-  encryptionMethod: string;
+  users: number,
+  cards: number,
+  transactions: number,
+  },
+    checksum: string,
+  encryptionMethod: string,
 }
-
+;
 interface RestoreOptions {
   validateChecksum?: boolean;
   decryptData?: boolean;
@@ -51,58 +51,58 @@ interface RestoreOptions {
   dryRun?: boolean;
   conflictResolution?: 'skip' | 'overwrite' | 'merge';
 }
-
+;
 interface RestoreResult {
   success: boolean;
   restoredCounts: {
-    users: number;
-    cards: number;
-    transactions: number;
-  };
-  errors: RestoreError[];
-  warnings: string[];
-  duration: number;
+  users: number;
+  cards: number,
+  transactions: number,
+  },
+    errors: RestoreError[];,
+  warnings: string[];,
+  duration: number,
 }
-
+;
 interface RestoreError {
   entity: string;
   id: string | number;
-  error: string;
+  error: string,
   data?: any;
 }
-
+;
 interface ValidationResult {
   isValid: boolean;
-  errors: string[];
+  errors: string[];,
   warnings: string[];
 }
-
+;
 const mockUsers: User[] = [
   {
-    id: '1',
+  id: '1',
     email: 'test1@example.com',
     username: 'testuser1',
     firstName: 'Test',
     lastName: 'User1',
     isActive: true,
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
+    updatedAt: new Date('2024-01-01')
+},
   {
-    id: '2',
+  id: '2',
     email: 'test2@example.com',
     username: 'testuser2',
     firstName: 'Test',
     lastName: 'User2',
     isActive: true,
     createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
-  },
+    updatedAt: new Date('2024-01-02')
+},
 ];
-
+;
 const mockCards: Card[] = [
   {
-    id: '1',
+  id: '1',
     userId: '1',
     cardNumber: '1234567890123456',
     cardType: 'VIRTUAL',
@@ -110,10 +110,10 @@ const mockCards: Card[] = [
     balance: 1000,
     currency: 'USD',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
+    updatedAt: new Date('2024-01-01')
+},
   {
-    id: '2',
+  id: '2',
     userId: '2',
     cardNumber: '2345678901234567',
     cardType: 'PHYSICAL',
@@ -121,13 +121,13 @@ const mockCards: Card[] = [
     balance: 2000,
     currency: 'USD',
     createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
-  },
+    updatedAt: new Date('2024-01-02')
+},
 ];
-
+;
 const mockTransactions: Transaction[] = [
   {
-    id: '1',
+  id: '1',
     cardId: '1',
     userId: '1',
     amount: 100,
@@ -136,10 +136,10 @@ const mockTransactions: Transaction[] = [
     status: 'COMPLETED',
     merchantName: 'Test Merchant 1',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-  },
+    updatedAt: new Date('2024-01-01')
+},
   {
-    id: '2',
+  id: '2',
     cardId: '2',
     userId: '2',
     amount: 200,
@@ -148,10 +148,10 @@ const mockTransactions: Transaction[] = [
     status: 'COMPLETED',
     merchantName: 'Test Merchant 2',
     createdAt: new Date('2024-01-02'),
-    updatedAt: new Date('2024-01-02'),
-  },
+    updatedAt: new Date('2024-01-02')
+},
 ];
-
+;
 const mockRestorePoint: RestorePoint = {
   id: '1',
   filename: 'backup_20240101_120000.json.gz',
@@ -160,21 +160,20 @@ const mockRestorePoint: RestorePoint = {
   checksum: 'abc123def456',
   encryptionMethod: 'AES-256-GCM',
   entityCounts: {
-    users: 2,
+  users: 2,
     cards: 2,
-    transactions: 2,
-  },
+    transactions: 2
+},
   createdAt: new Date('2024-01-01T12:00:00Z'),
   createdBy: 'system',
   status: 'COMPLETED',
-  version: '1.0.0',
-};
-
-const ENCRYPTION_KEY = crypto.randomBytes(32);
-const ENCRYPTION_IV = crypto.randomBytes(16);
-const RESTORE_TIMEOUT = 300000; // 5 minutes
-const MAX_RESTORE_SIZE = 1024 * 1024 * 100; // 100MB
-const SUPPORTED_VERSIONS = ['1.0.0', '1.1.0', '1.2.0'];
+  version: '1.0.0'
+}
+    // const ENCRYPTION_KEY = crypto.randomBytes(32); // TODO: Move to proper scope
+// const ENCRYPTION_IV = crypto.randomBytes(16); // TODO: Move to proper scope
+const RESTORE_TIMEOUT = 300000; // 5 minutes;
+const MAX_RESTORE_SIZE = 1024 * 1024 * 100; // 100MB;
+// const SUPPORTED_VERSIONS = ['1.0.0', '1.1.0', '1.2.0']; // TODO: Move to proper scope
 
 describe('RestoreService', () => {
   let service: RestoreService;
@@ -182,42 +181,41 @@ describe('RestoreService', () => {
   let mockFileSystem: jest.Mocked<FileSystem>;
   let mockLogger: jest.Mocked<Logger>;
   let mockEventEmitter: jest.Mocked<EventEmitter>;
-
   beforeEach(() => {
     mockDbConnection = {
-      query: jest.fn(),
+  query: jest.fn(),
       transaction: jest.fn(),
-      close: jest.fn(),
-    };
+      close: jest.fn()
+};
 
     mockFileSystem = {
-      readFile: jest.fn(),
+  readFile: jest.fn(),
       writeFile: jest.fn(),
       exists: jest.fn(),
       mkdir: jest.fn(),
       unlink: jest.fn(),
-      readdir: jest.fn(),
-    };
+      readdir: jest.fn()
+}
 
     mockLogger = {
-      info: jest.fn(),
+  info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
-      debug: jest.fn(),
-    };
+      debug: jest.fn()
+}
 
     mockEventEmitter = {
-      emit: jest.fn(),
+  emit: jest.fn(),
       on: jest.fn(),
-      off: jest.fn(),
-    };
+      off: jest.fn()
+}
 
     service = new RestoreService({
-      db: mockDbConnection,
+  db: mockDbConnection,
       fs: mockFileSystem,
       logger: mockLogger,
-      eventEmitter: mockEventEmitter,
-    });
+      eventEmitter: mockEventEmitter
+});
   });
 
   afterEach(() => {
@@ -228,31 +226,31 @@ describe('RestoreService', () => {
     it('should restore data from a valid backup file', async () => {
       const backupPath = '/backups/backup-2024-01-01.json';
       const mockBackupData: BackupData = {
-        version: '1.0.0',
+  version: '1.0.0',
         timestamp: new Date('2024-01-01').toISOString(),
         data: {
-          users: [{ id: '1', name: 'John Doe', email: 'john@example.com' }],
-          settings: { theme: 'dark', notifications: true },
-        },
+  users: [{ id: '1', name: 'John Doe', email: 'john@example.com' }],
+          settings: { theme: 'dark', notifications: true }
+},
         metadata: {
-          itemCount: 2,
-          checksum: 'abc123',
-        },
-      };
+  itemCount: 2,
+          checksum: 'abc123'
+}
+}
 
       mockFileSystem.exists.mockResolvedValue(true);
       mockFileSystem.readFile.mockResolvedValue(JSON.stringify(mockBackupData));
       mockDbConnection.transaction.mockImplementation(async (callback) => {
         return callback();
       });
-
-      const result = await service.restoreFromBackup(backupPath);
+;
+// const result = await service.restoreFromBackup(backupPath); // TODO: Move to proper scope
 
       expect(result).toEqual({
-        status: 'success',
+  status: 'success',
         restoredItems: 2,
-        timestamp: expect.any(String),
-      });
+        timestamp: expect.any(String)
+});
       expect(mockLogger.info).toHaveBeenCalledWith('Starting restore from backup', { backupPath });
       expect(mockEventEmitter.emit).toHaveBeenCalledWith('restore.completed', expect.any(Object));
     });
@@ -267,8 +265,7 @@ describe('RestoreService', () => {
 
     it('should validate backup data structure', async () => {
       mockFileSystem.exists.mockResolvedValue(true);
-      mockFileSystem.readFile.mockResolvedValue('{"invalid": "data"}');
-
+      mockFileSystem.readFile.mockResolvedValue('{"invalid": "data"}'),
       await expect(service.restoreFromBackup(backupPath)).rejects.toThrow(
         'Invalid backup format'
       );
@@ -276,11 +273,11 @@ describe('RestoreService', () => {
 
     it('should rollback on database error', async () => {
       const mockBackupData: BackupData = {
-        version: '1.0.0',
+  version: '1.0.0',
         timestamp: new Date().toISOString(),
         data: { users: [] },
-        metadata: { itemCount: 0, checksum: 'xyz' },
-      };
+        metadata: { itemCount: 0, checksum: 'xyz' }
+}
 
       mockFileSystem.exists.mockResolvedValue(true);
       mockFileSystem.readFile.mockResolvedValue(JSON.stringify(mockBackupData));
@@ -296,15 +293,14 @@ describe('RestoreService', () => {
 
   describe('createBackup', () => {
     it('should create a backup successfully', async () => {
-      const mockData = {
-        users: [{ id: '1', name: 'Test User' }],
-        settings: { theme: 'light' },
-      };
+      // const mockData = {
+  users: [{ id: '1', name: 'Test User' }],
+        settings: { theme: 'light' }
+}
 
-      mockDbConnection.query.mockResolvedValueOnce({ rows: mockData.users });
-      mockDbConnection.query.mockResolvedValueOnce({ rows: [mockData.settings] });
+      mockDbConnection.query.mockResolvedValueOnce({ rows: mockData.users }),
+      mockDbConnection.query.mockResolvedValueOnce({ rows: [mockData.settings] }),; // TODO: Move to proper scope
       mockFileSystem.mkdir.mockResolvedValue(undefined);
-
 
       expect(result.status).toBe('success');
       expect(result.backupPath).toMatch(/backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.json$/);
@@ -324,14 +320,13 @@ describe('RestoreService', () => {
 
   describe('listBackups', () => {
     it('should list all available backups', async () => {
-      const mockFiles = [
+      // const mockFiles = [
         'backup-2024-01-01T00-00-00.json',
         'backup-2024-01-02T00-00-00.json',
-        'not-a-backup.txt',
+        'not-a-backup.txt',; // TODO: Move to proper scope
       ];
 
       mockFileSystem.readdir.mockResolvedValue(mockFiles);
-
 
       expect(result).toHaveLength(2);
       expect(result[0].filename).toBe('backup-2024-01-01T00-00-00.json');
@@ -340,7 +335,6 @@ describe('RestoreService', () => {
 
     it('should return empty array if no backups exist', async () => {
       mockFileSystem.readdir.mockResolvedValue([]);
-
 
       expect(result).toEqual([]);
     });
@@ -370,15 +364,14 @@ describe('RestoreService', () => {
   describe('validateBackup', () => {
     it('should validate backup integrity', async () => {
       const validBackup: BackupData = {
-        version: '1.0.0',
+  version: '1.0.0',
         timestamp: new Date().toISOString(),
         data: { users: [] },
-        metadata: { itemCount: 0, checksum: 'valid' },
-      };
+        metadata: { itemCount: 0, checksum: 'valid' }
+}
 
       mockFileSystem.exists.mockResolvedValue(true);
       mockFileSystem.readFile.mockResolvedValue(JSON.stringify(validBackup));
-
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);
@@ -387,7 +380,6 @@ describe('RestoreService', () => {
     it('should detect corrupted backup data', async () => {
       mockFileSystem.exists.mockResolvedValue(true);
       mockFileSystem.readFile.mockResolvedValue('corrupted data');
-
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Invalid JSON format');
@@ -402,8 +394,8 @@ describe('RestoreService', () => {
 
       expect(mockEventEmitter.emit).toHaveBeenCalledWith('backup.scheduled', {
         schedule,
-        nextRun: expect.any(Date),
-      });
+        nextRun: expect.any(Date)
+});
     });
 
     it('should cancel existing schedule when scheduling new one', async () => {
@@ -416,18 +408,16 @@ describe('RestoreService', () => {
 
   describe('getRestoreHistory', () => {
     it('should return restore operation history', async () => {
-      const mockHistory = [
+      // const mockHistory = [
         {
-          id: '1',
+  id: '1',
           timestamp: new Date('2024-01-01'),
           status: 'success',
-          backupFile: 'backup-2024-01-01.json',
-        },
+          backupFile: 'backup-2024-01-01.json'
+},; // TODO: Move to proper scope
       ];
 
-      mockDbConnection.query.mockResolvedValue({ rows: mockHistory });
-
-
+      mockDbConnection.query.mockResolvedValue({ rows: mockHistory }),
       expect(result).toEqual(mockHistory);
       expect(mockDbConnection.query).toHaveBeenCalledWith(
         expect.stringContaining('SELECT * FROM restore_history')

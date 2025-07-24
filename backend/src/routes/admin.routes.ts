@@ -7,6 +7,7 @@ import { rateLimiter } from '../middleware/rateLimiter.middleware';
 import * as adminController from '../controllers/admin.controller';
 import { UserRole } from '../types/user.types';
 import { upload } from '../middleware/upload.middleware';
+;
 
 const router = Router();
 

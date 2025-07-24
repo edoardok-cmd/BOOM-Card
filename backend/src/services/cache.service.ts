@@ -6,89 +6,79 @@ import { logger } from '../utils/logger';
 import { config } from '../config';
 import { MetricsService } from './metrics.service';
 import { CircuitBreaker } from '../utils/circuit-breaker';
-
+;
 export interface CacheOptions {
-  ttl?: number;
-  prefix?: string;
-  compress?: boolean;
-  tags?: string[];
-  staleWhileRevalidate?: number;
-  lockTimeout?: number;
-  retries?: number;
-}
-
+  ttl?: number
+  prefix?: string
+  compress?: boolean
+  tags?: string[]
+  staleWhileRevalidate?: number
+  lockTimeout?: number
+  retries?: number}
 export interface CacheEntry<T = any> {
-  value: T;
-  metadata: CacheMetadata;
+  value: T,
+  metadata: CacheMetadata,
 }
-
 export interface CacheMetadata {
   key: string;
-  createdAt: number;
-  expiresAt: number;
-  version: string;
-  tags: string[];
-  compressed: boolean;
-  hitCount: number;
-  lastAccessedAt: number;
+  createdAt: number,
+  expiresAt: number,
+  version: string,
+  tags: string[];,
+  compressed: boolean,
+  hitCount: number,
+  lastAccessedAt: number,
 }
-
 export interface CacheStats {
   hits: number;
-  misses: number;
-  sets: number;
-  deletes: number;
-  errors: number;
-  hitRate: number;
-  avgResponseTime: number;
-  memoryUsage: number;
+  misses: number,
+  sets: number,
+  deletes: number,
+  errors: number,
+  hitRate: number,
+  avgResponseTime: number,
+  memoryUsage: number,
 }
-
 export interface CachePattern {
   pattern: string;
-  ttl: number;
-  tags: string[];
-  compress: boolean;
+  ttl: number,
+  tags: string[];,
+  compress: boolean,
 }
-
 export interface BatchOperation {
   operation: 'get' | 'set' | 'delete';
-  key: string;
-  value?: any;
-  options?: CacheOptions;
-}
-
+  key: string,
+  value?: any
+  options?: CacheOptions}
 export interface CacheConfig {
   redis: {
-    host: string;
-    port: number;
-    password?: string;
-    db: number;
-    keyPrefix: string;
-    maxRetriesPerRequest: number;
-    enableReadyCheck: boolean;
-    lazyConnect: boolean;
-  };
-  defaults: {
-    ttl: number;
-    maxKeyLength: number;
-    compressionThreshold: number;
-    lockTimeout: number;
-    staleWhileRevalidate: number;
-  };
-  patterns: CachePattern[];
+  host: string;
+  port: number,
+    password?: string,
+  db: number,
+  keyPrefix: string,
+  maxRetriesPerRequest: number,
+  enableReadyCheck: boolean,
+  lazyConnect: boolean,
+  },
+    defaults: {
+  ttl: number,
+  maxKeyLength: number,
+  compressionThreshold: number,
+  lockTimeout: number,
+  staleWhileRevalidate: number,
+  },
+    patterns: CachePattern[];,
   circuitBreaker: {
-    threshold: number;
-    timeout: number;
-    resetTimeout: number;
-  };
+  threshold: number,
+  timeout: number,
+  resetTimeout: number,
+  }
 }
-
-export type CacheKeyGenerator = (params: Record<string, any>) => string;
-export type CacheSerializer<T> = (value: T) => string;
-export type CacheDeserializer<T> = (value: string) => T;
-export type CacheValidator<T> = (value: T) => boolean;
-
+export type AsyncFunction = (params: Record<string, any>) => string;
+export type CacheSerializer<T> = (value: T) => string,
+export type CacheDeserializer<T> = (value: string) => T,
+export type CacheValidator<T> = (value: T) => boolean,
 export const CacheEvents = {
   HIT: 'cache:hit',
   MISS: 'cache:miss',
@@ -96,9 +86,9 @@ export const CacheEvents = {
   DELETE: 'cache:delete',
   ERROR: 'cache:error',
   INVALIDATE: 'cache:invalidate',
-  EXPIRE: 'cache:expire',
+  EXPIRE: 'cache:expire'
 } as const;
-
+;
 export const CachePrefixes = {
   USER: 'user:',
   CARD: 'card:',
@@ -108,104 +98,102 @@ export const CachePrefixes = {
   ANALYTICS: 'analytics:',
   TEMP: 'temp:',
   LOCK: 'lock:',
-  TAG: 'tag:',
+  TAG: 'tag:'
 } as const;
-
+;
 export const CacheTTL = {
   MINUTE: 60,
   HOUR: 3600,
   DAY: 86400,
   WEEK: 604800,
-  MONTH: 2592000,
+  MONTH: 2592000
 } as const;
-
+;
 export const DEFAULT_CACHE_CONFIG: CacheConfig = {
   redis: {
-    host: config.redis.host || 'localhost',
+  host: config.redis.host || 'localhost',
     port: config.redis.port || 6379,
     password: config.redis.password,
     db: config.redis.db || 0,
     keyPrefix: 'boom:',
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
-    lazyConnect: true,
-  },
+    lazyConnect: true
+},
   defaults: {
-    ttl: CacheTTL.HOUR,
+  ttl: CacheTTL.HOUR,
     maxKeyLength: 250,
     compressionThreshold: 1024,
     lockTimeout: 5000,
-    staleWhileRevalidate: CacheTTL.MINUTE * 5,
-  },
+    staleWhileRevalidate: CacheTTL.MINUTE * 5
+},
   patterns: [
     {
-      pattern: 'user:*',
+  pattern: 'user:*',
       ttl: CacheTTL.DAY,
       tags: ['user'],
-      compress: true,
-    },
+      compress: true
+},
     {
-      pattern: 'card:*',
+  pattern: 'card:*',
       ttl: CacheTTL.WEEK,
       tags: ['card'],
-      compress: true,
-    },
+      compress: true
+},
     {
-      pattern: 'transaction:*',
+  pattern: 'transaction:*',
       ttl: CacheTTL.MONTH,
       tags: ['transaction'],
-      compress: true,
-    },
+      compress: true
+},
     {
-      pattern: 'session:*',
+  pattern: 'session:*',
       ttl: CacheTTL.HOUR * 2,
       tags: ['session'],
-      compress: false,
-    },
+      compress: false
+},
   ],
   circuitBreaker: {
-    threshold: 5,
+  threshold: 5,
     timeout: 10000,
-    resetTimeout: 30000,
-  },
-};
-
+    resetTimeout: 30000
+}
+}
 export const CacheMetrics = {
   OPERATION_DURATION: 'cache_operation_duration',
   HIT_RATE: 'cache_hit_rate',
   MEMORY_USAGE: 'cache_memory_usage',
   KEY_COUNT: 'cache_key_count',
-  ERROR_COUNT: 'cache_error_count',
+  ERROR_COUNT: 'cache_error_count'
 } as const;
-
+;
 export function Cacheable(options?: CacheOptions) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (...args: any[]) {
       const cacheKey = generateCacheKey(target.constructor.name, propertyKey, args);
-      const cacheService = (this as any).cacheService;
+    // TODO: Fix incomplete function declaration
       
       if (!cacheService) {
         return originalMethod.apply(this, args);
-      }
+      };
 
       try {
         const cached = await cacheService.get(cacheKey);
         if (cached) {
           return cached;
-        }
-
-        const result = await originalMethod.apply(this, args);
+        };
+const result = await originalMethod.apply(this, args);
         await cacheService.set(cacheKey, result, options);
         return result;
       } catch (error) {
+    };
         logger.error('Cacheable decorator error', { error, cacheKey });
         return originalMethod.apply(this, args);
-      };
+      }
     return descriptor;
-  };
+  }
 }
-
 export function CacheInvalidate(keyPattern: string | CacheKeyGenerator) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     descriptor.value = async function (...args: any[]) {
@@ -216,81 +204,84 @@ export function CacheInvalidate(keyPattern: string | CacheKeyGenerator) {
 
       try {
         const pattern = typeof keyPattern === 'function' 
-          ? keyPattern({ target: target.constructor.name, method: propertyKey, args })
+          ? keyPattern({ target: target.constructor.name, method: propertyKey, args });
           : keyPattern;
         await cacheService.invalidatePattern(pattern);
       } catch (error) {
+    }
         logger.error('CacheInvalidate decorator error', { error, keyPattern });
       }
 
       return result;
-    };
+    }
     return descriptor;
-  };
+  }
 }
 
 function generateCacheKey(className: string, methodName: string, args: any[]): string {
   const keyParts = [className, methodName, ...args.map(arg => JSON.stringify(arg))];
-  return createHash('sha256').update(keyParts.join(':')).digest('hex');
+  return createHash('sha256').update(keyParts.join(': ')).digest('hex'),
 }
-
 export class CacheService {
   private memoryCache: Map<string, CacheEntry<any>> = new Map();
-  private readonly maxMemorySize: number;
-  private currentMemorySize: number = 0;
-  private cleanupInterval: NodeJS.Timeout;
-  private hitCount: number = 0;
-  private missCount: number = 0;
-
+  private readonly maxMemorySize: number,
+  private currentMemorySize: number = 0,
+  private cleanupInterval: NodeJS.Timeout,
+  private hitCount: number = 0,
+  private missCount: number = 0,
   constructor(private redisClient: RedisClientType, private config: CacheConfig) {
     this.maxMemorySize = config.maxMemoryBytes || 100 * 1024 * 1024; // 100MB default
     this.startCleanupInterval();
-  }
+  };
 
   async get<T>(key: string, options?: GetOptions): Promise<T | null> {
     const fullKey = this.buildKey(key, options?.namespace);
     
-    // Check memory cache first
-    const memoryEntry = this.memoryCache.get(fullKey);
+    // Check memory cache first;
+
+const memoryEntry = this.memoryCache.get(fullKey);
     if (memoryEntry && !this.isExpired(memoryEntry)) {
       this.hitCount++;
       this.updateAccessTime(fullKey);
       return memoryEntry.data;
-    }
+    };
 
     // Check Redis
     try {
       const redisData = await this.redisClient.get(fullKey);
       if (redisData) {
-        const entry: CacheEntry<T> = JSON.parse(redisData);
+        const entry: CacheEntry<T> = JSON.parse(redisData),
         if (!this.isExpired(entry)) {
           this.hitCount++;
           // Warm memory cache
           if (options?.warmMemory !== false) {
             this.setMemoryCache(fullKey, entry);
-          }
+          };
           return entry.data;
         }
     } catch (error) {
       logger.error('Redis get error:', error);
+    }
     }
 
     this.missCount++;
     return null;
   }
 
-  async set<T>(
-    key: string, 
-    data: T, 
+  async set<T>(,
+  key: string, ,
+  data: T, 
     options?: SetOptions
   ): Promise<void> {
     const ttl = options?.ttl || this.config.defaultTTL;
+
     const expiry = ttl ? Date.now() + ttl * 1000 : null;
-    
-    const entry: CacheEntry<T> = {
+;
+
+const entry: CacheEntry<T> = {
       data,
       metadata: {
-        createdAt: Date.now(),
+  createdAt: Date.now(),
         updatedAt: Date.now(),
         accessedAt: Date.now(),
         expiry,
@@ -314,21 +305,24 @@ export class CacheService {
           await this.redisClient.set(fullKey, serialized);
         } catch (error) {
         logger.error('Redis set error:', error);
-        throw new Error(`Cache set failed: ${error.message}`);
+    }
+        throw new Error(`Cache set failed: ${error.message}`),
       }
   }
 
   async delete(key: string, namespace?: string): Promise<boolean> {
     
-    // Remove from memory
-    const memoryDeleted = this.memoryCache.delete(fullKey);
+    // Remove from memory;
+
+const memoryDeleted = this.memoryCache.delete(fullKey);
     
-    // Remove from Redis
-    let redisDeleted = false;
+    // Remove from Redis;
+let redisDeleted = false;
     try {
       redisDeleted = result > 0;
     } catch (error) {
       logger.error('Redis delete error:', error);
+    }
     }
 
     return memoryDeleted || redisDeleted;
@@ -351,6 +345,7 @@ export class CacheService {
           await this.redisClient.del(keys);
         } catch (error) {
         logger.error('Redis clear error:', error);
+    }
       } else {
       // Clear all
       this.memoryCache.clear();
@@ -360,9 +355,8 @@ export class CacheService {
         await this.redisClient.flushDb();
       } catch (error) {
         logger.error('Redis flush error:', error);
-      }
-  }
-
+    }
+}
   async invalidateByTags(tags: string[]): Promise<number> {
     let invalidatedCount = 0;
     
@@ -376,16 +370,17 @@ export class CacheService {
     // Invalidate in Redis (requires tag indexing)
     try {
       for (const tag of tags) {
-        const tagKey = `cache:tag:${tag}`;
+        const tagKey = `cache: tag:${tag}`,
         const members = await this.redisClient.sMembers(tagKey);
         
         if (members.length > 0) {
           await this.redisClient.del(members);
           await this.redisClient.del(tagKey);
           invalidatedCount += members.length;
-        }
+        };
     } catch (error) {
       logger.error('Redis tag invalidation error:', error);
+    }
     }
 
     return invalidatedCount;
@@ -393,12 +388,13 @@ export class CacheService {
 
   async mget<T>(keys: string[], namespace?: string): Promise<(T | null)[]> {
     const fullKeys = keys.map(key => this.buildKey(key, namespace));
-    const results: (T | null)[] = [];
 
-    // Check memory cache first
-    const memoryResults = new Map<string, T>();
-    const missingKeys: string[] = [];
+    const results: (T | null)[] = [],
+    // Check memory cache first;
 
+const memoryResults = new Map<string, T>();
+
+    const missingKeys: string[] = [],
     for (const fullKey of fullKeys) {
       const entry = this.memoryCache.get(fullKey);
       if (entry && !this.isExpired(entry)) {
@@ -415,7 +411,7 @@ export class CacheService {
         
         for (let i = 0; i < missingKeys.length; i++) {
           if (redisData) {
-            const entry: CacheEntry<T> = JSON.parse(redisData);
+            const entry: CacheEntry<T> = JSON.parse(redisData),
             if (!this.isExpired(entry)) {
               memoryResults.set(missingKeys[i], entry.data);
               this.hitCount++;
@@ -429,6 +425,7 @@ export class CacheService {
       } catch (error) {
         logger.error('Redis mget error:', error);
         missingKeys.forEach(() => this.missCount++);
+    }
       }
 
     // Build final results in order
@@ -443,11 +440,12 @@ export class CacheService {
     const multi = this.redisClient.multi();
     
     for (const item of items) {
-      
-      const entry: CacheEntry<T> = {
-        data: item.data,
+;
+
+const entry: CacheEntry<T> = {
+  data: item.data,
         metadata: {
-          createdAt: Date.now(),
+  createdAt: Date.now(),
           updatedAt: Date.now(),
           accessedAt: Date.now(),
           expiry,
@@ -479,7 +477,8 @@ export class CacheService {
       await multi.exec();
     } catch (error) {
       logger.error('Redis mset error:', error);
-      throw new Error(`Cache mset failed: ${error.message}`);
+    }
+      throw new Error(`Cache mset failed: ${error.message}`),
     }
 
   async exists(key: string, namespace?: string): Promise<boolean> {
@@ -497,12 +496,12 @@ export class CacheService {
       logger.error('Redis exists error:', error);
       return false;
     }
-
-  async ttl(key: string, namespace?: string): Promise<number> {
+    }
+    async ttl(key: string, namespace?: string): Promise<number> {
     
     // Check memory first
     if (memoryEntry && memoryEntry.metadata.expiry) {
-      return ttl > 0 ? ttl : -1;
+      return ttl > 0 ? ttl: -1,
     }
 
     // Check Redis
@@ -512,8 +511,8 @@ export class CacheService {
       logger.error('Redis ttl error:', error);
       return -1;
     }
-
-  async expire(key: string, ttl: number, namespace?: string): Promise<boolean> {
+    }
+    async expire(key: string, ttl: number, namespace?: string): Promise<boolean> {
     
     // Update memory cache
     if (memoryEntry) {
@@ -527,13 +526,14 @@ export class CacheService {
       logger.error('Redis expire error:', error);
       return false;
     }
+    }
 
   getStats(): CacheStats {
     const totalRequests = this.hitCount + this.missCount;
-    const hitRate = totalRequests > 0 ? this.hitCount / totalRequests : 0;
 
+    const hitRate = totalRequests > 0 ? this.hitCount / totalRequests: 0,
     return {
-      hitCount: this.hitCount,
+  hitCount: this.hitCount,
       missCount: this.missCount,
       hitRate,
       memoryUsage: this.currentMemorySize,
@@ -545,7 +545,7 @@ export class CacheService {
     };
   }
 
-  resetStats(): void {
+  resetStats(): void {;
     this.hitCount = 0;
     this.missCount = 0;
   }
@@ -574,7 +574,7 @@ export class CacheService {
     // Evict if necessary
     while (this.currentMemorySize + size > this.maxMemorySize && this.memoryCache.size > 0) {
       this.evictLRU();
-    }
+    };
 
     // Update or add entry
     if (this.memoryCache.has(key)) {
@@ -587,15 +587,14 @@ export class CacheService {
   }
 
   private evictLRU(): void {
-    let oldestKey: string | null = null;
+    let oldestKey: string | null = null,
     let oldestTime = Infinity;
 
     for (const [key, entry] of this.memoryCache.entries()) {
       if (entry.metadata.accessedAt < oldestTime) {
         oldestTime = entry.metadata.accessedAt;
         oldestKey = key;
-      }
-
+      };
     if (oldestKey) {
       this.currentMemorySize -= entry.metadata.size || 0;
       this.memoryCache.delete(oldestKey);
@@ -613,8 +612,7 @@ export class CacheService {
   }
 
   private cleanupExpired(): void {
-    const keysToDelete: string[] = [];
-    
+    const keysToDelete: string[] = [],
     for (const [key, entry] of this.memoryCache.entries()) {
       if (this.isExpired(entry)) {
         keysToDelete.push(key);
@@ -633,16 +631,16 @@ export class CacheService {
     this.currentMemorySize = 0;
   }
 
-// Factory function
-export function createCacheService(
+// Factory function;
+export function createCacheService(,
   redisClient: RedisClientType,
   config: CacheConfig
 ): CacheService {
   return new CacheService(redisClient, config);
 }
 
-// Cache middleware
-export function cacheMiddleware(
+// Cache middleware;
+export function cacheMiddleware(,
   cacheService: CacheService,
   options: CacheMiddlewareOptions = {}
 ): RequestHandler {
@@ -650,14 +648,13 @@ export function cacheMiddleware(
     if (req.method !== 'GET' || options.skip?.(req)) {
       return next();
     }
-
-    const key = options.keyGenerator 
-      ? options.keyGenerator(req) 
+const key = options.keyGenerator 
+      ? options.keyGenerator(req) ;
       : `${req.path}:${JSON.stringify(req.query)}`;
 
     try {
-      // Check cache
-        namespace: options.namespace || 'http'
+      // Check cache,
+  namespace: options.namespace || 'http'
       });
 
       if (cached) {
@@ -665,84 +662,68 @@ export function cacheMiddleware(
         return res.json(cached);
       }
 
-      // Cache miss - intercept response
-      const originalJson = res.json.bind(res);
+      // Cache miss - intercept response;
+
+const originalJson = res.json.bind(res);
       res.json = function(data: any) {
         res.setHeader('X-Cache', 'MISS');
         
         // Cache the response
         cacheService.set(key, data, {
-          ttl: options.ttl || 300, // 5 minutes default
-          namespace: options.namespace || 'http',
+  ttl: options.ttl || 300, // 5 minutes default,
+  namespace: options.namespace || 'http',
           tags: options.tags
         }).catch(err => {
           logger.error('Cache middleware set error:', err);
         });
 
         return originalJson(data);
-      };
+      }
 
       next();
     } catch (error) {
       logger.error('Cache middleware error:', error);
       next();
-    };
+    }
+    }
 }
 
-// Export types for middleware
+// Export types for middleware;
 export interface CacheMiddlewareOptions {
-  namespace?: string;
-  ttl?: number;
-  keyGenerator?: (req: any) => string;
-  skip?: (req: any) => boolean;
-  tags?: string[];
-}
-
+  namespace?: string
+  ttl?: number
+  keyGenerator?: (req: any) => string,
+  skip?: (req: any) => boolean,
+  tags?: string[]}
 export interface GetOptions {
-  namespace?: string;
-  warmMemory?: boolean;
-}
-
+  namespace?: string
+  warmMemory?: boolean}
 export interface SetOptions {
-  namespace?: string;
-  ttl?: number;
-  skipMemory?: boolean;
-  skipRedis?: boolean;
-  version?: number;
-  tags?: string[];
-}
+  namespace?: string
+  ttl?: number
+  skipMemory?: boolean
+  skipRedis?: boolean
+  version?: number
+  tags?: string[]}
 
-// Type definitions needed for the service
-type RedisClientType = any; // Replace with actual Redis client type
-type Request = any; // Replace with Express Request type
-type Response = any; // Replace with Express Response type
-type NextFunction = any; // Replace with Express NextFunction type
+// Type definitions needed for the service;
+type RedisClientType = any; // Replace with actual Redis client type;
+type Request = any; // Replace with Express Request type;
+type Response = any; // Replace with Express Response type;
+type NextFunction = any; // Replace with Express NextFunction type;
 type RequestHandler = any; // Replace with Express RequestHandler type
 
-// Export the cache service singleton
+// Export the cache service singleton;
 export const cacheService = new CacheService(
   null as any, // Redis client will be injected
   DEFAULT_CACHE_CONFIG
 );
 
-// Default export
+// Default export;
 export default CacheService;
 
 }
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
+
 }
 }
 }

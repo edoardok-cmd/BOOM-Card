@@ -29,14 +29,14 @@ describe('PushNotificationService', () => {
   let mockSMSService: jest.Mocked<SMSService>;
   let mockLogger: jest.Mocked<Logger>;
   let mockRedis: jest.Mocked<typeof redis>;
-
-  const mockUser: Partial<User> = {
-    id: 'user-123',
+;
+const mockUser: Partial<User> = {
+  id: 'user-123',
     email: 'test@example.com',
     phone: '+359888123456',
     fcmToken: 'fcm-token-123',
     notificationPreferences: {
-      email: true,
+  email: true,
       push: true,
       sms: true,
       marketing: true,
@@ -44,10 +44,9 @@ describe('PushNotificationService', () => {
       weeklyDigest: false
     },
     language: 'en'
-  };
-
-  const mockNotificationTemplate: NotificationTemplate = {
-    id: 'template-123',
+  }
+    const mockNotificationTemplate: NotificationTemplate = {
+  id: 'template-123',
     type: NotificationType.DISCOUNT_USED,
     channel: NotificationChannel.PUSH,
     language: 'en',
@@ -57,11 +56,11 @@ describe('PushNotificationService', () => {
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date()
-  };
+  }
 
   beforeEach(() => {
     mockNotificationRepository = {
-      create: jest.fn(),
+  create: jest.fn(),
       save: jest.fn(),
       findById: jest.fn(),
       findByUserId: jest.fn(),
@@ -76,14 +75,14 @@ describe('PushNotificationService', () => {
     } as any;
 
     mockUserRepository = {
-      findById: jest.fn(),
+  findById: jest.fn(),
       findByIds: jest.fn(),
       findBySegment: jest.fn(),
       updateFCMToken: jest.fn()
     } as any;
 
     mockFirebaseService = {
-      sendNotification: jest.fn(),
+  sendNotification: jest.fn(),
       sendBatchNotifications: jest.fn(),
       sendToTopic: jest.fn(),
       subscribeToTopic: jest.fn(),
@@ -91,24 +90,24 @@ describe('PushNotificationService', () => {
     } as any;
 
     mockEmailService = {
-      sendEmail: jest.fn(),
+  sendEmail: jest.fn(),
       sendBulkEmails: jest.fn()
     } as any;
 
     mockSMSService = {
-      sendSMS: jest.fn(),
+  sendSMS: jest.fn(),
       sendBulkSMS: jest.fn()
     } as any;
 
     mockLogger = {
-      info: jest.fn(),
+  info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
       debug: jest.fn()
     } as any;
 
     mockRedis = {
-      get: jest.fn(),
+  get: jest.fn(),
       set: jest.fn(),
       del: jest.fn(),
       incr: jest.fn(),
@@ -131,34 +130,34 @@ describe('PushNotificationService', () => {
   });
 
   describe('sendNotification', () => {
-    const notificationData = {
-      userId: 'user-123',
+    // const notificationData = {
+  userId: 'user-123',
       type: NotificationType.DISCOUNT_USED,
       title: 'Discount Applied',
       message: 'Your 20% discount at Restaurant XYZ has been applied!',
       data: {
-        discountAmount: '20',
+  discountAmount: '20',
         partnerName: 'Restaurant XYZ',
         partnerId: 'partner-123',
         transactionId: 'trans-123'
       },
       priority: NotificationPriority.HIGH
-    };
+    }
 
-    it('should send notification through all enabled channels', async () => {
+    it('should send notification through all enabled channels', async () => {; // TODO: Move to proper scope
       mockUserRepository.findById.mockResolvedValue(mockUser as User);
       mockNotificationRepository.getTemplate.mockResolvedValue(mockNotificationTemplate);
-      mockFirebaseService.sendNotification.mockResolvedValue({ success: true });
-      mockEmailService.sendEmail.mockResolvedValue({ success: true });
-      mockSMSService.sendSMS.mockResolvedValue({ success: true });
-      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any);
-
-      const result = await pushNotificationService.sendNotification(notificationData);
+      mockFirebaseService.sendNotification.mockResolvedValue({ success: true }),
+      mockEmailService.sendEmail.mockResolvedValue({ success: true }),
+      mockSMSService.sendSMS.mockResolvedValue({ success: true }),
+      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any),
+;
+// const result = await pushNotificationService.sendNotification(notificationData); // TODO: Move to proper scope
 
       expect(result.success).toBe(true);
       expect(result.channels).toEqual(['push', 'email', 'sms']);
       expect(mockFirebaseService.sendNotification).toHaveBeenCalledWith({
-        token: 'fcm-token-123',
+  token: 'fcm-token-123',
         title: 'Discount Applied',
         body: 'Your 20% discount at Restaurant XYZ has been applied!',
         data: notificationData.data,
@@ -170,19 +169,17 @@ describe('PushNotificationService', () => {
     });
 
     it('should respect user notification preferences', async () => {
-      const userWithPreferences = {
+      // const userWithPreferences = {
         ...mockUser,
         notificationPreferences: {
           ...mockUser.notificationPreferences,
           push: false,
           sms: false
-        };
+        }; // TODO: Move to proper scope
       mockUserRepository.findById.mockResolvedValue(userWithPreferences as User);
       mockNotificationRepository.getTemplate.mockResolvedValue(mockNotificationTemplate);
-      mockEmailService.sendEmail.mockResolvedValue({ success: true });
-      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any);
-
-
+      mockEmailService.sendEmail.mockResolvedValue({ success: true }),
+      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any),
       expect(result.channels).toEqual(['email']);
       expect(mockFirebaseService.sendNotification).not.toHaveBeenCalled();
       expect(mockSMSService.sendSMS).not.toHaveBeenCalled();
@@ -212,11 +209,9 @@ describe('PushNotificationService', () => {
       mockUserRepository.findById.mockResolvedValue(mockUser as User);
       mockNotificationRepository.getTemplate.mockResolvedValue(mockNotificationTemplate);
       mockFirebaseService.sendNotification.mockRejectedValue(new Error('FCM error'));
-      mockEmailService.sendEmail.mockResolvedValue({ success: true });
-      mockSMSService.sendSMS.mockResolvedValue({ success: true });
-      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any);
-
-
+      mockEmailService.sendEmail.mockResolvedValue({ success: true }),
+      mockSMSService.sendSMS.mockResolvedValue({ success: true }),
+      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any),
       expect(result.success).toBe(true);
       expect(result.channels).toEqual(['email', 'sms']);
       expect(result.failedChannels).toEqual(['push']);
@@ -226,9 +221,8 @@ describe('PushNotificationService', () => {
     it('should apply template variables', async () => {
       mockUserRepository.findById.mockResolvedValue(mockUser as User);
       mockNotificationRepository.getTemplate.mockResolvedValue(mockNotificationTemplate);
-      mockFirebaseService.sendNotification.mockResolvedValue({ success: true });
-      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any);
-
+      mockFirebaseService.sendNotification.mockResolvedValue({ success: true }),
+      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any),
       await pushNotificationService.sendNotification({
         ...notificationData,
         useTemplate: true
@@ -236,36 +230,33 @@ describe('PushNotificationService', () => {
 
       expect(mockFirebaseService.sendNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          body: 'Your 20% discount at Restaurant XYZ has been applied!'
+  body: 'Your 20% discount at Restaurant XYZ has been applied!'
         })
       );
     });
   });
 
   describe('sendBulkNotifications', () => {
-    const bulkNotificationData = {
-      userIds: ['user-123', 'user-456', 'user-789'],
+    // const bulkNotificationData = {
+  userIds: ['user-123', 'user-456', 'user-789'],
       type: NotificationType.MARKETING,
       title: 'New Partner Alert',
       message: '50% off at our new partner!',
-      data: { partnerId: 'partner-new' };
-
+      data: { partnerId: 'partner-new' },
     it('should send bulk notifications to multiple users', async () => {
       const users = [
         { ...mockUser, id: 'user-123' },
         { ...mockUser, id: 'user-456', fcmToken: 'fcm-456' },
-        { ...mockUser, id: 'user-789', fcmToken: 'fcm-789' }
+        { ...mockUser, id: 'user-789', fcmToken: 'fcm-789' }; // TODO: Move to proper scope
       ];
       mockUserRepository.findByIds.mockResolvedValue(users as User[]);
       mockFirebaseService.sendBatchNotifications.mockResolvedValue({
-        successCount: 3,
+  successCount: 3,
         failureCount: 0,
         responses: []
       });
-      mockEmailService.sendBulkEmails.mockResolvedValue({ success: true });
-      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any);
-
-
+      mockEmailService.sendBulkEmails.mockResolvedValue({ success: true }),
+      mockNotificationRepository.save.mockResolvedValue({ id: 'notif-123' } as any),
       expect(result.totalSent).toBe(3);
       expect(result.successful).toBe(3);
       expect(result.failed).toBe(0);
@@ -274,6 +265,8 @@ describe('PushNotificationService', () => {
     });
 
     it('should handle partial failu
-}}
+}
+
 }
 }
+});

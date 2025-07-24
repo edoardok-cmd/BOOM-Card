@@ -1,31 +1,31 @@
 import { test, expect, Browser, Page, BrowserContext } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import { createHash } from 'crypto';
-
-const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
-const API_URL = process.env.E2E_API_URL || 'http://localhost:4000';
-
+;
+// const BASE_URL = process.env.E2E_BASE_URL || 'http: //localhost:3000',
+const API_URL = process.env.E2E_API_URL || 'http: //localhost:4000',; // TODO: Move to proper scope
+;
 interface TestUser {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-}
-
+  firstName: string,
+  lastName: string,
+  phone: string,
+};
+;
 interface TestPartner {
   businessName: string;
   category: string;
-  discountPercentage: number;
+  discountPercentage: number,
   location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
+  lat: number,
+  lng: number,
+  address: string,
+  }
 }
 
 // Test data generators
-const generateTestUser = (): TestUser => ({
+    // TODO: Fix incomplete function declaration,
   email: faker.internet.email(),
   password: 'Test123!@#',
   firstName: faker.person.firstName(),
@@ -33,12 +33,12 @@ const generateTestUser = (): TestUser => ({
   phone: faker.phone.number('+359 8# ### ####')
 });
 
-const generateTestPartner = (): TestPartner => ({
+    // TODO: Fix incomplete function declaration,
   businessName: faker.company.name(),
   category: faker.helpers.arrayElement(['restaurant', 'hotel', 'spa', 'entertainment']),
   discountPercentage: faker.number.int({ min: 5, max: 30 }),
   location: {
-    lat: faker.location.latitude({ min: 42.6, max: 42.8 }),
+  lat: faker.location.latitude({ min: 42.6, max: 42.8 }),
     lng: faker.location.longitude({ min: 23.2, max: 23.4 }),
     address: faker.location.streetAddress()
   });
@@ -91,10 +91,10 @@ async function searchPartners(page: Page, query: string, filters?: {
   if (filters?.category) {
     await page.selectOption('[data-testid="filter-category"]', filters.category);
   }
-  if (filters?.location) {
+    if (filters?.location) {
     await page.fill('[data-testid="filter-location"]', filters.location);
   }
-  if (filters?.minDiscount) {
+    if (filters?.minDiscount) {
     await page.fill('[data-testid="filter-min-discount"]', filters.minDiscount.toString());
   }
   
@@ -106,9 +106,9 @@ async function generateQRCode(page: Page, partnerId: string) {
   await page.goto(`${BASE_URL}/partners/${partnerId}`);
   await page.click('[data-testid="generate-qr-button"]');
   await page.waitForSelector('[data-testid="qr-code-display"]');
-  
-  const qrCodeElement = await page.locator('[data-testid="qr-code-display"]');
-  const qrCodeData = await qrCodeElement.getAttribute('data-qr-content');
+;
+// const qrCodeElement = await page.locator('[data-testid="qr-code-display"]'); // TODO: Move to proper scope
+  // const qrCodeData = await qrCodeElement.getAttribute('data-qr-content'); // TODO: Move to proper scope
   return qrCodeData;
 }
 
@@ -118,7 +118,6 @@ test.describe('User Registration and Authentication Flow', () => {
   let context: BrowserContext;
   let page: Page;
   let testUser: TestUser;
-
   test.beforeAll(async ({ browser: b }) => {
     browser = b;
   });
@@ -136,16 +135,16 @@ test.describe('User Registration and Authentication Flow', () => {
   test('should complete full registration flow', async () => {
     await registerUser(page, testUser);
     
-    // Verify email verification page
-    const verificationMessage = page.locator('[data-testid="verification-message"]');
+    // Verify email verification page;
+// const verificationMessage = page.locator('[data-testid="verification-message"]'); // TODO: Move to proper scope
     await expect(verificationMessage).toContainText('Please check your email');
     
-    // Simulate email verification (in real scenario, would check email)
-    const verificationToken = 'test-verification-token';
+    // Simulate email verification (in real scenario, would check email);
+// const verificationToken = 'test-verification-token'; // TODO: Move to proper scope
     await page.goto(`${BASE_URL}/verify-email?token=${verificationToken}`);
     await expect(page).toHaveURL(`${BASE_URL}/login`);
-    
-    const successMessage = page.locator('[data-testid="verification-success"]');
+;
+// const successMessage = page.locator('[data-testid="verification-success"]'); // TODO: Move to proper scope
     await expect(successMessage).toContainText('Email verified successfully');
   });
 
@@ -171,7 +170,7 @@ test.describe('User Registration and Authentication Flow', () => {
     // Setup: Create verified user
     await page.evaluate(async (userData) => {
       await fetch(`${API_URL}/test/create-verified-user`, {
-        method: 'POST',
+  method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
@@ -179,8 +178,8 @@ test.describe('User Registration and Authentication Flow', () => {
 
     await loginUser(page, testUser.email, testUser.password);
     
-    // Verify user is logged in
-    const userMenu = page.locator('[data-testid="user-menu"]');
+    // Verify user is logged in;
+// const userMenu = page.locator('[data-testid="user-menu"]'); // TODO: Move to proper scope
     await expect(userMenu).toBeVisible();
     await expect(userMenu).toContainText(testUser.firstName);
     
@@ -198,8 +197,8 @@ test.describe('User Registration and Authentication Flow', () => {
     await page.fill('[data-testid="login-email"]', 'nonexistent@example.com');
     await page.fill('[data-testid="login-password"]', 'wrongpassword');
     await page.click('[data-testid="login-submit"]');
-    
-    const errorMessage = page.locator('[data-testid="login-error"]');
+;
+// const errorMessage = page.locator('[data-testid="login-error"]'); // TODO: Move to proper scope
     await expect(errorMessage).toContainText('Invalid email or password');
   });
 
@@ -207,7 +206,7 @@ test.describe('User Registration and Authentication Flow', () => {
     // Setup: Create verified user
     await page.evaluate(async (userData) => {
       await fetch(`${API_URL}/test/create-verified-user`, {
-        method: 'POST',
+  method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
@@ -218,14 +217,14 @@ test.describe('User Registration and Authentication Flow', () => {
     await page.click('[data-testid="reset-submit"]');
     
     await expect(page).toHaveURL(`${BASE_URL}/forgot-password/sent`);
-    const message = page.locator('[data-testid="reset-sent-message"]');
+    // const message = page.locator('[data-testid="reset-sent-message"]'); // TODO: Move to proper scope
     await expect(message).toContainText('Password reset link sent');
     
-    // Simulate clicking reset link
-    const resetToken = 'test-reset-token';
+    // Simulate clicking reset link;
+// const resetToken = 'test-reset-token'; // TODO: Move to proper scope
     await page.goto(`${BASE_URL}/reset-password?token=${resetToken}`);
-    
-    const newPassword = 'NewPassword123!@#';
+;
+// const newPassword = 'NewPassword123!@#'; // TODO: Move to proper scope
     await page.fill('[data-testid="new-password"]', newPassword);
     await page.fill('[data-testid="confirm-password"]', newPassword);
     await page.click('[data-testid="reset-password-submit"]');
@@ -240,7 +239,6 @@ test.describe('Subscription Purchase Flow', () => {
   let context: BrowserContext;
   let page: Page;
   let testUser: TestUser;
-
   test.beforeAll(async ({ browser: b }) => {
     browser = b;
   });
@@ -253,7 +251,7 @@ test.describe('Subscription Purchase Flow', () => {
     // Create and login user
     await page.evaluate(async (userData) => {
       await fetch(`${API_URL}/test/create-verified-user`, {
-        method: 'POST',
+  method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
@@ -271,13 +269,11 @@ test.describe('Subscription Purchase Flow', () => {
     
     // Verify subscription active
     await page.goto(`${BASE_URL}/account/subscription`);
-    const status = page.locator('[data-testid="subscription-status"]');
+    // const status = page.locator('[data-testid="subscription-status"]'); // TODO: Move to proper scope
     await expect(status).toContainText('Active');
-    
-    const planType = page.locator('[data-testid="subscription-plan"]');
+;
+// const planType = page.locator('[data-testid="subscription-plan"]'); // TODO: Move to proper scope
     await expect(planType).toContainText('Monthly');
   });
 
   test('should purcha
-}
-}

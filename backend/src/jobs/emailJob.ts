@@ -18,68 +18,68 @@ import { CardExpiryReminderEmail } from '../templates/CardExpiryReminderEmail';
 import { LowBalanceAlertEmail } from '../templates/LowBalanceAlertEmail';
 import { metrics } from '../utils/metrics';
 import { EmailStatus, EmailType } from '@prisma/client';
-
+;
 interface EmailJobData {
   id: string;
-  to: string;
-  cc?: string[];
-  bcc?: string[];
-  subject: string;
-  type: EmailType;
-  templateData: Record<string, any>;
-  userId?: string;
-  priority?: number;
-  scheduledFor?: Date;
-  retryCount?: number;
-  metadata?: Record<string, any>;
-}
-
+  to: string,
+  cc?: string[]
+  bcc?: string[];,
+  subject: string,
+  type: EmailType,
+  templateData: Record<string, any>
+  userId?: string
+  priority?: number
+  scheduledFor?: Date
+  retryCount?: number
+  metadata?: Record<string, any>}
 interface EmailResult {
   messageId: string;
-  accepted: string[];
-  rejected: string[];
-  response: string;
+  accepted: string[];,
+  rejected: string[];,
+  response: string,
 }
-
 interface EmailError {
   code: string;
-  message: string;
-  command?: string;
-  response?: string;
-  responseCode?: number;
-}
-
+  message: string,
+  command?: string
+  response?: string
+  responseCode?: number}
 interface EmailMetrics {
   sent: number;
-  failed: number;
-  retried: number;
-  bounced: number;
-  opened: number;
-  clicked: number;
+  failed: number,
+  retried: number,
+  bounced: number,
+  opened: number,
+  clicked: number,
 }
-
 interface TransporterConfig {
   host: string;
-  port: number;
-  secure: boolean;
+  port: number,
+  secure: boolean,
   auth: {
-    user: string;
-    pass: string;
-  };
+  user: string,
+  pass: string,
+  }
   pool?: boolean;
   maxConnections?: number;
   maxMessages?: number;
   rateDelta?: number;
   rateLimit?: number;
 }
-
 const EMAIL_QUEUE_NAME = 'email-queue';
+
 const MAX_RETRY_ATTEMPTS = 3;
+
 const RETRY_DELAY_MS = 5000;
+
 const EMAIL_TIMEOUT_MS = 30000;
+
 const BATCH_SIZE = 10;
+
 const RATE_LIMIT_WINDOW_MS = 60000;
+
 const RATE_LIMIT_MAX_EMAILS = 100;
+;
 
 const EMAIL_TEMPLATES = {
   [EmailType.WELCOME]: WelcomeEmail,
@@ -91,55 +91,55 @@ const EMAIL_TEMPLATES = {
   [EmailType.SECURITY_ALERT]: SecurityAlertEmail,
   [EmailType.MONTHLY_STATEMENT]: MonthlyStatementEmail,
   [EmailType.CARD_EXPIRY_REMINDER]: CardExpiryReminderEmail,
-  [EmailType.LOW_BALANCE_ALERT]: LowBalanceAlertEmail,
+  [EmailType.LOW_BALANCE_ALERT]: LowBalanceAlertEmail;
 } as const;
+;
 
 const transporterConfig: TransporterConfig = {
   host: config.email.smtp.host,
   port: config.email.smtp.port,
   secure: config.email.smtp.secure,
   auth: {
-    user: config.email.smtp.user,
-    pass: config.email.smtp.pass,
-  },
+  user: config.email.smtp.user,
+    pass: config.email.smtp.pass
+},
   pool: true,
   maxConnections: 5,
   maxMessages: 100,
   rateDelta: 1000,
-  rateLimit: 10,
-};
-
-const redisConnection = new Redis({
+  rateLimit: 10
+}
+    const redisConnection = new Redis({
   host: config.redis.host,
   port: config.redis.port,
   password: config.redis.password,
-  maxRetriesPerRequest: null,
+  maxRetriesPerRequest: null;
 });
 
-// Email service implementation
+// Email service implementation;
 class EmailService {
-  private transporter: Mail;
-  private retryCount: number = 3;
+  private transporter: Mail,
+  private retryCount: number = 3,
   private retryDelay: number = 5000; // 5 seconds
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: config.smtp.host,
+  host: config.smtp.host,
       port: config.smtp.port,
       secure: config.smtp.secure,
       auth: {
-        user: config.smtp.user,
-        pass: config.smtp.pass,
-      },
+  user: config.smtp.user,
+        pass: config.smtp.pass
+},
       pool: true,
       maxConnections: 5,
-      maxMessages: 100,
-    });
+      maxMessages: 100
+});
   }
 
   async sendEmail(data: EmailData): Promise<void> {
     const mailOptions: Mail.Options = {
-      from: data.from || config.smtp.defaultFrom,
+  from: data.from || config.smtp.defaultFrom,
       to: data.to,
       cc: data.cc,
       bcc: data.bcc,
@@ -149,35 +149,35 @@ class EmailService {
       attachments: data.attachments,
       headers: {
         'X-Email-Type': data.type,
-        'X-Priority': data.priority || 'normal',
-      },
-    };
-
-    let lastError: Error;
+        'X-Priority': data.priority || 'normal'
+}
+}
+    let lastError: Error,
     for (let attempt = 1; attempt <= this.retryCount; attempt++) {
       try {
         const info = await this.transporter.sendMail(mailOptions);
         logger.info('Email sent successfully', {
-          messageId: info.messageId,
+  messageId: info.messageId,
           to: data.to,
           type: data.type,
-          attempt,
-        });
+          attempt
+});
         return;
       } catch (error) {
         lastError = error as Error;
+    }
         logger.error(`Email send attempt ${attempt} failed`, {
-          error: error.message,
+  error: error.message,
           to: data.to,
-          type: data.type,
-        });
+          type: data.type
+});
         
         if (attempt < this.retryCount) {
           await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
         }
     }
 
-    throw new Error(`Failed to send email after ${this.retryCount} attempts: ${lastError.message}`);
+    throw new Error(`Failed to send email after ${this.retryCount} attempts: ${lastError.message}`),
   }
 
   async verifyConnection(): Promise<boolean> {
@@ -185,12 +185,13 @@ class EmailService {
       await this.transporter.verify();
       return true;
     } catch (error) {
-      logger.error('SMTP connection verification failed', { error: error.message });
+    }
+      logger.error('SMTP connection verification failed', { error: error.message }),
       return false;
     }
 }
 
-// Email template renderer
+// Email template renderer;
 class EmailTemplateRenderer {
   private templateCache = new Map<string, Function>();
 
@@ -199,16 +200,17 @@ class EmailTemplateRenderer {
     
     if (!this.templateCache.has(templateName)) {
       const templateContent = await fs.readFile(templatePath, 'utf-8');
+
       const template = handlebars.compile(templateContent);
       this.templateCache.set(templateName, template);
     }
+const html = template(data);
 
-    const html = template(data);
     const text = htmlToText(html, {
-      wordwrap: 130,
+  wordwrap: 130,
       hideLinkHrefIfSameAsText: true,
-      ignoreImage: true,
-    });
+      ignoreImage: true;
+});
 
     return { html, text };
   }
@@ -216,17 +218,17 @@ class EmailTemplateRenderer {
   registerHelpers(): void {
     handlebars.registerHelper('formatCurrency', (amount: number) => {
       return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(amount);
+  style: 'currency',
+        currency: 'USD'
+}).format(amount);
     });
 
     handlebars.registerHelper('formatDate', (date: Date) => {
       return new Intl.DateTimeFormat('en-US', {
-        year: 'numeric',
+  year: 'numeric',
         month: 'long',
-        day: 'numeric',
-      }).format(new Date(date));
+        day: 'numeric'
+}).format(new Date(date));
     });
 
     handlebars.registerHelper('truncate', (str: string, length: number) => {
@@ -235,13 +237,12 @@ class EmailTemplateRenderer {
     });
   }
 
-// Email queue processor
+// Email queue processor;
 class EmailQueueProcessor {
-  private emailService: EmailService;
-  private templateRenderer: EmailTemplateRenderer;
-  private isProcessing: boolean = false;
-  private processingInterval: NodeJS.Timeout | null = null;
-
+  private emailService: EmailService,
+  private templateRenderer: EmailTemplateRenderer,
+  private isProcessing: boolean = false,
+  private processingInterval: NodeJS.Timeout | null = null,
   constructor() {
     this.emailService = new EmailService();
     this.templateRenderer = new EmailTemplateRenderer();
@@ -253,11 +254,10 @@ class EmailQueueProcessor {
       logger.warn('Email queue processor is already running');
       return;
     }
-
-    const isConnected = await this.emailService.verifyConnection();
+const isConnected = await this.emailService.verifyConnection();
     if (!isConnected) {
       throw new Error('Failed to connect to SMTP server');
-    }
+    };
 
     this.isProcessing = true;
     logger.info('Email queue processor started');
@@ -299,12 +299,14 @@ class EmailQueueProcessor {
           await this.processEmailJob(emailJob);
         } catch (error) {
           logger.error('Failed to process email job', {
-            jobId: emailJob.id,
-            error: error.message,
-          });
+  jobId: emailJob.id,
+            error: error.message
+    }
+});
         }
     } catch (error) {
-      logger.error('Error processing email queue', { error: error.message });
+    }
+      logger.error('Error processing email queue', { error: error.message }),
     }
 
   private async fetchPendingEmails(): Promise<EmailJob[]> {
@@ -315,14 +317,14 @@ class EmailQueueProcessor {
   }
 
   private async processEmailJob(job: EmailJob): Promise<void> {
-    logger.info('Processing email job', { jobId: job.id, type: job.type });
-
+    logger.info('Processing email job', { jobId: job.id, type: job.type }),
     try {
       // Update job status to processing
       await this.updateJobStatus(job.id, 'processing');
 
-      // Prepare email data
-      const emailData = await this.prepareEmailData(job);
+      // Prepare email data;
+
+const emailData = await this.prepareEmailData(job);
 
       // Send email
       await this.emailService.sendEmail(emailData);
@@ -330,12 +332,13 @@ class EmailQueueProcessor {
       // Update job status to sent
       await this.updateJobStatus(job.id, 'sent');
 
-      logger.info('Email job processed successfully', { jobId: job.id });
+      logger.info('Email job processed successfully', { jobId: job.id }),
     } catch (error) {
       logger.error('Failed to process email job', {
-        jobId: job.id,
-        error: error.message,
-      });
+  jobId: job.id,
+        error: error.message
+    }
+});
 
       // Update job status to failed
       await this.updateJobStatus(job.id, 'failed', error.message);
@@ -349,9 +352,8 @@ class EmailQueueProcessor {
     }
 
   private async prepareEmailData(job: EmailJob): Promise<EmailData> {
-    let html: string;
-    let text: string;
-
+    let html: string,
+    let text: string,
     if (job.templateName) {
       const rendered = await this.templateRenderer.renderTemplate(
         job.templateName,
@@ -369,12 +371,12 @@ class EmailQueueProcessor {
       html,
       text,
       type: job.type,
-      priority: job.priority,
-    };
+      priority: job.priority
+};
   }
 
-  private async updateJobStatus(
-    jobId: string,
+  private async updateJobStatus(,
+  jobId: string,
     status: EmailJob['status'],
     error?: string
   ): Promise<void> {
@@ -384,29 +386,30 @@ class EmailQueueProcessor {
 
   private async scheduleRetry(job: EmailJob): Promise<void> {
     const nextAttempt = job.attempts + 1;
-    const delayMinutes = Math.pow(2, nextAttempt) * 5; // Exponential backoff: 10, 20, 40 minutes
-    const scheduledFor = new Date(Date.now() + delayMinutes * 60 * 1000);
+
+    const delayMinutes = Math.pow(2, nextAttempt) * 5; // Exponential backoff: 10, 20, 40 minutes;
+
+const scheduledFor = new Date(Date.now() + delayMinutes * 60 * 1000);
 
     // TODO: Update job in database with new scheduled time and attempt count
     logger.info('Scheduling email retry', {
-      jobId: job.id,
+  jobId: job.id,
       attempt: nextAttempt,
-      scheduledFor,
-    });
+      scheduledFor
+});
   }
 
-// Email job API
+// Email job API;
 export class EmailJobAPI {
-  private queueProcessor: EmailQueueProcessor;
-
+  private queueProcessor: EmailQueueProcessor,
   constructor() {
     this.queueProcessor = new EmailQueueProcessor();
   }
 
   async queueEmail(params: {
-    to: string | string[];
-    subject: string;
-    type: EmailType;
+  to: string | string[];,
+  subject: string,
+  type: EmailType,
     templateName?: string;
     templateData?: any;
     html?: string;
@@ -416,28 +419,27 @@ export class EmailJobAPI {
     metadata?: any;
   }): Promise<EmailJob> {
     const job: EmailJob = {
-      id: uuidv4(),
+  id: uuidv4(),
       type: params.type,
       status: 'pending',
       priority: params.priority || 'normal',
       data: {
-        to: params.to,
+  to: params.to,
         subject: params.subject,
         html: params.html,
-        text: params.text,
-      },
+        text: params.text
+},
       templateName: params.templateName,
       templateData: params.templateData,
       metadata: params.metadata,
       attempts: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
-      scheduledFor: params.scheduledFor || new Date(),
-    };
+      scheduledFor: params.scheduledFor || new Date()
+}
 
     // TODO: Save job to database
-    logger.info('Email job queued', { jobId: job.id, type: job.type });
-
+    logger.info('Email job queued', { jobId: job.id, type: job.type }),
     return job;
   }
 
@@ -460,10 +462,10 @@ export class EmailJobAPI {
     await this.queueProcessor.stop();
   }
 
-// Singleton instance
+// Singleton instance;
 export const emailJobAPI = new EmailJobAPI();
 
-// Express middleware for email job routes
+// Express middleware for email job routes;
 export const emailJobRoutes = Router();
 
 emailJobRoutes.post('/queue', async (req: Request, res: Response) => {
@@ -471,14 +473,11 @@ emailJobRoutes.post('/queue', async (req: Request, res: Response) => {
     const job = await emailJobAPI.queueEmail(req.body);
     res.json({ success: true, job });
   } catch (error) {
-    logger.error('Failed to queue email', { error: error.message });
+    }
+    logger.error('Failed to queue email', { error: error.message }),
     res.status(500).json({ success: false, error: error
-}}}
 }
-}
-}
-}
-}
+
 }
 }
 }

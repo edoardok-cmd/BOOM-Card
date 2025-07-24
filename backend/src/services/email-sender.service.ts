@@ -14,121 +14,108 @@ import { EmailTemplate } from '../entities/email-template.entity';
 import { RedisService } from './redis.service';
 import { MetricsService } from './metrics.service';
 import { EncryptionService } from './encryption.service';
-
+;
 export interface EmailOptions {
   to: string | string[];
-  cc?: string | string[];
-  bcc?: string | string[];
-  subject: string;
-  template?: string;
-  templateData?: Record<string, any>;
-  html?: string;
-  text?: string;
-  attachments?: EmailAttachment[];
-  priority?: 'high' | 'normal' | 'low';
-  scheduledAt?: Date;
-  trackOpens?: boolean;
-  trackClicks?: boolean;
-  tags?: string[];
-  metadata?: Record<string, any>;
-  replyTo?: string;
-}
-
+  cc?: string | string[]
+  bcc?: string | string[];,
+  subject: string,
+  template?: string
+  templateData?: Record<string, any>
+  html?: string
+  text?: string
+  attachments?: EmailAttachment[]
+  priority?: 'high' | 'normal' | 'low'
+  scheduledAt?: Date
+  trackOpens?: boolean
+  trackClicks?: boolean
+  tags?: string[]
+  metadata?: Record<string, any>
+  replyTo?: string}
 export interface EmailAttachment {
   filename: string;
-  content?: Buffer | string;
-  path?: string;
-  contentType?: string;
-  encoding?: string;
-  cid?: string;
-}
-
+  content?: Buffer | string
+  path?: string
+  contentType?: string
+  encoding?: string
+  cid?: string}
 export interface EmailResult {
   messageId: string;
-  accepted: string[];
-  rejected: string[];
-  response: string;
+  accepted: string[];,
+  rejected: string[];,
+  response: string,
   envelope: {
-    from: string;
-    to: string[];
-  };
+  from: string,
+  to: string[],
+  }
 }
-
 export interface EmailTemplateData {
-  userName?: string;
-  userEmail?: string;
-  verificationLink?: string;
-  resetPasswordLink?: string;
-  transactionAmount?: number;
-  transactionId?: string;
-  transactionDate?: Date;
-  cardNumber?: string;
-  merchantName?: string;
-  supportEmail?: string;
-  companyName?: string;
-  currentYear?: number;
-  unsubscribeLink?: string;
-  [key: string]: any;
+  userName?: string
+  userEmail?: string
+  verificationLink?: string
+  resetPasswordLink?: string
+  transactionAmount?: number
+  transactionId?: string
+  transactionDate?: Date
+  cardNumber?: string
+  merchantName?: string
+  supportEmail?: string
+  companyName?: string
+  currentYear?: number
+  unsubscribeLink?: string
+  [key: string]: any,
 }
-
 export interface EmailProviderConfig {
   provider: 'smtp' | 'sendgrid' | 'aws-ses' | 'mailgun';
-  host?: string;
-  port?: number;
-  secure?: boolean;
+  host?: string
+  port?: number
+  secure?: boolean
   auth?: {
-    user: string;
-    pass: string;
-  };
+  user: string,
+  pass: string,
+  }
   apiKey?: string;
   domain?: string;
   region?: string;
 }
-
 export interface EmailQueueJob {
   id: string;
-  options: EmailOptions;
-  retries: number;
-  maxRetries: number;
-  createdAt: Date;
-  processedAt?: Date;
-  error?: string;
-}
-
+  options: EmailOptions,
+  retries: number,
+  maxRetries: number,
+  createdAt: Date,
+  processedAt?: Date
+  error?: string}
 export interface EmailMetrics {
   sent: number;
-  failed: number;
-  bounced: number;
-  opened: number;
-  clicked: number;
-  unsubscribed: number;
-  spamReports: number;
+  failed: number,
+  bounced: number,
+  opened: number,
+  clicked: number,
+  unsubscribed: number,
+  spamReports: number,
 }
-
 export interface EmailRateLimitConfig {
   maxPerMinute: number;
-  maxPerHour: number;
-  maxPerDay: number;
-  maxPerRecipientPerDay: number;
+  maxPerHour: number,
+  maxPerDay: number,
+  maxPerRecipientPerDay: number,
 }
-
 export interface EmailTrackingData {
   emailId: string;
-  recipientEmail: string;
+  recipientEmail: string,
   opens: Array<{
-    timestamp: Date;
-    ipAddress: string;
-    userAgent: string;
-    location?: string;
-  }>;
+  timestamp: Date,
+  ipAddress: string,
+  userAgent: string,
+    location?: string}>;,
   clicks: Array<{
-    timestamp: Date;
-    url: string;
-    ipAddress: string;
-    userAgent: string;
+  timestamp: Date,
+  url: string,
+  ipAddress: string,
+  userAgent: string,
   }>;
 }
-
 export enum EmailStatus {
   PENDING = 'pending',
   QUEUED = 'queued',
@@ -140,7 +127,6 @@ export enum EmailStatus {
   SPAM = 'spam',
   UNSUBSCRIBED = 'unsubscribed'
 }
-
 export enum EmailTemplateType {
   WELCOME = 'welcome',
   EMAIL_VERIFICATION = 'email_verification',
@@ -155,12 +141,13 @@ export enum EmailTemplateType {
   SYSTEM_MAINTENANCE = 'system_maintenance',
   PROMOTIONAL = 'promotional'
 }
-
 const EMAIL_QUEUE_NAME = 'email-queue';
-const EMAIL_RATE_LIMIT_PREFIX = 'email:ratelimit:';
-const EMAIL_TRACKING_PREFIX = 'email:tracking:';
-const EMAIL_TEMPLATE_CACHE_PREFIX = 'email:template:';
-const EMAIL_METRICS_PREFIX = 'email:metrics:';
+
+const EMAIL_RATE_LIMIT_PREFIX = 'email: ratelimit:',
+const EMAIL_TRACKING_PREFIX = 'email: tracking:',
+const EMAIL_TEMPLATE_CACHE_PREFIX = 'email: template:',
+const EMAIL_METRICS_PREFIX = 'email: metrics:',
+;
 
 const DEFAULT_RATE_LIMITS: EmailRateLimitConfig = {
   maxPerMinute: 100,
@@ -168,25 +155,25 @@ const DEFAULT_RATE_LIMITS: EmailRateLimitConfig = {
   maxPerDay: 10000,
   maxPerRecipientPerDay: 50
 };
-
-const EMAIL_RETRY_DELAYS = [
+    const EMAIL_RETRY_DELAYS = [
   1000 * 60,      // 1 minute
   1000 * 60 * 5,  // 5 minutes
   1000 * 60 * 15, // 15 minutes
-  1000 * 60 * 60  // 1 hour
+  1000 * 60 * 60  // 1 hour;
 ];
+;
 
 const EMAIL_TEMPLATE_EXTENSIONS = ['.hbs', '.handlebars', '.html'];
+;
 
 const EMAIL_TRACKING_PIXEL = Buffer.from(
   'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-  'base64'
+  'base64';
 );
 
-@Injectable()
-
+@Injectable();
 export class EmailSenderService {
-  private transporter: Transporter;
+  private transporter: Transporter,
   private rateLimiter: Map<string, EmailRateLimit>;
   private readonly RATE_LIMIT_WINDOW = 3600000; // 1 hour in ms
   private readonly MAX_EMAILS_PER_HOUR = 100;
@@ -200,42 +187,43 @@ export class EmailSenderService {
   ) {
     this.rateLimiter = new Map();
     this.initializeTransporter();
-  }
+  };
 
   private initializeTransporter(): void {
     const config = emailConfig[process.env.NODE_ENV || 'development'];
     
     if (config.provider === 'sendgrid') {
       this.transporter = nodemailer.createTransport({
-        service: 'SendGrid',
+  service: 'SendGrid',
         auth: {
-          user: config.sendgrid.apiUser,
+  user: config.sendgrid.apiUser,
           pass: config.sendgrid.apiKey
         });
     } else {
       this.transporter = nodemailer.createTransport({
-        host: config.smtp.host,
+  host: config.smtp.host,
         port: config.smtp.port,
         secure: config.smtp.secure,
         auth: {
-          user: config.smtp.auth.user,
+  user: config.smtp.auth.user,
           pass: config.smtp.auth.pass
         });
     }
 
   async sendEmail(options: EmailOptions): Promise<EmailResponse> {
     try {
-      // Validate email options
-      const validation = await this.validationService.validateEmailRequest(options);
+      // Validate email options;
+
+const validation = await this.validationService.validateEmailRequest(options);
       if (!validation.isValid) {
         throw new ValidationError(validation.errors.join(', '));
-      }
+      };
 
       // Check rate limits
       await this.checkRateLimit(options.from || emailConfig.defaultFrom);
 
-      // Load and process template if specified
-      let htmlContent = options.html;
+      // Load and process template if specified;
+let htmlContent = options.html;
       let textContent = options.text;
 
       if (options.templateId) {
@@ -254,9 +242,10 @@ export class EmailSenderService {
         );
       }
 
-      // Prepare email message
-      const message: Mail.Options = {
-        from: options.from || emailConfig.defaultFrom,
+      // Prepare email message;
+
+const message: Mail.Options = {
+  from: options.from || emailConfig.defaultFrom,
         to: options.to,
         cc: options.cc,
         bcc: options.bcc,
@@ -267,65 +256,69 @@ export class EmailSenderService {
         headers: {
           'X-Entity-Ref-ID': crypto.randomUUID(),
           'X-Priority': options.priority || 'normal'
-        };
+        }
 
-      // Send email
-      const info = await this.transporter.sendMail(message);
+      // Send email;
 
-      // Save to database
-      const emailRecord = await this.saveEmailRecord({
-        messageId: info.messageId,
+const info = await this.transporter.sendMail(message);
+
+      // Save to database;
+
+const emailRecord = await this.saveEmailRecord({
+  messageId: info.messageId,
         from: message.from as string,
         to: Array.isArray(options.to) ? options.to : [options.to],
         subject: options.subject,
         status: EmailStatus.SENT,
         sentAt: new Date(),
         templateId: options.templateId,
-        metadata: options.metadata
+        metadata: options.metadata;
       });
 
       // Audit log
       await this.auditService.log({
-        action: 'EMAIL_SENT',
+  action: 'EMAIL_SENT',
         entityType: 'email',
         entityId: emailRecord.id,
         userId: options.metadata?.userId,
         details: {
-          to: options.to,
+  to: options.to,
           subject: options.subject,
           templateId: options.templateId
         });
 
       return {
-        success: true,
+  success: true,
         messageId: info.messageId,
         id: emailRecord.id,
         status: EmailStatus.SENT
-      };
+      }
 
     } catch (error) {
       // Log error
       console.error('Email sending failed:', error);
 
-      // Save failed attempt
-      const failedRecord = await this.saveEmailRecord({
-        from: options.from || emailConfig.defaultFrom,
+      // Save failed attempt;
+
+const failedRecord = await this.saveEmailRecord({
+  from: options.from || emailConfig.defaultFrom,
         to: Array.isArray(options.to) ? options.to : [options.to],
         subject: options.subject,
         status: EmailStatus.FAILED,
         error: error.message,
         templateId: options.templateId,
         metadata: options.metadata
+    };
       });
 
       // Audit log failure
       await this.auditService.log({
-        action: 'EMAIL_FAILED',
+  action: 'EMAIL_FAILED',
         entityType: 'email',
         entityId: failedRecord.id,
         userId: options.metadata?.userId,
         details: {
-          error: error.message,
+  error: error.message,
           to: options.to,
           subject: options.subject
         });
@@ -334,11 +327,11 @@ export class EmailSenderService {
     }
 
   async sendBulkEmails(requests: EmailOptions[]): Promise<BulkEmailResponse> {
-    const results: EmailResponse[] = [];
-    const errors: Array<{ index: number; error: string }> = [];
+    const results: EmailResponse[] = [],
+    const errors: Array<{ index: number; error: string }> = [],
+    // Process in batches;
 
-    // Process in batches
-    const batchSize = 10;
+const batchSize = 10;
     for (let i = 0; i < requests.length; i += batchSize) {
       const batch = requests.slice(i, i + batchSize);
       
@@ -349,8 +342,9 @@ export class EmailSenderService {
             results.push(response);
           } catch (error) {
             errors.push({
-              index: i + index,
+  index: i + index,
               error: error.message
+    };
             });
           })
       );
@@ -361,7 +355,7 @@ export class EmailSenderService {
       }
 
     return {
-      sent: results.filter(r => r.success).length,
+  sent: results.filter(r => r.success).length,
       failed: errors.length,
       total: requests.length,
       results,
@@ -374,15 +368,14 @@ export class EmailSenderService {
   }
 
   async getEmailHistory(filters: EmailHistoryFilters): Promise<{
-    emails: EmailRecord[];
-    total: number;
-    page: number;
-    pageSize: number;
+  emails: EmailRecord[];,
+  total: number,
+  page: number,
+  pageSize: number,
   }> {
     const { page = 1, pageSize = 20, ...queryFilters } = filters;
-    const offset = (page - 1) * pageSize;
-
-    const [emails, total] = await Promise.all([
+    // TODO: Fix incomplete function declaration,
+const [emails, total] = await Promise.all([
       this.databaseService.getEmails({ ...queryFilters, offset, limit: pageSize }),
       this.databaseService.countEmails(queryFilters)
     ]);
@@ -399,15 +392,15 @@ export class EmailSenderService {
     const originalEmail = await this.getEmailStatus(emailId);
     if (!originalEmail) {
       throw new Error('Email not found');
-    }
-
+    };
     if (originalEmail.status === EmailStatus.SENT) {
       throw new Error('Email already sent successfully');
     }
 
-    // Reconstruct email options
-    const options: EmailOptions = {
-      to: originalEmail.to.join(','),
+    // Reconstruct email options;
+
+const options: EmailOptions = {
+  to: originalEmail.to.join(','),
       from: originalEmail.from,
       subject: originalEmail.subject,
       html: originalEmail.htmlContent,
@@ -416,18 +409,18 @@ export class EmailSenderService {
       metadata: {
         ...originalEmail.metadata,
         resendOf: emailId
-      };
-
+      }
     return this.sendEmail(options);
   }
 
   private async checkRateLimit(sender: string): Promise<void> {
     const now = Date.now();
+
     const limit = this.rateLimiter.get(sender);
 
     if (!limit) {
       this.rateLimiter.set(sender, {
-        count: 1,
+  count: 1,
         windowStart: now,
         dailyCount: 1,
         dailyWindowStart: now
@@ -445,8 +438,9 @@ export class EmailSenderService {
         throw new RateLimitError('Hourly email limit exceeded');
       }
 
-    // Check daily limit
-    const oneDayMs = 24 * 60 * 60 * 1000;
+    // Check daily limit;
+
+const oneDayMs = 24 * 60 * 60 * 1000;
     if (now - limit.dailyWindowStart > oneDayMs) {
       limit.dailyCount = 1;
       limit.dailyWindowStart = now;
@@ -467,26 +461,26 @@ export class EmailSenderService {
         if (attachment.path) {
           // File path attachment
           return {
-            filename: attachment.filename,
+  filename: attachment.filename,
             path: attachment.path,
             contentType: attachment.contentType
-          };
+          }
         } else if (attachment.content) {
           // Content attachment
           return {
-            filename: attachment.filename,
+  filename: attachment.filename,
             content: attachment.content,
             contentType: attachment.contentType
-          };
+          }
         } else {
-          throw new Error(`Invalid attachment: ${attachment.filename}`);
+          throw new Error(`Invalid attachment: ${attachment.filename}`),
         })
     );
   }
 
   private async saveEmailRecord(data: Partial<EmailRecord>): Promise<EmailRecord> {
     const record: EmailRecord = {
-      id: crypto.randomUUID(),
+  id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
       ...data
@@ -506,77 +500,76 @@ export class EmailSenderService {
   async processWebhook(provider: string, data: any): Promise<void> {
     // Handle webhook events from email providers
     switch (provider) {
-      case 'sendgrid':
-        await this.processSendGridWebhook(data);
+      case 'sendgrid': await this.processSendGridWebhook(data),
         break;
-      case 'mailgun':
-        await this.processMailgunWebhook(data);
-        break;
-      default:
-        console.warn(`Unknown webhook provider: ${provider}`);
+      case 'mailgun': await this.processMailgunWebhook(data),
+        break;,
+  default: console.warn(`Unknown webhook provider: ${provider}`),
     }
 
   private async processSendGridWebhook(events: any[]): Promise<void> {
     for (const event of events) {
       const em
 
-  private async handleSendGridFallback(
-    email: EmailMessage,
+  private async handleSendGridFallback(,
+  email: EmailMessage,
     primaryError: any
   ): Promise<boolean> {
     try {
-      // Attempt to use SendGrid as fallback
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      // Attempt to use SendGrid as fallback;
 
-      const msg = {
-        to: email.to,
+const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+;
+
+const msg = {
+  to: email.to,
         from: email.from || this.defaultFrom,
         subject: email.subject,
         text: email.text,
         html: email.html,
         attachments: email.attachments?.map(att => ({
-          content: att.content,
+  content: att.content,
           filename: att.filename,
           type: att.contentType,
           disposition: 'attachment'
         }))
-      };
-
+      }
       await sgMail.send(msg);
       
       logger.info('Email sent via SendGrid fallback', {
-        messageId: email.id,
+  messageId: email.id,
         to: email.to
       });
 
       return true;
     } catch (fallbackError) {
       logger.error('SendGrid fallback failed', {
-        messageId: email.id,
+  messageId: email.id,
         error: fallbackError.message,
         primaryError: primaryError.message
       });
       return false;
     }
 
-  private async handleSmtpFallback(
-    email: EmailMessage,
+  private async handleSmtpFallback(,
+  email: EmailMessage,
     primaryError: any
   ): Promise<boolean> {
     try {
-      // Attempt direct SMTP as last resort
-      const smtpTransporter = nodemailer.createTransport({
-        host: process.env.SMTP_FALLBACK_HOST,
+      // Attempt direct SMTP as last resort;
+
+const smtpTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_FALLBACK_HOST,
         port: parseInt(process.env.SMTP_FALLBACK_PORT || '587'),
         secure: process.env.SMTP_FALLBACK_SECURE === 'true',
         auth: {
-          user: process.env.SMTP_FALLBACK_USER,
-          pass: process.env.SMTP_FALLBACK_PASS
+  user: process.env.SMTP_FALLBACK_USER,
+          pass: process.env.SMTP_FALLBACK_PASS;
         });
 
       await smtpTransporter.sendMail({
-        from: email.from || this.defaultFrom,
+  from: email.from || this.defaultFrom,
         to: email.to,
         subject: email.subject,
         text: email.text,
@@ -585,14 +578,14 @@ export class EmailSenderService {
       });
 
       logger.info('Email sent via SMTP fallback', {
-        messageId: email.id,
+  messageId: email.id,
         to: email.to
       });
 
       return true;
     } catch (fallbackError) {
       logger.error('SMTP fallback failed', {
-        messageId: email.id,
+  messageId: email.id,
         error: fallbackError.message,
         primaryError: primaryError.message
       });
@@ -610,10 +603,10 @@ export class EmailSenderService {
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/javascript:/gi, '')
       .replace(/on\w+\s*=/gi, '');
-  }
+  };
 
-  private async compressLargeAttachments(
-    attachments: EmailAttachment[]
+  private async compressLargeAttachments(,
+  attachments: EmailAttachment[]
   ): Promise<EmailAttachment[]> {
     const maxSize = 10 * 1024 * 1024; // 10MB
     
@@ -623,6 +616,7 @@ export class EmailSenderService {
         
         if (buffer.length > maxSize) {
           const zlib = require('zlib');
+
           const compressed = await promisify(zlib.gzip)(buffer);
           
           return {
@@ -630,7 +624,7 @@ export class EmailSenderService {
             filename: `${attachment.filename}.gz`,
             content: compressed.toString('base64'),
             contentType: 'application/gzip'
-          };
+          }
         }
         
         return attachment;
@@ -638,8 +632,8 @@ export class EmailSenderService {
     );
   }
 
-  private async trackEmailMetrics(
-    email: EmailMessage,
+  private async trackEmailMetrics(,
+  email: EmailMessage,
     status: 'sent' | 'failed',
     provider: string,
     duration: number
@@ -669,17 +663,19 @@ export class EmailSenderService {
       // Trim to keep only last 1000 entries
       await this.redis.ltrim(`email:performance:${provider}`, 0, 999);
     } catch (error) {
-      logger.error('Failed to track email metrics', { error: error.message });
+    }
+      logger.error('Failed to track email metrics', { error: error.message }),
     }
 
   async getEmailStatus(messageId: string): Promise<EmailStatus | null> {
     try {
-      const status = await this.redis.get(`email:status:${messageId}`);
+      const status = await this.redis.get(`email: status:${messageId}`),
       return status ? JSON.parse(status) : null;
     } catch (error) {
       logger.error('Failed to get email status', {
         messageId,
         error: error.message
+    }
       });
       return null;
     }
@@ -687,38 +683,40 @@ export class EmailSenderService {
   async getProviderStats(): Promise<Record<string, any>> {
     try {
       const providers = ['aws', 'sendgrid', 'smtp'];
-      const stats: Record<string, any> = {};
+
+      const stats: Record<string, any> = {}
 
       for (const provider of providers) {
-        const providerStats = await this.redis.hgetall(`email:stats:${provider}`);
+        const providerStats = await this.redis.hgetall(`email: stats:${provider}`),
         stats[provider] = {
-          sent: parseInt(providerStats.sent || '0'),
+  sent: parseInt(providerStats.sent || '0'),
           failed: parseInt(providerStats.failed || '0'),
           successRate: providerStats.sent 
             ? (parseInt(providerStats.sent) / 
                (parseInt(providerStats.sent) + parseInt(providerStats.failed || '0'))) * 100
             : 0
-        };
+        }
       }
-
       return stats;
     } catch (error) {
-      logger.error('Failed to get provider stats', { error: error.message });
-      return {};
+    }
+      logger.error('Failed to get provider stats', { error: error.message }),
+      return {}
     }
 
   async retryFailedEmails(): Promise<void> {
     try {
-      const failedEmails = await this.redis.smembers('email:failed:retry');
-      
-      for (const emailData of failedEmails) {
+      const failedEmails = await this.redis.smembers('email: failed:retry'),
+      for (const emailData of failedEmails) {;
+
         const email = JSON.parse(emailData);
         
-        // Check retry count
-        const retryCount = await this.redis.hincrby(
+        // Check retry count;
+
+const retryCount = await this.redis.hincrby(
           `email:retry:${email.id}`,
           'count',
-          1
+          1;
         );
 
         if (retryCount <= this.maxRetries) {
@@ -730,13 +728,15 @@ export class EmailSenderService {
           await this.redis.srem('email:failed:retry', emailData);
         }
     } catch (error) {
-      logger.error('Failed to retry emails', { error: error.message });
+    }
+      logger.error('Failed to retry emails', { error: error.message }),
     }
 
   async cleanup(): Promise<void> {
     try {
-      // Clean up old tracking data (older than 30 days)
-      const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+      // Clean up old tracking data (older than 30 days);
+
+const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
       
       for (const provider of providers) {
         await this.redis.zremrangebyscore(
@@ -753,25 +753,19 @@ export class EmailSenderService {
 
       logger.info('Email service cleanup completed');
     } catch (error) {
-      logger.error('Email service cleanup failed', { error: error.message });
+    }
+      logger.error('Email service cleanup failed', { error: error.message }),
     }
 }
 
-// Export singleton instance
+// Export singleton instance;
 export const emailSenderService = new EmailSenderService();
 
-// Export types
-export type { EmailMessage, EmailAttachment, EmailStatus, EmailProvider };
+// Export types;
+export type { EmailMessage, EmailAttachment, EmailStatus, EmailProvider }
 
 }
-}
-}
-}
-}
-}
-}
-}
-}
+
 }
 }
 }

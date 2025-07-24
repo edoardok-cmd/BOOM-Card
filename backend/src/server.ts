@@ -8,19 +8,19 @@ import partnerRoutes from './routes/partner.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import { initializeDatabase } from './database/init';
 
-// Types
+// Types;
 export interface CustomRequest extends Request {
   user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
+  id: string,
+  email: string,
+  role: string,
+  }
   requestId?: string;
 }
 
-// Initialize Express app
-const app: Application = express();
+// Initialize Express app;
 
+const app: Application = express(),
 // Basic middleware
 app.use(cors({
   origin: [
@@ -31,9 +31,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
+app.use(express.json({ limit: '10mb' })),
+app.use(express.urlencoded({ extended: true, limit: '10mb' })),
 // Request ID middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -52,14 +51,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Root endpoint
 app.get('/', (req: Request, res: Response) => {
   res.json({
-    name: 'BOOM Card API',
+  name: 'BOOM Card API',
     version: '1.0.0',
     status: 'running',
     message: 'Welcome to BOOM Card Discount Platform API',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     endpoints: {
-      health: '/health',
+  health: '/health',
       apiHealth: '/api/health',
       test: '/api/test'
     }
@@ -68,7 +67,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({
-    status: 'healthy',
+  status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: '1.0.0'
@@ -77,7 +76,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 app.get('/health', (req: Request, res: Response) => {
   res.json({
-    status: 'healthy',
+  status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: '1.0.0'
@@ -87,7 +86,7 @@ app.get('/health', (req: Request, res: Response) => {
 // Test endpoint
 app.get('/api/test', (req: Request, res: Response) => {
   res.json({
-    message: 'BOOM Card Backend is running!',
+  message: 'BOOM Card Backend is running!',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
@@ -102,9 +101,9 @@ app.use('/api/subscriptions', subscriptionRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
-  console.warn(`404 Not Found: ${req.method} ${req.path}`);
+  console.warn(`404 Not Found: ${req.method} ${req.path}`),
   res.status(404).json({
-    error: 'Not Found',
+      error: 'Not Found',
     message: 'The requested resource does not exist',
     path: req.path
   });
@@ -113,19 +112,23 @@ app.use((req: Request, res: Response) => {
 // Error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('Unhandled error:', err);
-  
-  const status = err.status || err.statusCode || 500;
+;
+
+const status = err.status || err.statusCode || 500;
+
   const message = err.message || 'Internal Server Error';
   
   res.status(status).json({
-    error: message,
+  error: message,
     requestId: (req as CustomRequest).requestId,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
-// Server startup
+// Server startup;
+
 const PORT = process.env.PORT || 5000;
+
 const HOST = process.env.HOST || '0.0.0.0';
 
 async function startServer() {
@@ -137,15 +140,15 @@ async function startServer() {
     
     app.listen(PORT, () => {
       console.log('🚀 BOOM Card Backend Server started successfully!');
-      console.log(`🔗 Server running on http://${HOST}:${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('✅ Health check available at: /health');
-      console.log('✅ Test endpoint available at: /api/test');
-      console.log('✅ Review API available at: /api/reviews');
-      console.log('✅ User API available at: /api/users');
-      console.log('✅ QR Code API available at: /api/qrcode');
-      console.log('✅ Partner API available at: /api/partners');
-      console.log('✅ Subscription API available at: /api/subscriptions');
+      console.log(`🔗 Server running on http: //${HOST}:${PORT}`),
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`),
+      console.log('✅ Health check available at: /health'),
+      console.log('✅ Test endpoint available at: /api/test'),
+      console.log('✅ Review API available at: /api/reviews'),
+      console.log('✅ User API available at: /api/users'),
+      console.log('✅ QR Code API available at: /api/qrcode'),
+      console.log('✅ Partner API available at: /api/partners'),
+      console.log('✅ Subscription API available at: /api/subscriptions'),
       console.log('');
       console.log('Ready to accept connections! 🎉');
     });
@@ -164,13 +167,12 @@ async function startServer() {
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
-  }
+    }
 }
-
 // Start the server
 startServer().catch((error) => {
   console.error('Server startup failed:', error);
   process.exit(1);
 });
-
+;
 export default app;

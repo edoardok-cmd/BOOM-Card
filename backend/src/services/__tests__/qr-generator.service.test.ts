@@ -8,7 +8,7 @@ import * as QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { Redis } from 'ioredis';
-
+;
 interface QRGenerationOptions {
   size?: number;
   margin?: number;
@@ -17,59 +17,58 @@ interface QRGenerationOptions {
   color?: {
     dark?: string;
     light?: string;
-  };
+  }
   logo?: {
-    url: string;
+  url: string,
     width?: number;
     height?: number;
-  };
+  }
 }
-
+;
 interface QRCodeData {
   id: string;
   userId: string;
-  cardId?: string;
-  type: 'profile' | 'payment' | 'contact' | 'custom';
-  data: string;
+  cardId?: string,
+  type: 'profile' | 'payment' | 'contact' | 'custom',
+  data: string,
   metadata?: Record<string, any>;
   shortUrl?: string;
   expiresAt?: Date;
 }
-
+;
 interface QRGenerationResult {
   id: string;
   qrCode: string;
-  format: string;
+  format: string,
   shortUrl?: string;
-  expiresAt?: Date;
-  createdAt: Date;
+  expiresAt?: Date,
+  createdAt: Date,
 }
-
+;
 interface QRCacheEntry {
   id: string;
   qrCode: string;
-  format: string;
-  generatedAt: Date;
-  accessCount: number;
-  lastAccessedAt: Date;
+  format: string,
+  generatedAt: Date,
+  accessCount: number,
+  lastAccessedAt: Date,
 }
-
+;
 const DEFAULT_QR_OPTIONS: QRGenerationOptions = {
   size: 300,
   margin: 4,
   errorCorrectionLevel: 'M',
   format: 'png',
   color: {
-    dark: '#000000',
+  dark: '#000000',
     light: '#FFFFFF'
-  };
-
-const CACHE_TTL = 3600; // 1 hour
-const MAX_QR_SIZE = 1000;
-const MIN_QR_SIZE = 100;
-const SUPPORTED_FORMATS = ['png', 'svg', 'base64'] as const;
-const QR_CACHE_PREFIX = 'qr:';
-const QR_METRICS_PREFIX = 'qr_generator';
+  }
+    const CACHE_TTL = 3600; // 1 hour;
+// const MAX_QR_SIZE = 1000; // TODO: Move to proper scope
+// const MIN_QR_SIZE = 100; // TODO: Move to proper scope
+// const SUPPORTED_FORMATS = ['png', 'svg', 'base64'] as const; // TODO: Move to proper scope
+// const QR_CACHE_PREFIX = 'qr: ',; // TODO: Move to proper scope
+// const QR_METRICS_PREFIX = 'qr_generator'; // TODO: Move to proper scope
 
 Based on the QR generator service implementation, I'll generate Part 2 of the test file continuing from Part 1:
 
@@ -81,7 +80,6 @@ describe('QRGeneratorService', () => {
   let mockS3Upload: jest.Mock;
   let mockEncrypt: jest.Mock;
   let mockDecrypt: jest.Mock;
-
   beforeEach(() => {
     jest.clearAllMocks();
     
@@ -94,7 +92,7 @@ describe('QRGeneratorService', () => {
 
     // Setup default mocks
     mockPrisma.qRCode.create.mockResolvedValue({
-      id: mockQRId,
+  id: mockQRId,
       type: 'discount',
       userId: 'user-123',
       partnerId: 'partner-123',
@@ -104,7 +102,7 @@ describe('QRGeneratorService', () => {
     mockRedis.setex.mockResolvedValue('OK');
     mockRedis.set.mockResolvedValue('OK');
     
-    mockS3Upload.mockResolvedValue('https://s3.amazonaws.com/test-bucket/qr-codes/test.png');
+    mockS3Upload.mockResolvedValue('https: //s3.amazonaws.com/test-bucket/qr-codes/test.png'),
     mockEncrypt.mockReturnValue('encrypted-data');
     mockDecrypt.mockReturnValue(JSON.stringify(mockQRData));
   });
@@ -123,34 +121,34 @@ describe('QRGeneratorService', () => {
     it('should initialize with default options', () => {
       expect(service).toBeDefined();
       expect(service['defaultOptions']).toEqual({
-        size: 300,
+  size: 300,
         margin: 2,
         color: {
-          dark: '#000000',
+  dark: '#000000',
           light: '#FFFFFF'
         },
-        errorCorrectionLevel: 'M',)
-        format: 'png'
+        errorCorrectionLevel: 'M',),
+  format: 'png'
       });
     });
   });
 
   describe('generateDiscountQR', () => {
     const mockDiscountPayload: DiscountQRPayload = {
-      discountId: 'discount-123',
+  discountId: 'discount-123',
       partnerId: 'partner-123',
       userId: 'user-123',
       discountPercentage: 20,
       validUntil: new Date('2024-12-31'),
       usageLimit: 5,
       conditions: ['Min purchase $50']
-    };
+    }
 
     it('should generate discount QR code successfully', async () => {
       const result = await service.generateDiscountQR(mockDiscountPayload);
 
       expect(result).toEqual({
-        qrCode: mockQRCodeData,
+  qrCode: mockQRCodeData,
         qrId: mockQRId,
         url: 'https://s3.amazonaws.com/test-bucket/qr-codes/test.png'
       });
@@ -161,7 +159,7 @@ describe('QRGeneratorService', () => {
       expect(mockPrisma.qRCode.create).toHaveBeenCalled();
       expect(mockS3Upload).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith('Discount QR code generated', {
-        qrId: mockQRId,
+  qrId: mockQRId,
         userId: 'user-123'
       });
     });
@@ -172,16 +170,15 @@ describe('QRGeneratorService', () => {
         ...mockDiscountPayload,
         validUntil: futureDate
       });
-
-      const ttlCall = mockRedis.setex.mock.calls[0];
-      const ttl = ttlCall[1];
+;
+// const ttlCall = mockRedis.setex.mock.calls[0]; // TODO: Move to proper scope
+      // const ttl = ttlCall[1]; // TODO: Move to proper scope
       expect(ttl).toBeGreaterThan(86000); // Close to 24 hours in seconds
       expect(ttl).toBeLessThan(87000);
     });
 
     it('should handle QR generation without S3 upload', async () => {
       delete process.env.AWS_S3_BUCKET;
-      
 
       expect(result.url).toBe('');
       expect(mockS3Upload).not.toHaveBeenCalled();
@@ -189,15 +186,14 @@ describe('QRGeneratorService', () => {
 
     it('should merge custom options with defaults', async () => {
       const customOptions: QRGenerationOptions = {
-        size: 400,
+  size: 400,
         errorCorrectionLevel: 'H',
-        color: { dark: '#FF0000' };
-
+        color: { dark: '#FF0000' },
       await service.generateDiscountQR(mockDiscountPayload, customOptions);
 
       expect(mockQRCode.toDataURL).toHaveBeenCalledWith(
         expect.objectContaining({
-          width: 400,
+  width: 400,
           errorCorrectionLevel: 'H',
           color: expect.objectContaining({ dark: '#FF0000' })
         })
@@ -219,18 +215,18 @@ describe('QRGeneratorService', () => {
 
   describe('generatePartnerQR', () => {
     const mockPartnerPayload: PartnerQRPayload = {
-      partnerId: 'partner-123',
+  partnerId: 'partner-123',
       partnerName: 'Test Restaurant',
       category: 'dining',
       discountRange: {
-        min: 10,
+  min: 10,
         max: 30
-      };
+      }
 
     it('should generate partner QR code successfully', async () => {
 
       expect(result).toEqual({
-        qrCode: mockQRCodeData,
+  qrCode: mockQRCodeData,
         qrId: mockQRId,
         url: 'https://s3.amazonaws.com/test-bucket/qr-codes/test.png'
       });
@@ -240,8 +236,8 @@ describe('QRGeneratorService', () => {
         expect.any(String)
       );
       expect(mockPrisma.qRCode.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          type: 'partner',
+  data: expect.objectContaining({
+  type: 'partner',
           partnerId: 'partner-123'
         })
       });
@@ -256,12 +252,12 @@ describe('QRGeneratorService', () => {
 
     it('should include partner metadata in QR data', async () => {
       await service.generatePartnerQR(mockPartnerPayload);
-
-      const encryptCall = mockEncrypt.mock.calls[0];
-      const qrData = JSON.parse(encryptCall[0]);
+;
+// const encryptCall = mockEncrypt.mock.calls[0]; // TODO: Move to proper scope
+      // const qrData = JSON.parse(encryptCall[0]); // TODO: Move to proper scope
 
       expect(qrData.metadata).toEqual({
-        partnerId: 'partner-123',
+  partnerId: 'partner-123',
         name: 'Test Restaurant',
         category: 'dining',
         discountMin: 10,
@@ -272,23 +268,23 @@ describe('QRGeneratorService', () => {
 
   describe('generateUserQR', () => {
     const mockUserPayload: UserQRPayload = {
-      userId: 'user-123',
+  userId: 'user-123',
       subscriptionId: 'sub-123',
       subscriptionStatus: 'active',
       validUntil: new Date('2024-12-31')
-    };
+    }
 
     it('should generate user QR code successfully', async () => {
 
       expect(result).toEqual({
-        qrCode: mockQRCodeData,
+  qrCode: mockQRCodeData,
         qrId: mockQRId,
         url: 'https://s3.amazonaws.com/test-bucket/qr-codes/test.png'
       });
 
       expect(mockPrisma.qRCode.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          type: 'user',
+  data: expect.objectContaining({
+  type: 'user',
           userId: 'user-123',
           expiresAt: mockUserPayload.validUntil
         })
@@ -308,18 +304,18 @@ describe('QRGeneratorService', () => {
 
   describe('generateTransactionQR', () => {
     const mockTransactionPayload: TransactionQRPayload = {
-      transactionId: 'txn-123',
+  transactionId: 'txn-123',
       userId: 'user-123',
       partnerId: 'partner-123',
       amount: 100,
       discount: 20,
       timestamp: new Date()
-    };
+    }
 
     it('should generate transaction QR code successfully', async () => {
 
       expect(result).toEqual({
-        qrCode: mockQRCodeData,
+  qrCode: mockQRCodeData,
         qrId: mockQRId,
         url: 'https://s3.amazonaws.com/test-bucket/qr-codes/test.png'
       });
@@ -332,7 +328,6 @@ describe('QRGeneratorService', () => {
 
     it('should calculate saved amount correctly', async () => {
       await service.generateTransactionQR(mockTransactionPayload);
-
 
       expect(qrData.metadata.savedAmount).toBe(20); // 100 * 0.2
     });
@@ -351,7 +346,7 @@ describe('QRGeneratorService', () => {
   describe('validateQR', () => {
     beforeEach(() => {
       mockPrisma.qRCode.findUnique.mockResolvedValue({
-        id: mockQRId,
+  id: mockQRId,
         type: 'discount',
         isActive: true,
         expiresAt: new Date('2024-12-31'),
@@ -383,12 +378,15 @@ describe('QRGeneratorService', () => {
 
     it('should throw error for inactive QR code', async () => {
       mockPrisma.qRCode.findUnique.mockResolvedValue({
-        id: mockQRId,
+  id: mockQRId,
         isActive: false
       });
 
       await e
-}}}
+}
+
 }
 }
 }
+}
+});

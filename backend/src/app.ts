@@ -22,8 +22,6 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import dotenv from 'dotenv';
 import path from 'path';
-
-// Route imports
 import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import cardRouter from './routes/card.routes';
@@ -34,96 +32,105 @@ import qrRouter from './routes/qr.routes';
 import adminRouter from './routes/admin.routes';
 import webhookRouter from './routes/webhook.routes';
 import healthRouter from './routes/health.routes';
-
-// Middleware imports
 import { errorHandler } from './middleware/error.middleware';
 import { authMiddleware } from './middleware/auth.middleware';
 import { validationMiddleware } from './middleware/validation.middleware';
 import { loggingMiddleware } from './middleware/logging.middleware';
 import { corsMiddleware } from './middleware/cors.middleware';
 
-// Interfaces
+// Route imports
+
+// Middleware imports
+
+// Interfaces;
 interface AppConfig {
   port: number;
-  nodeEnv: string;
-  apiVersion: string;
-  corsOrigins: string[];
-  sessionSecret: string;
-  redisUrl: string;
-  postgresUrl: string;
-  jwtSecret: string;
-  jwtExpiresIn: string;
-  refreshTokenExpiresIn: string;
-  rateLimitWindowMs: number;
-  rateLimitMax: number;
-  slowDownWindowMs: number;
-  slowDownDelayAfter: number;
-  slowDownDelayMs: number;
-  uploadLimit: string;
-  trustProxy: boolean;
+  nodeEnv: string,
+  apiVersion: string,
+  corsOrigins: string[];,
+  sessionSecret: string,
+  redisUrl: string,
+  postgresUrl: string,
+  jwtSecret: string,
+  jwtExpiresIn: string,
+  refreshTokenExpiresIn: string,
+  rateLimitWindowMs: number,
+  rateLimitMax: number,
+  slowDownWindowMs: number,
+  slowDownDelayAfter: number,
+  slowDownDelayMs: number,
+  uploadLimit: string,
+  trustProxy: boolean,
 }
-
 interface SessionData {
-  userId?: string;
-  email?: string;
-  role?: string;
-  lastActivity?: Date;
-}
-
+  userId?: string
+  email?: string
+  role?: string
+  lastActivity?: Date}
 interface CustomRequest extends Request {
   user?: {
-    id: string;
-    email: string;
-    role: string;
+  id: string,
+  email: string,
+  role: string,
     permissions?: string[];
-  };
-  sessionID: string;
-  requestId: string;
+  },
+    sessionID: string,
+  requestId: string,
   startTime?: number;
 }
-
 interface ErrorResponse {
   success: false;
   error: {
-    message: string;
-    code?: string;
-    statusCode: number;
-    details?: any;
-  };
-  requestId: string;
-  timestamp: string;
+  message: string,
+    code?: string,
+  statusCode: number,
+    details?: any},
+    requestId: string,
+  timestamp: string,
 }
-
 interface SuccessResponse<T = any> {
-  success: true;
-  data: T;
+  success: true,
+  data: T,
   meta?: {
     page?: number;
     limit?: number;
     total?: number;
     totalPages?: number;
-  };
-  requestId: string;
-  timestamp: string;
+  },
+    requestId: string,
+  timestamp: string,
 }
 
-// Constants
+// Constants;
+
 const API_PREFIX = '/api/v1';
+
 const STATIC_PATH = path.join(__dirname, '../public');
+
 const UPLOADS_PATH = path.join(__dirname, '../uploads');
+
 const LOGS_PATH = path.join(__dirname, '../logs');
+;
 
 const DEFAULT_PORT = 3000;
+
 const DEFAULT_NODE_ENV = 'development';
-const DEFAULT_RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+const DEFAULT_RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes;
+
 const DEFAULT_RATE_LIMIT_MAX = 100;
-const DEFAULT_SLOW_DOWN_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+const DEFAULT_SLOW_DOWN_WINDOW = 15 * 60 * 1000; // 15 minutes;
+
 const DEFAULT_SLOW_DOWN_DELAY_AFTER = 50;
+
 const DEFAULT_SLOW_DOWN_DELAY_MS = 500;
+
 const DEFAULT_UPLOAD_LIMIT = '10mb';
 
 // Configuration
 dotenv.config();
+;
 
 const config: AppConfig = {
   port: parseInt(process.env.PORT || '') || DEFAULT_PORT,
@@ -145,26 +152,30 @@ const config: AppConfig = {
   trustProxy: process.env.TRUST_PROXY === 'true'
 };
 
-// Redis client configuration
+// Redis client configuration;
+
 const redisClient = new Redis(config.redisUrl, {
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
   enableReadyCheck: true,
-  maxRetriesPerRequest: 3
+  maxRetriesPerRequest: 3;
 });
 
-// PostgreSQL pool configuration
+// PostgreSQL pool configuration;
+
 const pgPool = new Pool({
   connectionString: config.postgresUrl,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 2000;
 });
 
-// Session store
-const RedisStore = connectRedis(session);
-const sessionStore = new RedisStore({ client: redisClient });
+// Session store;
 
-// Rate limiter configuration
+const RedisStore = connectRedis(session);
+
+const sessionStore = new RedisStore({ client: redisClient }),
+// Rate limiter configuration;
+
 const limiter = rateLimit({
   windowMs: config.rateLimitWindowMs,
   max: config.rateLimitMax,
@@ -172,12 +183,13 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new (require('rate-limit-redis'))({
-    client: redisClient,
-    prefix: 'rl:',
-  }),
+  client: redisClient,
+    prefix: 'rl:'
+});
 });
 
-// Slow down configuration
+// Slow down configuration;
+
 const speedLimiter = slowDown({
   windowMs: config.slowDownWindowMs,
   delayAfter: config.slowDownDelayAfter,
@@ -185,12 +197,13 @@ const speedLimiter = slowDown({
   maxDelayMs: 20000,
   skipSuccessfulRequests: false,
   store: new (require('express-slow-down/lib/redis-store'))({
-    client: redisClient,
-    prefix: 'sd:',
-  }),
+  client: redisClient,
+    prefix: 'sd:'
+});
 });
 
-// Logger configuration
+// Logger configuration;
+
 const logger = winston.createLogger({
   level: config.nodeEnv === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
@@ -201,63 +214,63 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.File({ filename: path.join(LOGS_PATH, 'error.log'), level: 'error' }),
     new winston.transports.File({ filename: path.join(LOGS_PATH, 'combined.log') }),
-  ],
+  ];
 });
 
 if (config.nodeEnv !== 'production') {
   logger.add(new winston.transports.Console({
-    format: winston.format.combine(
+  format: winston.format.combine(
       winston.format.colorize(),
       winston.format.simple()
     )
   }));
 }
 
-// Swagger configuration
+// Swagger configuration;
+
 const swaggerOptions: swaggerJsdoc.Options = {
   definition: {
-    openapi: '3.0.0',
+  openapi: '3.0.0',
     info: {
-      title: 'BOOM Card API',
+  title: 'BOOM Card API',
       version: config.apiVersion,
       description: 'Digital business card platform API',
       contact: {
-        name: 'BOOM Card Support',
-        email: 'support@boomcard.com',
-      },
-    },
+  name: 'BOOM Card Support',
+        email: 'support@boomcard.com'
+}
+},
     servers: [
       {
-        url: `http://localhost:${config.port}${API_PREFIX}`,
-        description: 'Development server',
-      },
+  url: `http://localhost:${config.port}${API_PREFIX}`,
+        description: 'Development server'
+},
       {
-        url: `https://api.boomcard.com${API_PREFIX}`,
-        description: 'Production server',
-      },
+  url: `https://api.boomcard.com${API_PREFIX}`,
+        description: 'Production server'
+},
     ],
     components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
+  securitySchemes: {
+  bearerAuth: {
+  type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-  },
-  apis: ['./src/routes/*.ts', './src/models/*.ts'],
-};
+          bearerFormat: 'JWT'
+}
+}
+},
+  apis: ['./src/routes/*.ts', './src/models/*.ts']
+}
+    const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+// Express app configuration;
 
-// Express app configuration
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })),
 app.use(express.static('public'));
 
 // API routes
@@ -265,7 +278,7 @@ app.use('/api', apiRoutes);
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() }),
 });
 
 // Error handling middleware
@@ -276,13 +289,16 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // 404 handler
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: 'Not found' }),
 });
 
-// Start server
+// Start server;
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
+;
 export default app;
+
+}

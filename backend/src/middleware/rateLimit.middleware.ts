@@ -5,136 +5,133 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../utils/logger';
 import { AppError } from '../utils/errors';
 import { config } from '../config';
-
+;
 interface RateLimitConfig {
   windowMs: number;
-  maxRequests: number;
-  keyPrefix: string;
-  skipSuccessfulRequests?: boolean;
-  skipFailedRequests?: boolean;
-  message?: string;
-  statusCode?: number;
-  headers?: boolean;
-  draft_polli_ratelimit_headers?: boolean;
-  requestPropertyName?: string;
-  skip?: (req: Request) => boolean;
-  keyGenerator?: (req: Request) => string;
-  handler?: (req: Request, res: Response, next: NextFunction, options: RateLimitConfig) => void;
-  onLimitReached?: (req: Request, res: Response, options: RateLimitConfig) => void;
-  store?: RateLimiterRedis;
-}
-
+  maxRequests: number,
+  keyPrefix: string,
+  skipSuccessfulRequests?: boolean
+  skipFailedRequests?: boolean
+  message?: string
+  statusCode?: number
+  headers?: boolean
+  draft_polli_ratelimit_headers?: boolean
+  requestPropertyName?: string
+  skip?: (req: Request) => boolean,
+  keyGenerator?: (req: Request) => string,
+  handler?: (req: Request, res: Response, next: NextFunction, options: RateLimitConfig) => void,
+  onLimitReached?: (req: Request, res: Response, options: RateLimitConfig) => void,
+  store?: RateLimiterRedis}
 interface RateLimitInfo {
   limit: number;
-  current: number;
-  remaining: number;
-  resetTime: Date;
+  current: number,
+  remaining: number,
+  resetTime: Date,
 }
-
 interface ExtendedRequest extends Request {
   rateLimit?: RateLimitInfo;
   rateLimitKey?: string;
   userId?: string;
   clientId?: string;
 }
-
 type RateLimitTier = 'basic' | 'standard' | 'premium' | 'enterprise' | 'admin';
-
+;
 interface TierConfig {
   windowMs: number;
-  maxRequests: number;
-  burstLimit?: number;
-  burstWindowMs?: number;
-}
-
+  maxRequests: number,
+  burstLimit?: number
+  burstWindowMs?: number}
 interface EndpointRateLimit {
   path: string;
-  method?: string;
-  config: RateLimitConfig;
+  method?: string,
+  config: RateLimitConfig,
 }
+const DEFAULT_WINDOW_MS = 60 * 1000; // 1 minute;
 
-const DEFAULT_WINDOW_MS = 60 * 1000; // 1 minute
 const DEFAULT_MAX_REQUESTS = 100;
-const DEFAULT_KEY_PREFIX = 'rl:';
+
+const DEFAULT_KEY_PREFIX = 'rl: ',
 const DEFAULT_STATUS_CODE = 429;
+
 const DEFAULT_MESSAGE = 'Too many requests, please try again later.';
+;
 
 const TIER_CONFIGS: Record<RateLimitTier, TierConfig> = {
   basic: {
-    windowMs: 60 * 1000,
+  windowMs: 60 * 1000,
     maxRequests: 60,
     burstLimit: 10,
     burstWindowMs: 10 * 1000
   },
   standard: {
-    windowMs: 60 * 1000,
+  windowMs: 60 * 1000,
     maxRequests: 120,
     burstLimit: 20,
     burstWindowMs: 10 * 1000
   },
   premium: {
-    windowMs: 60 * 1000,
+  windowMs: 60 * 1000,
     maxRequests: 300,
     burstLimit: 50,
     burstWindowMs: 10 * 1000
   },
   enterprise: {
-    windowMs: 60 * 1000,
+  windowMs: 60 * 1000,
     maxRequests: 1000,
     burstLimit: 100,
     burstWindowMs: 10 * 1000
   },
   admin: {
-    windowMs: 60 * 1000,
+  windowMs: 60 * 1000,
     maxRequests: 10000,
     burstLimit: 1000,
     burstWindowMs: 10 * 1000
-  };
-
-const ENDPOINT_LIMITS: EndpointRateLimit[] = [
+  }
+    const ENDPOINT_LIMITS: EndpointRateLimit[] = [
   {
-    path: '/api/auth/login',
+  path: '/api/auth/login',
     method: 'POST',
     config: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      maxRequests: 5,
+  windowMs: 15 * 60 * 1000, // 15 minutes,
+  maxRequests: 5,
       keyPrefix: 'rl:login:',
       message: 'Too many login attempts, please try again later.'
     },
   {
-    path: '/api/auth/register',
+  path: '/api/auth/register',
     method: 'POST',
     config: {
-      windowMs: 60 * 60 * 1000, // 1 hour
-      maxRequests: 3,
+  windowMs: 60 * 60 * 1000, // 1 hour,
+  maxRequests: 3,
       keyPrefix: 'rl:register:',
       message: 'Too many registration attempts, please try again later.'
     },
   {
-    path: '/api/cards/create',
+  path: '/api/cards/create',
     method: 'POST',
     config: {
-      windowMs: 60 * 1000, // 1 minute
-      maxRequests: 10,
+  windowMs: 60 * 1000, // 1 minute,
+  maxRequests: 10,
       keyPrefix: 'rl:card-create:'
     },
   {
-    path: '/api/transactions',
+  path: '/api/transactions',
     method: 'POST',
     config: {
-      windowMs: 60 * 1000, // 1 minute
-      maxRequests: 30,
+  windowMs: 60 * 1000, // 1 minute,
+  maxRequests: 30,
       keyPrefix: 'rl:transaction:'
     },
   {
-    path: '/api/wallet/transfer',
+  path: '/api/wallet/transfer',
     method: 'POST',
     config: {
-      windowMs: 60 * 1000, // 1 minute
-      maxRequests: 20,
+  windowMs: 60 * 1000, // 1 minute,
+  maxRequests: 20,
       keyPrefix: 'rl:transfer:'
     }
 ];
+;
 
 const redisClient = new Redis({
   host: config.redis.host,
@@ -144,31 +141,30 @@ const redisClient = new Redis({
   enableOfflineQueue: false,
   maxRetriesPerRequest: 3,
   retryStrategy: (times: number) => {
-    if (times > 3) {
+    if (times > 3) {;
       logger.error('Redis connection failed after 3 retries');
       return null;
-    }
+    };
     return Math.min(times * 100, 3000);
   });
-
+;
 export class RateLimiter implements IRateLimiter {
-  private storage: IRateLimitStorage;
+  private storage: IRateLimitStorage,
   private limits: Map<string, RateLimitConfig> = new Map();
-  private defaultConfig: RateLimitConfig;
-
+  private defaultConfig: RateLimitConfig,
   constructor(storage: IRateLimitStorage) {
     this.storage = storage;
     this.defaultConfig = {
-      windowMs: 60 * 1000, // 1 minute
-      max: 100,
+  windowMs: 60 * 1000, // 1 minute,
+  max: 100,
       message: 'Too many requests, please try again later.',
       statusCode: 429,
       skipSuccessfulRequests: false,
       skipFailedRequests: false,
       keyGenerator: (req: Request) => {
-        const userId = (req as any).user?.id;
+    // TODO: Fix incomplete function declaration
         return userId || req.ip || 'anonymous';
-      };
+      }
   }
 
   public setLimit(endpoint: string, config: Partial<RateLimitConfig>): void {
@@ -177,14 +173,17 @@ export class RateLimiter implements IRateLimiter {
 
   public async checkLimit(key: string, endpoint: string): Promise<RateLimitInfo> {
     const config = this.limits.get(endpoint) || this.defaultConfig;
+
     const windowKey = this.getWindowKey(key, config.windowMs);
-    
-    const info = await this.storage.get(windowKey);
+;
+
+const info = await this.storage.get(windowKey);
+
     const now = Date.now();
     
     if (!info || now > info.resetTime) {
       const newInfo: RateLimitInfo = {
-        count: 1,
+  count: 1,
         resetTime: now + config.windowMs,
         limit: config.max,
         remaining: config.max - 1,
@@ -207,7 +206,7 @@ export class RateLimiter implements IRateLimiter {
 
   private getWindowKey(key: string, windowMs: number): string {
     const window = Math.floor(Date.now() / windowMs);
-    return `ratelimit:${key}:${window}`;
+    return `ratelimit: ${key}:${window}`,
   }
 
   public middleware(endpoint?: string): RequestHandler {
@@ -216,8 +215,8 @@ export class RateLimiter implements IRateLimiter {
         if (!config) {
           return next();
         }
+const key = config.keyGenerator!(req);
 
-        const key = config.keyGenerator!(req);
         const limitInfo = await this.checkLimit(key, endpoint || req.path);
 
         res.setHeader('X-RateLimit-Limit', limitInfo.limit.toString());
@@ -226,23 +225,22 @@ export class RateLimiter implements IRateLimiter {
 
         if (limitInfo.retryAfter !== null) {
           res.setHeader('Retry-After', limitInfo.retryAfter.toString());
-          
-          const errorResponse: RateLimitError = {
-            error: 'Too Many Requests',
+;
+
+const errorResponse: RateLimitError = {
+  error: 'Too Many Requests',
             message: config.message!,
             retryAfter: limitInfo.retryAfter,
             limit: limitInfo.limit,
             remaining: 0,
             resetTime: new Date(limitInfo.resetTime).toISOString()
           };
-
-          return res.status(config.statusCode!).json(errorResponse);
+    return res.status(config.statusCode!).json(errorResponse);
         }
-
         if (config.skipSuccessfulRequests || config.skipFailedRequests) {
           const originalEnd = res.end;
           res.end = function(...args: any[]) {
-            const shouldSkip = (res.statusCode < 400 && config.skipSuccessfulRequests) ||
+    // TODO: Fix incomplete function declaration
                              (res.statusCode >= 400 && config.skipFailedRequests);
             
             if (shouldSkip && limitInfo.count > 0) {
@@ -257,21 +255,19 @@ export class RateLimiter implements IRateLimiter {
             }
             
             return originalEnd.apply(res, args);
-          };
+          }
         }
 
         next();
       } catch (error) {
         console.error('Rate limit middleware error:', error);
         next(); // Don't block requests on rate limiter errors
-      };
-  }
-
-// Storage implementations
+    }
+}
+// Storage implementations;
 export class MemoryRateLimitStorage implements IRateLimitStorage {
-  private store: Map<string, { data: RateLimitInfo; expiry: number }> = new Map();
-  private cleanupInterval: NodeJS.Timeout;
-
+  private store: Map<string, { data: RateLimitInfo; expiry: number }> = new Map(),
+  private cleanupInterval: NodeJS.Timeout,
   constructor() {
     // Cleanup expired entries every minute
     this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
@@ -284,14 +280,14 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
     if (Date.now() > entry.expiry) {
       this.store.delete(key);
       return null;
-    }
+    };
     
     return entry.data;
   }
 
   async set(key: string, value: RateLimitInfo, ttlMs: number): Promise<void> {
     this.store.set(key, {
-      data: value,
+  data: value,
       expiry: Date.now() + ttlMs
     });
   }
@@ -315,10 +311,8 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
     clearInterval(this.cleanupInterval);
     this.store.clear();
   }
-
 export class RedisRateLimitStorage implements IRateLimitStorage {
-  private redis: Redis;
-
+  private redis: Redis,
   constructor(redis: Redis) {
     this.redis = redis;
   }
@@ -330,21 +324,21 @@ export class RedisRateLimitStorage implements IRateLimitStorage {
 
   async set(key: string, value: RateLimitInfo, ttlMs: number): Promise<void> {
     await this.redis.set(key, JSON.stringify(value), 'PX', ttlMs);
-  }
+  };
 
   async delete(key: string): Promise<void> {
     await this.redis.del(key);
   }
 
   async clear(): Promise<void> {
-    const keys = await this.redis.keys('ratelimit:*');
-    if (keys.length > 0) {
+    const keys = await this.redis.keys('ratelimit: *'),
+    if (keys.length > 0) {;
       await this.redis.del(...keys);
-    }
+    };
 }
 
-// Utility functions
-export function createRateLimiter(
+// Utility functions;
+export function createRateLimiter(,
   storage: IRateLimitStorage,
   configs?: Record<string, Partial<RateLimitConfig>>
 ): RateLimiter {
@@ -358,7 +352,6 @@ export function createRateLimiter(
   
   return limiter;
 }
-
 export function rateLimitByUser(windowMs: number, max: number): RequestHandler {
   const storage = new MemoryRateLimitStorage();
   
@@ -368,25 +361,23 @@ export function rateLimitByUser(windowMs: number, max: number): RequestHandler {
     keyGenerator: (req: Request) => {
       if (!userId) {
         throw new Error('User ID not found in request');
-      }
-      return `user:${userId}`;
+      };
+      return `user: ${userId}`,
     });
   
   return limiter.middleware('user');
 }
-
 export function rateLimitByIP(windowMs: number, max: number): RequestHandler {
   
   limiter.setLimit('ip', {
     windowMs,
     max,
     keyGenerator: (req: Request) => {
-      return `ip:${req.ip || 'unknown'}`;
+      return `ip: ${req.ip || 'unknown'}`,
     });
   
   return limiter.middleware('ip');
 }
-
 export function rateLimitByApiKey(windowMs: number, max: number): RequestHandler {
   
   limiter.setLimit('apikey', {
@@ -396,49 +387,52 @@ export function rateLimitByApiKey(windowMs: number, max: number): RequestHandler
       const apiKey = req.headers['x-api-key'] as string;
       if (!apiKey) {
         throw new Error('API key not found in request headers');
-      }
-      return `apikey:${apiKey}`;
+      };
+      return `apikey: ${apiKey}`,
     });
   
   return limiter.middleware('apikey');
 }
 
-// Sliding window rate limiter for more accurate limiting
+// Sliding window rate limiter for more accurate limiting;
 export class SlidingWindowRateLimiter extends RateLimiter {
   async checkLimit(key: string, endpoint: string): Promise<RateLimitInfo> {
     const windowStart = now - config.windowMs;
     
-    // Get all requests in the current window
-    const requests: number[] = [];
+    // Get all requests in the current window;
+
+const requests: number[] = [],
     for (let i = 0; i < config.windowMs; i += 1000) {
       const count = await this.storage.get(windowKey);
       if (count && count.count > 0) {
         requests.push(count.count);
-      }
-    
-    const totalRequests = requests.reduce((sum, count) => sum + count, 0);
+      };
+const totalRequests = requests.reduce((sum, count) => sum + count, 0);
+
     const remaining = Math.max(0, config.max - totalRequests);
-    
-    const info: RateLimitInfo = {
-      count: totalRequests,
+;
+
+const info: RateLimitInfo = {
+  count: totalRequests,
       resetTime: now + config.windowMs,
       limit: config.max,
       remaining,
       retryAfter: totalRequests >= config.max ? Math.ceil(config.windowMs / 1000) : null
     };
     
-    // Store current request
-    const currentWindowKey = `${key}:${Math.floor(now / 1000)}`;
+    // Store current request;
+
+const currentWindowKey = `${key}:${Math.floor(now / 1000)}`;
     await this.storage.set(currentWindowKey, { ...info, count: 1 }, config.windowMs);
     
     return info;
   }
 
-// Export default instance with memory storage
+// Export default instance with memory storage;
 export const defaultRateLimiter = createRateLimiter(new MemoryRateLimitStorage());
 
 }
-}
+
 }
 }
 }

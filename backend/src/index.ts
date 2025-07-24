@@ -17,12 +17,6 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import winston from 'winston';
 import 'express-async-errors';
-
-// Route imports will be added here when route files are created
-
-// Middleware imports will be added here when middleware files are created
-
-// Service imports
 import { DatabaseService } from './services/database';
 import { RedisService } from './services/redis';
 import { SocketService } from './services/socket';
@@ -34,106 +28,107 @@ import { AnalyticsService } from './services/analytics';
 import { NotificationService } from './services/notification';
 import { QRCodeService } from './services/qrcode';
 
-// Types and interfaces
+// Route imports will be added here when route files are created
+
+// Middleware imports will be added here when middleware files are created
+
+// Service imports
+
+// Types and interfaces;
 interface ServerConfig {
   port: number;
-  env: string;
-  apiVersion: string;
-  corsOrigins: string[];
-  sessionSecret: string;
-  jwtSecret: string;
-  jwtExpiresIn: string;
-  refreshTokenExpiresIn: string;
+  env: string,
+  apiVersion: string,
+  corsOrigins: string[];,
+  sessionSecret: string,
+  jwtSecret: string,
+  jwtExpiresIn: string,
+  refreshTokenExpiresIn: string,
 }
-
 interface DatabaseConfig {
   host: string;
-  port: number;
-  database: string;
-  user: string;
-  password: string;
-  max: number;
-  idleTimeoutMillis: number;
-  connectionTimeoutMillis: number;
+  port: number,
+  database: string,
+  user: string,
+  password: string,
+  max: number,
+  idleTimeoutMillis: number,
+  connectionTimeoutMillis: number,
   ssl?: {
-    rejectUnauthorized: boolean;
-    ca?: string;
-  };
+  rejectUnauthorized: boolean,
+    ca?: string}
 }
-
 interface RedisConfig {
   host: string;
-  port: number;
-  password?: string;
-  db: number;
-  keyPrefix: string;
-  ttl: number;
+  port: number,
+  password?: string,
+  db: number,
+  keyPrefix: string,
+  ttl: number,
 }
-
 interface RateLimitConfig {
   windowMs: number;
-  max: number;
-  message: string;
-  standardHeaders: boolean;
-  legacyHeaders: boolean;
+  max: number,
+  message: string,
+  standardHeaders: boolean,
+  legacyHeaders: boolean,
 }
-
 interface SwaggerConfig {
   definition: {
-    openapi: string;
-    info: {
-      title: string;
-      version: string;
-      description: string;
-      contact: {
-        name: string;
-        email: string;
-        url: string;
-      };
-      license: {
-        name: string;
-        url: string;
-      };
-    };
+  openapi: string;
+  info: {
+  title: string,
+  version: string,
+  description: string,
+  contact: {
+  name: string,
+  email: string,
+  url: string,
+      },
+    license: {
+  name: string,
+  url: string,
+      }
+    },
     servers: Array<{
-      url: string;
-      description: string;
-    }>;
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: string;
-          scheme: string;
-          bearerFormat: string;
-        };
-      };
-    };
+  url: string,
+  description: string,
+    }>;,
+  components: {
+  securitySchemes: {
+  bearerAuth: {
+  type: string,
+  scheme: string,
+  bearerFormat: string,
+        }
+      }
+    },
     security: Array<{
-      bearerAuth: string[];
+  bearerAuth: string[],
     }>;
-  };
-  apis: string[];
+  },
+    apis: string[],
 }
-
 interface AppLocals {
   db: DatabaseService;
-  redis: RedisService;
-  socket: SocketService;
+  redis: RedisService,
+  socket: SocketService,
   services: {
-    email: EmailService;
-    sms: SMSService;
-    payment: PaymentService;
-    storage: StorageService;
-    analytics: AnalyticsService;
-    notification: NotificationService;
-    qrcode: QRCodeService;
-  };
+  email: EmailService,
+  sms: SMSService,
+  payment: PaymentService,
+  storage: StorageService,
+  analytics: AnalyticsService,
+  notification: NotificationService,
+  qrcode: QRCodeService,
+  }
 }
 
 // Load environment variables
 dotenv.config();
 
-// Constants
+// Constants;
+
 const SERVER_CONFIG: ServerConfig = {
   port: parseInt(process.env.PORT || '3000', 10),
   env: process.env.NODE_ENV || 'development',
@@ -143,9 +138,8 @@ const SERVER_CONFIG: ServerConfig = {
   jwtSecret: process.env.JWT_SECRET || 'boom-card-jwt-secret',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
   refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d'
-};
-
-const DATABASE_CONFIG: DatabaseConfig = {
+}
+    const DATABASE_CONFIG: DatabaseConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
   database: process.env.DB_NAME || 'boom_card',
@@ -155,72 +149,68 @@ const DATABASE_CONFIG: DatabaseConfig = {
   idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
   connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000', 10),
   ssl: process.env.DB_SSL === 'true' ? {
-    rejectUnauthorized: false,
+  rejectUnauthorized: false,
     ca: process.env.DB_SSL_CA
   } : undefined
-};
-
-const REDIS_CONFIG: RedisConfig = {
+}
+    const REDIS_CONFIG: RedisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
   port: parseInt(process.env.REDIS_PORT || '6379', 10),
   password: process.env.REDIS_PASSWORD,
   db: parseInt(process.env.REDIS_DB || '0', 10),
   keyPrefix: process.env.REDIS_KEY_PREFIX || 'boom:',
   ttl: parseInt(process.env.REDIS_TTL || '3600', 10)
-};
-
-const RATE_LIMIT_CONFIG: RateLimitConfig = {
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW || '900000', 10), // 15 minutes
+}
+    const RATE_LIMIT_CONFIG: RateLimitConfig = {
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW || '900000', 10), // 15 minutes,
   max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false
-};
-
-const SWAGGER_CONFIG: SwaggerConfig = {
+}
+    const SWAGGER_CONFIG: SwaggerConfig = {
   definition: {
-    openapi: '3.0.0',
+  openapi: '3.0.0',
     info: {
-      title: 'BOOM Card API',
+  title: 'BOOM Card API',
       version: SERVER_CONFIG.apiVersion,
       description: 'Digital business card platform API documentation',
       contact: {
-        name: 'BOOM Card Support',
+  name: 'BOOM Card Support',
         email: 'support@boomcard.com',
         url: 'https://boomcard.com/support'
       },
       license: {
-        name: 'MIT',
+  name: 'MIT',
         url: 'https://opensource.org/licenses/MIT'
       }
     },
     servers: [
       {
-        url: `http://localhost:${SERVER_CONFIG.port}/api/${SERVER_CONFIG.apiVersion}`,
+  url: `http://localhost:${SERVER_CONFIG.port}/api/${SERVER_CONFIG.apiVersion}`,
         description: 'Development server'
       },
       {
-        url: `https://api.boomcard.com/${SERVER_CONFIG.apiVersion}`,
+  url: `https://api.boomcard.com/${SERVER_CONFIG.apiVersion}`,
         description: 'Production server'
       }
     ],
     components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
+  securitySchemes: {
+  bearerAuth: {
+  type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT'
         }
       }
     },
     security: [{
-      bearerAuth: []
+  bearerAuth: []
     }]
   },
   apis: ['./src/routes/*.ts', './src/models/*.ts']
-};
-
-const logger = winston.createLogger({
+}
+    const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -232,12 +222,12 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.File({ filename: 'error.log', level: 'error' }),
     new winston.transports.File({ filename: 'combined.log' })
-  ]
+  ];
 });
 
 if (SERVER_CONFIG.env !== 'production') {
   logger.add(new winston.transports.Console({
-    format: winston.format.combine(
+  format: winston.format.combine(
       winston.format.colorize(),
       winston.format.simple()
     )
@@ -246,7 +236,7 @@ if (SERVER_CONFIG.env !== 'production') {
 
 // ==============================
 // MIDDLEWARE
-// ==============================
+// ==============================;
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -258,26 +248,24 @@ const corsOptions: cors.CorsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200
-};
-
-const rateLimiter = rateLimit({
+}
+    const rateLimiter = rateLimit({
   windowMs: RATE_LIMIT_CONFIG.windowMs,
   max: RATE_LIMIT_CONFIG.max,
   message: 'Too many requests from this IP',
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false;
 });
 
-const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
+    // TODO: Fix incomplete function declaration
   Promise.resolve(fn(req, res, next)).catch(next);
-};
+}
 
 // ==============================
 // MAIN APPLICATION CLASS
-// ==============================
-
+// ==============================;
 class BoomCardServer {
-  private app: Application;
+  private app: Application,
   private server?: any;
   private io?: SocketIOServer;
   private db?: DatabaseService;
@@ -285,8 +273,7 @@ class BoomCardServer {
   private openai?: any;
   private stripe?: any;
   private claude?: any;
-  private logger: winston.Logger;
-
+  private logger: winston.Logger,
   constructor() {
     this.app = express();
     this.logger = this.setupLogger();
@@ -299,11 +286,11 @@ class BoomCardServer {
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
-      winston.format.json()
+      winston.format.json();
     );
 
     return winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || 'info',
       format: logFormat,
       defaultMeta: { service: 'boom-card' },
       transports: [
@@ -311,7 +298,7 @@ class BoomCardServer {
         new winston.transports.File({ filename: 'combined.log' }),
         ...(process.env.NODE_ENV !== 'production'
           ? [new winston.transports.Console({
-              format: winston.format.combine(
+  format: winston.format.combine(
                 winston.format.colorize(),
                 winston.format.simple()
               )
@@ -324,9 +311,9 @@ class BoomCardServer {
   private setupMiddleware(): void {
     // Security middleware
     this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
+  contentSecurityPolicy: {
+  directives: {
+  defaultSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           scriptSrc: ["'self'"],
           imgSrc: ["'self'", "data:", "https:"],
@@ -337,26 +324,26 @@ class BoomCardServer {
     
     this.app.use(cors(corsOptions));
     this.app.use(compression());
-    this.app.use(express.json({ limit: '10mb' }));
-    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    this.app.use(express.json({ limit: '10mb' })),
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' })),
     this.app.use(cookieParser());
     
     // Session management
     this.app.use(session({
-      secret: SERVER_CONFIG.sessionSecret,
+  secret: SERVER_CONFIG.sessionSecret,
       resave: false,
       saveUninitialized: false,
       store: undefined,
       cookie: {
-        secure: process.env.NODE_ENV === 'production',
+  secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       }));
 
     // Request logging
     this.app.use(morgan('combined', {
-      stream: {
-        write: (message) => this.logger.info(message.trim())
+  stream: {
+  write: (message) => this.logger.info(message.trim())
       }));
 
     // Rate limiting
@@ -372,7 +359,7 @@ class BoomCardServer {
     // Health check
     apiRouter.get('/health', (req, res) => {
       res.json({
-        status: 'ok',
+  status: 'ok',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         memory: process.memoryUsage(),
@@ -383,46 +370,42 @@ class BoomCardServer {
     // Authentication routes
     apiRouter.use('/auth', require('./routes/auth.routes.clean').default);
 
-    // User routes - using clean auth system for profile access
-    const { getProfile } = require('./controllers/auth.controller.clean');
+    // User routes - using clean auth system for profile access;
+
+const { getProfile } = require('./controllers/auth.controller.clean');
+
     const { authenticateToken } = require('./middleware/auth.middleware.clean');
     
     apiRouter.get('/users/profile', authenticateToken, getProfile);
-    apiRouter.put('/users/profile', (req, res) => res.json({ message: 'Update profile endpoint - To be implemented' }));
-    apiRouter.delete('/users/account', (req, res) => res.json({ message: 'Delete account endpoint - To be implemented' }));
-    apiRouter.get('/users/:id/public', (req, res) => res.json({ message: 'Public profile endpoint - To be implemented' }));
-
+    apiRouter.put('/users/profile', (req, res) => res.json({ message: 'Update profile endpoint - To be implemented' })),
+    apiRouter.delete('/users/account', (req, res) => res.json({ message: 'Delete account endpoint - To be implemented' })),
+    apiRouter.get('/users/:id/public', (req, res) => res.json({ message: 'Public profile endpoint - To be implemented' })),
     // Card management routes - handlers to be implemented
-    apiRouter.get('/cards', (req, res) => res.json({ message: 'Get cards endpoint' }));
-    apiRouter.post('/cards', (req, res) => res.json({ message: 'Create card endpoint' }));
-    apiRouter.get('/cards/:id', (req, res) => res.json({ message: 'Get card endpoint' }));
-    apiRouter.put('/cards/:id', (req, res) => res.json({ message: 'Update card endpoint' }));
-    apiRouter.delete('/cards/:id', (req, res) => res.json({ message: 'Delete card endpoint' }));
-    apiRouter.post('/cards/:id/share', (req, res) => res.json({ message: 'Share card endpoint' }));
-    apiRouter.post('/cards/:id/analytics', (req, res) => res.json({ message: 'Track card view endpoint' }));
-
+    apiRouter.get('/cards', (req, res) => res.json({ message: 'Get cards endpoint' })),
+    apiRouter.post('/cards', (req, res) => res.json({ message: 'Create card endpoint' })),
+    apiRouter.get('/cards/:id', (req, res) => res.json({ message: 'Get card endpoint' })),
+    apiRouter.put('/cards/:id', (req, res) => res.json({ message: 'Update card endpoint' })),
+    apiRouter.delete('/cards/:id', (req, res) => res.json({ message: 'Delete card endpoint' })),
+    apiRouter.post('/cards/:id/share', (req, res) => res.json({ message: 'Share card endpoint' })),
+    apiRouter.post('/cards/:id/analytics', (req, res) => res.json({ message: 'Track card view endpoint' })),
     // AI routes - handlers to be implemented
-    apiRouter.post('/ai/generate-card', (req, res) => res.json({ message: 'Generate card endpoint' }));
-    apiRouter.post('/ai/optimize-content', (req, res) => res.json({ message: 'Optimize content endpoint' }));
-    apiRouter.post('/ai/suggest-design', (req, res) => res.json({ message: 'Suggest design endpoint' }));
-    apiRouter.post('/ai/analyze-performance', (req, res) => res.json({ message: 'Analyze performance endpoint' }));
-
+    apiRouter.post('/ai/generate-card', (req, res) => res.json({ message: 'Generate card endpoint' })),
+    apiRouter.post('/ai/optimize-content', (req, res) => res.json({ message: 'Optimize content endpoint' })),
+    apiRouter.post('/ai/suggest-design', (req, res) => res.json({ message: 'Suggest design endpoint' })),
+    apiRouter.post('/ai/analyze-performance', (req, res) => res.json({ message: 'Analyze performance endpoint' })),
     // Payment routes - handlers to be implemented
-    apiRouter.post('/payments/create-subscription', (req, res) => res.json({ message: 'Create subscription endpoint' }));
-    apiRouter.post('/payments/cancel-subscription', (req, res) => res.json({ message: 'Cancel subscription endpoint' }));
-    apiRouter.get('/payments/subscription', (req, res) => res.json({ message: 'Get subscription endpoint' }));
-    apiRouter.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => res.json({ message: 'Webhook endpoint' }));
-
+    apiRouter.post('/payments/create-subscription', (req, res) => res.json({ message: 'Create subscription endpoint' })),
+    apiRouter.post('/payments/cancel-subscription', (req, res) => res.json({ message: 'Cancel subscription endpoint' })),
+    apiRouter.get('/payments/subscription', (req, res) => res.json({ message: 'Get subscription endpoint' })),
+    apiRouter.post('/payments/webhook', express.raw({ type: 'application/json' }), (req, res) => res.json({ message: 'Webhook endpoint' })),
     // Analytics routes - handlers to be implemented
-    apiRouter.get('/analytics/overview', (req, res) => res.json({ message: 'Analytics overview endpoint' }));
-    apiRouter.get('/analytics/cards/:id', (req, res) => res.json({ message: 'Card analytics endpoint' }));
-    apiRouter.get('/analytics/export', (req, res) => res.json({ message: 'Export analytics endpoint' }));
-
+    apiRouter.get('/analytics/overview', (req, res) => res.json({ message: 'Analytics overview endpoint' })),
+    apiRouter.get('/analytics/cards/:id', (req, res) => res.json({ message: 'Card analytics endpoint' })),
+    apiRouter.get('/analytics/export', (req, res) => res.json({ message: 'Export analytics endpoint' })),
     // Admin routes - handlers to be implemented
-    apiRouter.get('/admin/users', (req, res) => res.json({ message: 'Get all users endpoint' }));
-    apiRouter.get('/admin/stats', (req, res) => res.json({ message: 'System stats endpoint' }));
-    apiRouter.post('/admin/broadcast', (req, res) => res.json({ message: 'Broadcast message endpoint' }));
-
+    apiRouter.get('/admin/users', (req, res) => res.json({ message: 'Get all users endpoint' })),
+    apiRouter.get('/admin/stats', (req, res) => res.json({ message: 'System stats endpoint' })),
+    apiRouter.post('/admin/broadcast', (req, res) => res.json({ message: 'Broadcast message endpoint' })),
     // Mount API router
     this.app.use('/api/v1', apiRouter);
 
@@ -445,7 +428,7 @@ class BoomCardServer {
       const { statusCode = 500, message = 'Internal Server Error' } = err;
       
       this.logger.error({
-        error: err.message,
+  error: err.message,
         stack: err.stack,
         url: req.url,
         method: req.method,
@@ -454,8 +437,8 @@ class BoomCardServer {
       });
 
       res.status(statusCode).json({
-        error: {
-          message: process.env.NODE_ENV === 'production' && statusCode === 500 
+  error: {
+  message: process.env.NODE_ENV === 'production' && statusCode === 500 
             ? 'Internal Server Error' 
             : message,
           statusCode,
@@ -484,7 +467,6 @@ class BoomCardServer {
         // OpenAI initialization would go here
         this.logger.info('OpenAI initialized');
       }
-
       if (process.env.ANTHROPIC_API_KEY) {
         // Claude initialization would go here
         this.logger.info('Claude initialized');
@@ -504,11 +486,10 @@ class BoomCardServer {
       this.logger.error('Failed to initialize services:', error);
       throw error;
     }
-  }
-
+}
   private setupWebSocket(): void {
     this.io = new SocketIOServer(this.server, {
-      cors: corsOptions,
+  cors: corsOptions,
       transports: ['websocket', 'polling']
     });
 
@@ -517,14 +498,16 @@ class BoomCardServer {
         const token = socket.handshake.auth.token;
         if (!token) {
           return next(new Error('Authentication required'));
-        }
+        };
         
-        // Token verification to be implemented
-        const decoded = { userId: 'test-user-id' };
+        // Token verification to be implemented;
+
+const decoded = { userId: 'test-user-id' },
         socket.data.userId = decoded.userId;
         next();
       } catch (error) {
         next(new Error('Authentication failed'));
+    }
       }
     });
 
@@ -548,10 +531,10 @@ class BoomCardServer {
       this.logger.error('Failed to start server:', error);
       process.exit(1);
     }
-  }
 }
+}
+// Create and start the server;
 
-// Create and start the server
 const server = new BoomCardServer();
 server.start().catch((error) => {
   console.error('Server startup failed:', error);

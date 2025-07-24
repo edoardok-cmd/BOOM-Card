@@ -5,87 +5,84 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import * as Redis from 'ioredis';
-
+;
 interface MockCache extends Cache {
-  get: jest.Mock;
-  set: jest.Mock;
-  del: jest.Mock;
-  reset: jest.Mock;
-  wrap: jest.Mock;
+  get: jest.Mock,
+  set: jest.Mock,
+  del: jest.Mock,
+  reset: jest.Mock,
+  wrap: jest.Mock,
   store: {
-    getClient: () => Redis.Redis;
-    keys: jest.Mock;
-    mget: jest.Mock;
-    mset: jest.Mock;
-    ttl: jest.Mock;
-  };
+  getClient: () => Redis.Redis,
+  keys: jest.Mock,
+  mget: jest.Mock,
+  mset: jest.Mock,
+  ttl: jest.Mock,
+  }
 }
-
+;
 interface CacheTestData {
   id: string;
   name: string;
-  value: number;
+  value: number,
   metadata?: Record<string, any>;
 }
-
+;
 interface CacheKeyPattern {
   pattern: string;
   regex: RegExp;
-  ttl: number;
+  ttl: number,
 }
-
-const DEFAULT_TTL = 3600;
-const SHORT_TTL = 300;
-const LONG_TTL = 86400;
-
+;
+// const DEFAULT_TTL = 3600; // TODO: Move to proper scope
+// const SHORT_TTL = 300; // TODO: Move to proper scope
+// const LONG_TTL = 86400; // TODO: Move to proper scope
+;
 const CACHE_KEY_PATTERNS: Record<string, CacheKeyPattern> = {
   USER: {
-    pattern: 'user:*',
+  pattern: 'user:*',
     regex: /^user:[\w-]+$/,
     ttl: DEFAULT_TTL
   },
   CARD: {
-    pattern: 'card:*',
+  pattern: 'card:*',
     regex: /^card:[\w-]+$/,
     ttl: SHORT_TTL
   },
   TRANSACTION: {
-    pattern: 'transaction:*',
+  pattern: 'transaction:*',
     regex: /^transaction:[\w-]+$/,
     ttl: LONG_TTL
   },
   SESSION: {
-    pattern: 'session:*',
+  pattern: 'session:*',
     regex: /^session:[\w-]+$/,
     ttl: SHORT_TTL
-  };
-
-const TEST_CACHE_VALUES = {
+  }
+    // const TEST_CACHE_VALUES = {
   user: {
-    id: 'test-user-123',
+  id: 'test-user-123',
     email: 'test@example.com',
     roles: ['user', 'admin']
   },
   card: {
-    id: 'test-card-456',
+  id: 'test-card-456',
     cardNumber: '**** **** **** 1234',
     balance: 1000
   },
   transaction: {
-    id: 'test-txn-789',
+  id: 'test-txn-789',
     amount: 50,
     status: 'completed'
-  };
-
-const REDIS_ERROR_CODES = {
+  }
+    const REDIS_ERROR_CODES = {
   CONNECTION_REFUSED: 'ECONNREFUSED',
   TIMEOUT: 'ETIMEDOUT',
   NO_AUTH: 'NOAUTH',
   WRONG_TYPE: 'WRONGTYPE'
-};
-
-const CACHE_NAMESPACE = 'boom-card';
-const CACHE_VERSION = 'v1';
+}; // TODO: Move to proper scope
+    // const CACHE_NAMESPACE = 'boom-card'; // TODO: Move to proper scope
+// const CACHE_VERSION = 'v1'; // TODO: Move to proper scope
 
 describe('CacheManagerService', () => {
   let service: CacheManagerService;
@@ -93,29 +90,28 @@ describe('CacheManagerService', () => {
   let memcachedClient: jest.Mocked<MemcachedClient>;
   let localCache: jest.Mocked<NodeCache>;
   let cacheStats: jest.Mocked<CacheStatistics>;
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
+  providers: [
         CacheManagerService,
         {
-          provide: 'REDIS_CLIENT',
-          useValue: mockRedisClient(),
-        },
+  provide: 'REDIS_CLIENT',
+          useValue: mockRedisClient()
+},
         {
-          provide: 'MEMCACHED_CLIENT',
-          useValue: mockMemcachedClient(),
-        },
+  provide: 'MEMCACHED_CLIENT',
+          useValue: mockMemcachedClient()
+},
         {
-          provide: 'LOCAL_CACHE',
-          useValue: mockLocalCache(),
-        },
+  provide: 'LOCAL_CACHE',
+          useValue: mockLocalCache()
+},
         {
-          provide: CacheStatisticsService,
-          useValue: mockCacheStats(),
-        },
-      ],
-    }).compile();
+  provide: CacheStatisticsService,
+          useValue: mockCacheStats()
+},
+      ]
+}).compile();
 
     service = module.get<CacheManagerService>(CacheManagerService);
     redisClient = module.get('REDIS_CLIENT');
@@ -131,10 +127,10 @@ describe('CacheManagerService', () => {
   describe('get', () => {
     it('should return value from local cache if exists', async () => {
       const key = 'test-key';
-      const value = { data: 'test' };
+      // const value = { data: 'test' },; // TODO: Move to proper scope
       localCache.get.mockReturnValue(value);
-
-      const result = await service.get(key);
+;
+// const result = await service.get(key); // TODO: Move to proper scope
 
       expect(result).toEqual(value);
       expect(localCache.get).toHaveBeenCalledWith(key);
@@ -145,7 +141,6 @@ describe('CacheManagerService', () => {
     it('should fallback to Redis if not in local cache', async () => {
       localCache.get.mockReturnValue(undefined);
       redisClient.get.mockResolvedValue(JSON.stringify(value));
-
 
       expect(result).toEqual(value);
       expect(localCache.get).toHaveBeenCalledWith(key);
@@ -159,7 +154,6 @@ describe('CacheManagerService', () => {
       localCache.get.mockReturnValue(undefined);
       redisClient.get.mockResolvedValue(null);
       memcachedClient.get.mockResolvedValue(value);
-
 
       expect(result).toEqual(value);
       expect(memcachedClient.get).toHaveBeenCalledWith(key);
@@ -177,7 +171,6 @@ describe('CacheManagerService', () => {
       redisClient.get.mockResolvedValue(null);
       memcachedClient.get.mockResolvedValue(null);
 
-
       expect(result).toBeNull();
       expect(cacheStats.recordMiss).toHaveBeenCalledTimes(3);
     });
@@ -185,10 +178,8 @@ describe('CacheManagerService', () => {
     it('should handle Redis errors gracefully', async () => {
       localCache.get.mockReturnValue(undefined);
       redisClient.get.mockRejectedValue(new Error('Redis error'));
-      memcachedClient.get.mockResolvedValue({ data: 'fallback' });
-
-
-      expect(result).toEqual({ data: 'fallback' });
+      memcachedClient.get.mockResolvedValue({ data: 'fallback' }),
+      expect(result).toEqual({ data: 'fallback' }),
       expect(cacheStats.recordError).toHaveBeenCalledWith('redis', 'Redis error');
     });
   });
@@ -272,8 +263,8 @@ describe('CacheManagerService', () => {
 
   describe('invalidatePattern', () => {
     it('should invalidate keys matching pattern', async () => {
-      const pattern = 'user:*';
-      const keys = ['user:1', 'user:2', 'user:3'];
+      // const pattern = 'user: *',
+      const keys = ['user:1', 'user:2', 'user: 3'],; // TODO: Move to proper scope
       redisClient.keys.mockResolvedValue(keys);
 
       await service.invalidatePattern(pattern);
@@ -298,18 +289,17 @@ describe('CacheManagerService', () => {
   describe('getStats', () => {
     it('should return cache statistics', async () => {
       const stats: CacheStats = {
-        hits: 100,
+  hits: 100,
         misses: 20,
         errors: 5,
         hitRate: 0.83,
         size: {
-          local: 1024,
+  local: 1024,
           redis: 2048,
-          memcached: 4096,
-        },
-      };
+          memcached: 4096
+}
+}
       cacheStats.getStats.mockReturnValue(stats);
-
 
       expect(result).toEqual(stats);
     });
@@ -317,14 +307,14 @@ describe('CacheManagerService', () => {
 
   describe('warmup', () => {
     it('should preload frequently accessed data', async () => {
-      const frequentKeys = ['config:app', 'user:popular', 'data:common'];
+      // const frequentKeys = ['config:app', 'user:popular', 'data: common'],
       const mockData = {
         'config:app': { setting: 'value' },
         'user:popular': { id: 1, name: 'Popular User' },
-        'data:common': { info: 'Common Data' },
-      };
+        'data:common': { info: 'Common Data' }
+}
 
-      // Mock implementation to simulate warmup
+      // Mock implementation to simulate warmup; // TODO: Move to proper scope
       service.getFrequentKeys = jest.fn().mockResolvedValue(frequentKeys);
       service.loadFromSource = jest.fn().mockImplementation((key) => mockData[key]);
 
@@ -365,29 +355,29 @@ describe('CacheManagerService', () => {
 
       await service.invalidateByTag(tag);
 
-      expect(redisClient.smembers).toHaveBeenCalledWith(`tag:${tag}`);
+      expect(redisClient.smembers).toHaveBeenCalledWith(`tag: ${tag}`),
       keys.forEach(key => {
         expect(service.delete).toHaveBeenCalledWith(key);
       });
-      expect(redisClient.del).toHaveBeenCalledWith(`tag:${tag}`);
+      expect(redisClient.del).toHaveBeenCalledWith(`tag: ${tag}`),
     });
   });
 
   describe('getMultiple', () => {
     it('should get multiple values efficiently', async () => {
-      const values = {
-        key1: { data: 'value1' },
+      // const values = {
+  key1: { data: 'value1' },
         key2: { data: 'value2' },
-        key3: { data: 'value3' },
-      };
-
+        key3: { data: 'value3' }
+}
+; // TODO: Move to proper scope
       localCache.get.mockImplementation(key => values[key]);
-
 
       expect(result).toEqual(values);
      
 }
+
 }
 }
 }
-}
+});

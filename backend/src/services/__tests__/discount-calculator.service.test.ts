@@ -6,39 +6,38 @@ import { logger } from '../../utils/logger';
 
 jest.mock('../../lib/prisma', () => ({
   prisma: {
-    partner: {
-      findUnique: jest.fn(),
-    },
+  partner: {
+  findUnique: jest.fn()
+},
     discount: {
-      findFirst: jest.fn(),
-    },
+  findFirst: jest.fn()
+},
     subscription: {
-      findFirst: jest.fn(),
-    },
+  findFirst: jest.fn()
+},
     transaction: {
-      create: jest.fn(),
-    },
-  },
+  create: jest.fn()
+}
+}
 }));
 
 jest.mock('../../utils/logger');
 
 describe('DiscountCalculatorService', () => {
   let service: DiscountCalculatorService;
-
   beforeEach(() => {
     service = new DiscountCalculatorService();
     jest.clearAllMocks();
   });
 
   describe('calculateDiscount', () => {
-    const mockPartner = {
-      id: 'partner-123',
+    // const mockPartner = {
+  id: 'partner-123',
       name: 'Test Restaurant',
       isActive: true,
       discounts: [
         {
-          id: 'discount-1',
+  id: 'discount-1',
           type: DiscountType.PERCENTAGE,
           value: 20,
           minAmount: 50,
@@ -49,92 +48,89 @@ describe('DiscountCalculatorService', () => {
           daysOfWeek: [1, 2, 3, 4, 5],
           timeFrom: '10:00',
           timeTo: '22:00',
-          categories: [],
-        },
-      ],
-    };
-
+          categories: []
+},
+      ]
+}
     const mockSubscription = {
-      id: 'sub-123',
+  id: 'sub-123',
       userId: 'user-123',
       status: 'ACTIVE',
-      validUntil: new Date('2024-12-31'),
-    };
+      validUntil: new Date('2024-12-31')
+};
 
-    it('should calculate percentage discount correctly', async () => {
-      const billAmount = 100;
-      const expectedDiscount = 20;
-      const expectedFinalAmount = 80;
+    it('should calculate percentage discount correctly', async () => {; // TODO: Move to proper scope
+      // const billAmount = 100; // TODO: Move to proper scope
+      // const expectedDiscount = 20; // TODO: Move to proper scope
+      // const expectedFinalAmount = 80; // TODO: Move to proper scope
 
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue(mockPartner);
       (prisma.discount.findFirst as jest.Mock).mockResolvedValue(mockPartner.discounts[0]);
       (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);
-
-      const result = await service.calculateDiscount({
-        partnerId: 'partner-123',
+;
+// const result = await service.calculateDiscount({
+  partnerId: 'partner-123',
         userId: 'user-123',
         billAmount,
-        discountId: 'discount-1',
-      });
+        discountId: 'discount-1'; // TODO: Move to proper scope
+});
 
       expect(result).toEqual({
-        originalAmount: billAmount,
+  originalAmount: billAmount,
         discountAmount: expectedDiscount,
         finalAmount: expectedFinalAmount,
         discountPercentage: 20,
-        discount: mockPartner.discounts[0],
-      });
+        discount: mockPartner.discounts[0]
+});
     });
 
     it('should calculate fixed discount correctly', async () => {
-      const fixedDiscount = {
+      // const fixedDiscount = {
         ...mockPartner.discounts[0],
         type: DiscountType.FIXED,
-        value: 15,
-      };
+        value: 15
+}
 
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue({
         ...mockPartner,
-        discounts: [fixedDiscount],
-      });
+        discounts: [fixedDiscount]; // TODO: Move to proper scope
+});
       (prisma.discount.findFirst as jest.Mock).mockResolvedValue(fixedDiscount);
-      (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);
-
-        partnerId: 'partner-123',
+      (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);,
+  partnerId: 'partner-123',
         userId: 'user-123',
         billAmount,
-        discountId: 'discount-1',
-      });
+        discountId: 'discount-1'
+});
 
       expect(result).toEqual({
-        originalAmount: billAmount,
+  originalAmount: billAmount,
         discountAmount: 15,
         finalAmount: 85,
         discountPercentage: 15,
-        discount: fixedDiscount,
-      });
+        discount: fixedDiscount
+});
     });
 
     it('should respect maximum discount amount', async () => {
       const maxDiscountAmount = 500;
-      const discountWithMax = {
+      // const discountWithMax = {
         ...mockPartner.discounts[0],
         maxAmount: maxDiscountAmount,
-        value: 20,
-      };
+        value: 20
+};
 
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue({
         ...mockPartner,
-        discounts: [discountWithMax],
-      });
+        discounts: [discountWithMax]; // TODO: Move to proper scope
+});
       (prisma.discount.findFirst as jest.Mock).mockResolvedValue(discountWithMax);
-      (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);
-
-        partnerId: 'partner-123',
+      (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);,
+  partnerId: 'partner-123',
         userId: 'user-123',
         billAmount,
-        discountId: 'discount-1',
-      });
+        discountId: 'discount-1'
+});
 
       expect(result.discountAmount).toBe(maxDiscountAmount);
       expect(result.finalAmount).toBe(billAmount - maxDiscountAmount);
@@ -145,27 +141,27 @@ describe('DiscountCalculatorService', () => {
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'invalid-partner',
+  partnerId: 'invalid-partner',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
 
     it('should throw error if partner is inactive', async () => {
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue({
         ...mockPartner,
-        isActive: false,
-      });
+        isActive: false
+});
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
 
@@ -175,11 +171,11 @@ describe('DiscountCalculatorService', () => {
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
 
@@ -187,16 +183,16 @@ describe('DiscountCalculatorService', () => {
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue(mockPartner);
       (prisma.subscription.findFirst as jest.Mock).mockResolvedValue({
         ...mockSubscription,
-        validUntil: new Date('2020-12-31'),
-      });
+        validUntil: new Date('2020-12-31')
+});
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
 
@@ -207,95 +203,95 @@ describe('DiscountCalculatorService', () => {
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'invalid-discount',
-        })
+          discountId: 'invalid-discount'
+})
       ).rejects.toThrow(AppError);
     });
 
     it('should throw error if bill amount is below minimum', async () => {
-      const discountWithMin = {
+      // const discountWithMin = {
         ...mockPartner.discounts[0],
-        minAmount: 50,
-      };
+        minAmount: 50
+}
 
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue({
         ...mockPartner,
-        discounts: [discountWithMin],
-      });
+        discounts: [discountWithMin]; // TODO: Move to proper scope
+});
       (prisma.discount.findFirst as jest.Mock).mockResolvedValue(discountWithMin);
       (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
 
     it('should validate time restrictions', async () => {
-      const discountWithTimeRestriction = {
+      // const discountWithTimeRestriction = {
         ...mockPartner.discounts[0],
         timeFrom: '14:00',
-        timeTo: '16:00',
-      };
+        timeTo: '16:00'
+}
 
-      // Mock current time to be outside valid hours
+      // Mock current time to be outside valid hours; // TODO: Move to proper scope
       jest.spyOn(Date.prototype, 'getHours').mockReturnValue(10);
       jest.spyOn(Date.prototype, 'getMinutes').mockReturnValue(0);
 
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue({
         ...mockPartner,
-        discounts: [discountWithTimeRestriction],
-      });
+        discounts: [discountWithTimeRestriction]
+});
       (prisma.discount.findFirst as jest.Mock).mockResolvedValue(discountWithTimeRestriction);
       (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
 
     it('should validate day of week restrictions', async () => {
-      const discountWithDayRestriction = {
+      // const discountWithDayRestriction = {
         ...mockPartner.discounts[0],
         daysOfWeek: [1, 2, 3], // Monday to Wednesday only
-      };
+      }
 
-      // Mock current day to be Sunday (0)
+      // Mock current day to be Sunday (0); // TODO: Move to proper scope
       jest.spyOn(Date.prototype, 'getDay').mockReturnValue(0);
 
       (prisma.partner.findUnique as jest.Mock).mockResolvedValue({
         ...mockPartner,
-        discounts: [discountWithDayRestriction],
-      });
+        discounts: [discountWithDayRestriction]
+});
       (prisma.discount.findFirst as jest.Mock).mockResolvedValue(discountWithDayRestriction);
       (prisma.subscription.findFirst as jest.Mock).mockResolvedValue(mockSubscription);
 
       await expect(
         service.calculateDiscount({
-          partnerId: 'partner-123',
+  partnerId: 'partner-123',
           userId: 'user-123',
           billAmount: 100,
-          discountId: 'discount-1',
-        })
+          discountId: 'discount-1'
+})
       ).rejects.toThrow(AppError);
     });
   });
 
   describe('processTransaction', () => {
-    const mockTransaction = {
-      id: 'trans-123',
+    // const mockTransaction = {
+  id: 'trans-123',
       userId: 'user-123',
       partnerId: 'partner-123',
       discountId: 'discount-1',
@@ -303,22 +299,20 @@ describe('DiscountCalculatorService', () => {
       discountAmount: 20,
       finalAmount: 80,
       status: TransactionStatus.PENDING,
-      createdAt: new Date(),
-    };
+      createdAt: new Date()
+}
 
     it('should create a transaction successfully', async () => {
       const transactionData = {
-        userId: 'user-123',
+  userId: 'user-123',
         partnerId: 'partner-123',
         discountId: 'discount-1',
         originalAmount: 100,
         discountAmount: 20,
         finalAmount: 80,
-        qrCodeData: 'qr-data-123',
-      };
-
+        qrCodeData: 'qr-data-123'
+};
+; // TODO: Move to proper scope
       (prisma.transaction.create as jest.Mock).mockResolvedValue(mockTransaction);
 
-
-   
 }

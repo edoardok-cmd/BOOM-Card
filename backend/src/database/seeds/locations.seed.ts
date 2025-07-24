@@ -1,30 +1,29 @@
 import { Knex } from 'knex';
-
+;
 interface Location {
   id: string;
-  name_en: string;
-  name_bg: string;
-  slug: string;
-  type: 'country' | 'region' | 'city' | 'district';
-  parent_id: string | null;
+  name_en: string,
+  name_bg: string,
+  slug: string,
+  type: 'country' | 'region' | 'city' | 'district',
+  parent_id: string | null,
   coordinates: {
-    lat: number;
-    lng: number;
-  } | null;
-  timezone: string;
-  is_active: boolean;
+  lat: number,
+  lng: number,
+  } | null;,
+  timezone: string,
+  is_active: boolean,
   metadata: {
     population?: number;
     area_km2?: number;
     postal_codes?: string[];
     phone_code?: string;
-  };
+  }
 }
-
 const locations: Location[] = [
   // Countries
   {
-    id: 'loc_country_bulgaria',
+  id: 'loc_country_bulgaria',
     name_en: 'Bulgaria',
     name_bg: 'България',
     slug: 'bulgaria',
@@ -34,14 +33,14 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 6916548,
+  population: 6916548,
       area_km2: 110879,
       phone_code: '+359'
     },
 
   // Regions
   {
-    id: 'loc_region_sofia_grad',
+  id: 'loc_region_sofia_grad',
     name_en: 'Sofia-Capital',
     name_bg: 'София-град',
     slug: 'sofia-capital',
@@ -51,11 +50,11 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 1328790,
+  population: 1328790,
       area_km2: 1349
     },
   {
-    id: 'loc_region_plovdiv',
+  id: 'loc_region_plovdiv',
     name_en: 'Plovdiv',
     name_bg: 'Пловдив',
     slug: 'plovdiv-region',
@@ -65,11 +64,11 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 666801,
+  population: 666801,
       area_km2: 5973
     },
   {
-    id: 'loc_region_varna',
+  id: 'loc_region_varna',
     name_en: 'Varna',
     name_bg: 'Варна',
     slug: 'varna-region',
@@ -79,11 +78,11 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 469885,
+  population: 469885,
       area_km2: 3820
     },
   {
-    id: 'loc_region_burgas',
+  id: 'loc_region_burgas',
     name_en: 'Burgas',
     name_bg: 'Бургас',
     slug: 'burgas-region',
@@ -93,13 +92,13 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 409265,
+  population: 409265,
       area_km2: 7748
     },
 
   // Cities
   {
-    id: 'loc_city_sofia',
+  id: 'loc_city_sofia',
     name_en: 'Sofia',
     name_bg: 'София',
     slug: 'sofia',
@@ -109,12 +108,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 1328790,
+  population: 1328790,
       area_km2: 492,
       postal_codes: ['1000', '1700', '1784']
     },
   {
-    id: 'loc_city_plovdiv',
+  id: 'loc_city_plovdiv',
     name_en: 'Plovdiv',
     name_bg: 'Пловдив',
     slug: 'plovdiv',
@@ -124,12 +123,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 346893,
+  population: 346893,
       area_km2: 102,
       postal_codes: ['4000', '4001', '4002', '4003', '4004', '4005', '4006']
     },
   {
-    id: 'loc_city_varna',
+  id: 'loc_city_varna',
     name_en: 'Varna',
     name_bg: 'Варна',
     slug: 'varna',
@@ -139,12 +138,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 335177,
+  population: 335177,
       area_km2: 238,
       postal_codes: ['9000', '9001', '9002', '9003', '9004', '9005', '9006', '9007', '9008', '9009', '9010']
     },
   {
-    id: 'loc_city_burgas',
+  id: 'loc_city_burgas',
     name_en: 'Burgas',
     name_bg: 'Бургас',
     slug: 'burgas',
@@ -154,12 +153,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 202766,
+  population: 202766,
       area_km2: 253,
       postal_codes: ['8000', '8001', '8002', '8003', '8004', '8005', '8006', '8007', '8008', '8009', '8010']
     },
   {
-    id: 'loc_city_stara_zagora',
+  id: 'loc_city_stara_zagora',
     name_en: 'Stara Zagora',
     name_bg: 'Стара Загора',
     slug: 'stara-zagora',
@@ -169,12 +168,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 136781,
+  population: 136781,
       area_km2: 85,
       postal_codes: ['6000', '6001', '6002', '6003', '6004', '6005', '6006']
     },
   {
-    id: 'loc_city_ruse',
+  id: 'loc_city_ruse',
     name_en: 'Ruse',
     name_bg: 'Русе',
     slug: 'ruse',
@@ -184,14 +183,14 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 144936,
+  population: 144936,
       area_km2: 127,
       postal_codes: ['7000', '7001', '7002', '7003', '7004', '7005']
     },
 
   // Sofia Districts
   {
-    id: 'loc_district_sofia_center',
+  id: 'loc_district_sofia_center',
     name_en: 'Sofia Center',
     name_bg: 'София Център',
     slug: 'sofia-center',
@@ -201,10 +200,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['1000', '1111', '1113']
+  postal_codes: ['1000', '1111', '1113']
     },
   {
-    id: 'loc_district_vitosha',
+  id: 'loc_district_vitosha',
     name_en: 'Vitosha',
     name_bg: 'Витоша',
     slug: 'vitosha',
@@ -214,10 +213,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['1618', '1619']
+  postal_codes: ['1618', '1619']
     },
   {
-    id: 'loc_district_lozenets',
+  id: 'loc_district_lozenets',
     name_en: 'Lozenets',
     name_bg: 'Лозенец',
     slug: 'lozenets',
@@ -227,10 +226,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['1164', '1407', '1421']
+  postal_codes: ['1164', '1407', '1421']
     },
   {
-    id: 'loc_district_mladost',
+  id: 'loc_district_mladost',
     name_en: 'Mladost',
     name_bg: 'Младост',
     slug: 'mladost',
@@ -240,10 +239,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['1712', '1715', '1750', '1784']
+  postal_codes: ['1712', '1715', '1750', '1784']
     },
   {
-    id: 'loc_district_studentski_grad',
+  id: 'loc_district_studentski_grad',
     name_en: 'Studentski Grad',
     name_bg: 'Студентски град',
     slug: 'studentski-grad',
@@ -253,12 +252,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['1700']
+  postal_codes: ['1700']
     },
 
   // Varna Districts
   {
-    id: 'loc_district_varna_center',
+  id: 'loc_district_varna_center',
     name_en: 'Varna Center',
     name_bg: 'Варна Център',
     slug: 'varna-center',
@@ -268,10 +267,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['9000']
+  postal_codes: ['9000']
     },
   {
-    id: 'loc_district_sea_garden',
+  id: 'loc_district_sea_garden',
     name_en: 'Sea Garden',
     name_bg: 'Морска градина',
     slug: 'sea-garden',
@@ -281,12 +280,12 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['9002']
+  postal_codes: ['9002']
     },
 
   // Resort Towns
   {
-    id: 'loc_city_golden_sands',
+  id: 'loc_city_golden_sands',
     name_en: 'Golden Sands',
     name_bg: 'Златни пясъци',
     slug: 'golden-sands',
@@ -296,10 +295,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['9007']
+  postal_codes: ['9007']
     },
   {
-    id: 'loc_city_sunny_beach',
+  id: 'loc_city_sunny_beach',
     name_en: 'Sunny Beach',
     name_bg: 'Слънчев бряг',
     slug: 'sunny-beach',
@@ -309,10 +308,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['8240']
+  postal_codes: ['8240']
     },
   {
-    id: 'loc_city_bansko',
+  id: 'loc_city_bansko',
     name_en: 'Bansko',
     name_bg: 'Банско',
     slug: 'bansko',
@@ -322,11 +321,11 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      population: 8838,
+  population: 8838,
       postal_codes: ['2770']
     },
   {
-    id: 'loc_city_borovets',
+  id: 'loc_city_borovets',
     name_en: 'Borovets',
     name_bg: 'Боровец',
     slug: 'borovets',
@@ -336,10 +335,10 @@ const locations: Location[] = [
     timezone: 'Europe/Sofia',
     is_active: true,
     metadata: {
-      postal_codes: ['2010']
+  postal_codes: ['2010']
     }
 ];
-
+;
 export async function seed(knex: Knex): Promise<void> {
   try {
     // Disable foreign key checks for seeding
@@ -348,13 +347,14 @@ export async function seed(knex: Knex): Promise<void> {
     // Clear existing locations
     await knex('locations').del();
 
-    // Insert locations with proper timestamp handling
-    const locationsWithTimestamps = locations.map(location => ({
+    // Insert locations with proper timestamp handling;
+
+const locationsWithTimestamps = locations.map(location => ({
       ...location,
       coordinates: location.coordinates ? knex.raw(`ST_GeomFromText('POINT(${location.coordinates.lng} ${location.coordinates.lat})', 4326)`) : null,
       metadata: JSON.stringify(location.metadata),
       created_at: knex.fn.now(),
-      updated_at: knex.fn.now()
+      updated_at: knex.fn.now();
     }));
 
     await knex('locations').insert(locationsWithTimestamps);
@@ -366,8 +366,8 @@ export async function seed(knex: Knex): Promise<void> {
   } catch (error) {
     console.error('❌ Error seeding locations:', error);
     throw error;
+    }
   }
-
 export async function down(knex: Knex): Promise<void> {
   try {
     await knex.raw('SET session_replication_role = replica;');
@@ -377,11 +377,9 @@ export async function down(knex: Knex): Promise<void> {
   } catch (error) {
     console.error('❌ Error rolling back locations seed:', error);
     throw error;
+    }
   }
 
-}
-}
-}
 }
 }
 }

@@ -3,28 +3,25 @@ import { body, param, query, validationResult, ValidationChain } from 'express-v
 import { AppError } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { z } from 'zod';
-
+;
 interface ValidationRule {
-  field: string;
-  rules: ValidationChain[];
+  field: string,
+  rules: ValidationChain[],
 }
-
 interface ValidationSchema {
-  body?: z.ZodSchema;
-  params?: z.ZodSchema;
-  query?: z.ZodSchema;
-}
-
+  body?: z.ZodSchema
+  params?: z.ZodSchema
+  query?: z.ZodSchema}
 interface ValidatedRequest<TBody = any, TParams = any, TQuery = any> extends Request {
   validatedBody?: TBody;
   validatedParams?: TParams;
   validatedQuery?: TQuery;
 }
-
-type ValidationMiddleware = (req: Request, res: Response, next: NextFunction) => void;
-
+type AsyncFunction: (req: Request, res: Response, next: NextFunction) => void,
 const VALIDATION_ERROR_CODE = 'VALIDATION_ERROR';
+
 const DEFAULT_ERROR_STATUS = 400;
+;
 
 const commonValidationMessages = {
   required: (field: string) => `${field} is required`,
@@ -38,35 +35,32 @@ const commonValidationMessages = {
   date: 'Must be a valid date',
   url: 'Must be a valid URL',
   phoneNumber: 'Must be a valid phone number',
-  postalCode: 'Must be a valid postal code',
-};
-
-const sanitizationOptions = {
+  postalCode: 'Must be a valid postal code'
+}
+    const sanitizationOptions = {
   trim: true,
   escape: true,
   normalizeEmail: true,
-  toLowerCase: false,
-};
-
-// Main validation middleware factory
-export const validate = (
+  toLowerCase: false
+}
+// Main validation middleware factory;
+export const asyncHandler: (,
   schema: ValidationSchema,
   options: ValidationOptions = {}
 ): RequestHandler => {
   const validationOptions: ValidationOptions = {
-    abortEarly: false,
+  abortEarly: false,
     stripUnknown: true,
     ...options
-  };
-
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const errors: ValidationError[] = [];
-
+  }
+    return async (req: Request, res: Response, next: NextFunction) => {
+    const errors: ValidationError[] = [],
     // Validate each schema target
     for (const [target, targetSchema] of Object.entries(schema)) {
       if (!targetSchema) continue;
+;
 
-      const source = req[target as keyof ValidationSchema];
+const source = req[target as keyof ValidationSchema];
       if (!source) continue;
 
       try {
@@ -76,32 +70,32 @@ export const validate = (
       } catch (error) {
         if (error instanceof Yup.ValidationError) {
           errors.push(...error.inner.map(err => ({
-            field: err.path || 'unknown',
+  field: err.path || 'unknown',
             message: err.message,
             value: err.value,
             type: err.type || 'validation'
+    }
           })));
         }
     }
-
     if (errors.length > 0) {
       return res.status(400).json({
-        success: false,
+      success: false,
         error: 'Validation failed',
         details: errors
       });
     }
 
     next();
-  };
-};
+  }
+}
 
-// Pre-built validation schemas
+// Pre-built validation schemas;
 export const validationSchemas = {
-  // User registration
+  // User registration,
   userRegistration: {
-    body: Yup.object({
-      email: Yup.string().email().required(),
+  body: Yup.object({
+  email: Yup.string().email().required(),
       password: Yup.string().min(8).required(),
       firstName: Yup.string().required(),
       lastName: Yup.string().required(),
@@ -109,24 +103,24 @@ export const validationSchemas = {
     })
   },
 
-  // User login
+  // User login,
   userLogin: {
-    body: Yup.object({
-      email: Yup.string().email().required(),
+  body: Yup.object({
+  email: Yup.string().email().required(),
       password: Yup.string().required()
     })
   },
 
-  // Card creation
+  // Card creation,
   cardCreation: {
-    body: Yup.object({
-      cardNumber: Yup.string().matches(/^\d{16}$/).required(),
+  body: Yup.object({
+  cardNumber: Yup.string().matches(/^\d{16}$/).required(),
       expiryMonth: Yup.number().min(1).max(12).required(),
       expiryYear: Yup.number().min(new Date().getFullYear()).required(),
       cvv: Yup.string().matches(/^\d{3,4}$/).required(),
       cardholderName: Yup.string().required(),
       billingAddress: Yup.object({
-        street: Yup.string().required(),
+  street: Yup.string().required(),
         city: Yup.string().required(),
         state: Yup.string().required(),
         zipCode: Yup.string().required(),
@@ -135,10 +129,10 @@ export const validationSchemas = {
     })
   },
 
-  // Transaction
+  // Transaction,
   transaction: {
-    body: Yup.object({
-      amount: Yup.number().positive().required(),
+  body: Yup.object({
+  amount: Yup.number().positive().required(),
       currency: Yup.string().oneOf(['USD', 'EUR', 'GBP']).required(),
       cardId: Yup.string().uuid().required(),
       merchantId: Yup.string().uuid().required(),
@@ -146,33 +140,33 @@ export const validationSchemas = {
     })
   },
 
-  // Pagination
+  // Pagination,
   pagination: {
-    query: Yup.object({
-      page: Yup.number().min(1).default(1),
+  query: Yup.object({
+  page: Yup.number().min(1).default(1),
       limit: Yup.number().min(1).max(100).default(20),
       sortBy: Yup.string().optional(),
       sortOrder: Yup.string().oneOf(['asc', 'desc']).default('desc')
     })
   },
 
-  // ID parameter
+  // ID parameter,
   idParam: {
-    params: Yup.object({
-      id: Yup.string().uuid().required()
+  params: Yup.object({
+  id: Yup.string().uuid().required()
     })
   },
 
-  // Search
+  // Search,
   search: {
-    query: Yup.object({
-      q: Yup.string().min(1).required(),
+  query: Yup.object({
+  q: Yup.string().min(1).required(),
       type: Yup.string().oneOf(['user', 'card', 'transaction']).optional()
     })
-  };
+  }
 
-// Validation error handler middleware
-export const handleValidationError = (
+// Validation error handler middleware;
+export const asyncHandler: (,
   error: Error,
   req: Request,
   res: Response,
@@ -183,7 +177,7 @@ export const handleValidationError = (
       success: false,
       error: 'Validation failed',
       details: error.inner.map(err => ({
-        field: err.path || 'unknown',
+  field: err.path || 'unknown',
         message: err.message,
         value: err.value,
         type: err.type || 'validation'
@@ -191,15 +185,15 @@ export const handleValidationError = (
     });
   } else {
     next(error);
-  };
+  }
 
-// Custom validation rules
+// Custom validation rules;
 export const customValidators = {
-  // Validate card number using Luhn algorithm
+  // Validate card number using Luhn algorithm,
   isValidCardNumber: (value: string): boolean => {
     if (!/^\d{16}$/.test(value)) return false;
-    
-    let sum = 0;
+;
+let sum = 0;
     let isEven = false;
     
     for (let i = value.length - 1; i >= 0; i--) {
@@ -217,7 +211,7 @@ export const customValidators = {
     return sum % 10 === 0;
   },
 
-  // Validate CVV
+  // Validate CVV,
   isValidCVV: (value: string, cardType?: string): boolean => {
     if (cardType === 'AMEX') {
       return /^\d{4}$/.test(value);
@@ -225,12 +219,13 @@ export const customValidators = {
     return /^\d{3}$/.test(value);
   },
 
-  // Validate expiry date
+  // Validate expiry date,
   isValidExpiryDate: (month: number, year: number): boolean => {
     const now = new Date();
+
     const expiry = new Date(year, month - 1);
     return expiry > now;
-  };
+  }
 
 // Add custom validation methods to Yup
 Yup.addMethod(Yup.string, 'cardNumber', function() {
@@ -247,8 +242,8 @@ Yup.addMethod(Yup.string, 'cvv', function(cardType?: string) {
   });
 });
 
-// Sanitization middleware
-export const sanitize = (): RequestHandler => {
+// Sanitization middleware;
+export const asyncHandler: (): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {
     // Sanitize body
     if (req.body) {
@@ -266,35 +261,33 @@ export const sanitize = (): RequestHandler => {
     }
 
     next();
-  };
-};
+  }
+}
 
 // Helper function to sanitize objects
-const sanitizeObject = (obj: any): any => {
+    // TODO: Fix incomplete function declaration
   if (typeof obj !== 'object' || obj === null) {
     return typeof obj === 'string' ? sanitizeString(obj) : obj;
   }
-
-  const sanitized: any = Array.isArray(obj) ? [] : {};
-
+const sanitized: any = Array.isArray(obj) ? [] : {},
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
       sanitized[key] = sanitizeObject(obj[key]);
     }
 
   return sanitized;
-};
+}
 
 // Helper function to sanitize strings
-const sanitizeString = (str: string): string => {
+    // TODO: Fix incomplete function declaration
   return str
     .trim()
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
-};
+}
 
-// Export validation middleware for specific routes
+// Export validation middleware for specific routes;
 export const validationMiddleware = {
   userRegistration: validate(validationSchemas.userRegistration),
   userLogin: validate(validationSchemas.userLogin),
@@ -303,10 +296,6 @@ export const validationMiddleware = {
   pagination: validate(validationSchemas.pagination),
   idParam: validate(validationSchemas.idParam),
   search: validate(validationSchemas.search)
-};
-
-}
-}
 }
 }
 }

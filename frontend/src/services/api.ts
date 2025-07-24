@@ -123,8 +123,8 @@ export interface Attachment {
 }
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002/api';
-const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:5002';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:5002';
 
 // Create axios instance
 const axiosInstance: AxiosInstance = axios.create({

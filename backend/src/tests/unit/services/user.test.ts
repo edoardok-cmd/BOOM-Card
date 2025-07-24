@@ -27,9 +27,9 @@ describe('UserService', () => {
   let mockEmailService: jest.Mocked<EmailService>;
   let mockCacheService: jest.Mocked<CacheService>;
   let mockPaymentService: jest.Mocked<PaymentService>;
-
-  const mockUser: User = {
-    id: uuidv4(),
+;
+const mockUser: User = {
+  id: uuidv4(),
     email: 'test@example.com',
     password: 'hashedPassword123',
     firstName: 'John',
@@ -44,14 +44,14 @@ describe('UserService', () => {
     avatarUrl: null,
     dateOfBirth: new Date('1990-01-01'),
     address: {
-      street: '123 Main St',
+  street: '123 Main St',
       city: 'Sofia',
       postalCode: '1000',
       country: 'BG'
     },
     preferences: {
-      notifications: {
-        email: true,
+  notifications: {
+  email: true,
         sms: false,
         push: true
       },
@@ -59,7 +59,7 @@ describe('UserService', () => {
       dietary: ['vegetarian']
     },
     subscription: {
-      id: uuidv4(),
+  id: uuidv4(),
       status: SubscriptionStatus.ACTIVE,
       plan: 'premium',
       startDate: new Date(),
@@ -68,13 +68,13 @@ describe('UserService', () => {
       paymentMethod: 'card'
     },
     stats: {
-      totalSavings: 150.50,
+  totalSavings: 150.50,
       transactionCount: 25,
       favoritePartners: 5,
       lastActive: new Date()
     },
     metadata: {
-      referralCode: 'JOHN123',
+  referralCode: 'JOHN123',
       referredBy: null,
       marketingConsent: true,
       termsAcceptedAt: new Date(),
@@ -82,11 +82,11 @@ describe('UserService', () => {
     },
     createdAt: new Date(),
     updatedAt: new Date()
-  };
+  }
 
   beforeEach(() => {
     mockUserRepository = {
-      create: jest.fn(),
+  create: jest.fn(),
       findById: jest.fn(),
       findByEmail: jest.fn(),
       findByPhone: jest.fn(),
@@ -100,21 +100,21 @@ describe('UserService', () => {
     } as any;
 
     mockEmailService = {
-      sendVerificationEmail: jest.fn(),
+  sendVerificationEmail: jest.fn(),
       sendPasswordResetEmail: jest.fn(),
       sendWelcomeEmail: jest.fn(),
       sendSubscriptionConfirmation: jest.fn()
     } as any;
 
     mockCacheService = {
-      get: jest.fn(),
+  get: jest.fn(),
       set: jest.fn(),
       delete: jest.fn(),
       exists: jest.fn()
     } as any;
 
     mockPaymentService = {
-      createCustomer: jest.fn(),
+  createCustomer: jest.fn(),
       createSubscription: jest.fn(),
       cancelSubscription: jest.fn(),
       updatePaymentMethod: jest.fn()
@@ -132,7 +132,7 @@ describe('UserService', () => {
 
   describe('register', () => {
     const createUserDto: CreateUserDto = {
-      email: 'newuser@example.com',
+  email: 'newuser@example.com',
       password: 'SecurePass123!',
       firstName: 'Jane',
       lastName: 'Smith',
@@ -140,13 +140,12 @@ describe('UserService', () => {
       language: 'en',
       marketingConsent: true,
       referralCode: 'REF123'
-    };
+    }
 
     it('should successfully register a new user', async () => {
       const hashedPassword = 'hashedPassword';
-      const verificationToken = 'verificationToken';
-      const newUser = { ...mockUser, id: uuidv4(), email: createUserDto.email };
-
+      // const verificationToken = 'verificationToken'; // TODO: Move to proper scope
+      // const newUser = { ...mockUser, id: uuidv4(), email: createUserDto.email },; // TODO: Move to proper scope
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockUserRepository.findByPhone.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
@@ -154,14 +153,14 @@ describe('UserService', () => {
       mockUserRepository.create.mockResolvedValue(newUser);
       mockEmailService.sendVerificationEmail.mockResolvedValue(undefined);
       mockCacheService.set.mockResolvedValue(undefined);
-
-      const result = await userService.register(createUserDto);
+;
+// const result = await userService.register(createUserDto); // TODO: Move to proper scope
 
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(createUserDto.email);
       expect(mockUserRepository.findByPhone).toHaveBeenCalledWith(createUserDto.phone);
       expect(bcrypt.hash).toHaveBeenCalledWith(createUserDto.password, 12);
       expect(mockUserRepository.create).toHaveBeenCalledWith(expect.objectContaining({
-        email: createUserDto.email,
+  email: createUserDto.email,
         password: hashedPassword,
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName
@@ -171,7 +170,7 @@ describe('UserService', () => {
         verificationToken
       );
       expect(result).toEqual(expect.objectContaining({
-        id: newUser.id,
+  id: newUser.id,
         email: newUser.email
       }));
     });
@@ -194,19 +193,18 @@ describe('UserService', () => {
     });
 
     it('should handle referral code if provided', async () => {
-      const referrer = { ...mockUser, id: uuidv4() };
+      const referrer = { ...mockUser, id: uuidv4() },;
       mockUserRepository.findByEmail.mockResolvedValue(null);
       mockUserRepository.findByPhone.mockResolvedValue(null);
       mockUserRepository.findByReferralCode.mockResolvedValue(referrer);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-      mockUserRepository.create.mockResolvedValue({ ...mockUser, id: uuidv4() });
-
+      mockUserRepository.create.mockResolvedValue({ ...mockUser, id: uuidv4() }),
       await userService.register(createUserDto);
 
       expect(mockUserRepository.findByReferralCode).toHaveBeenCalledWith(createUserDto.referralCode);
       expect(mockUserRepository.create).toHaveBeenCalledWith(expect.objectContaining({
-        metadata: expect.objectContaining({
-          referredBy: referrer.id
+  metadata: expect.objectContaining({
+  referredBy: referrer.id
         })
       }));
     });
@@ -214,14 +212,14 @@ describe('UserService', () => {
 
   describe('login', () => {
     const loginDto: LoginDto = {
-      email: 'test@example.com',
+  email: 'test@example.com',
       password: 'SecurePass123!',
       rememberMe: true
-    };
+    }
 
     it('should successfully login user with valid credentials', async () => {
       const accessToken = 'accessToken';
-      const refreshToken = 'refreshToken';
+      // const refreshToken = 'refreshToken'; // TODO: Move to proper scope
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -230,7 +228,6 @@ describe('UserService', () => {
         .mockReturnValueOnce(refreshToken);
       mockCacheService.set.mockResolvedValue(undefined);
       mockUserRepository.updateLastActive.mockResolvedValue(undefined);
-
 
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(loginDto.email);
       expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
@@ -241,8 +238,8 @@ describe('UserService', () => {
         3600
       );
       expect(result).toEqual({
-        user: expect.objectContaining({
-          id: mockUser.id,
+  user: expect.objectContaining({
+  id: mockUser.id,
           email: mockUser.email
         }),
         accessToken,
@@ -268,7 +265,7 @@ describe('UserService', () => {
     });
 
     it('should throw error for inactive user', async () => {
-      const inactiveUser = { ...mockUser, status: UserStatus.INACTIVE };
+      const inactiveUser = { ...mockUser, status: UserStatus.INACTIVE },;
       mockUserRepository.findByEmail.mockResolvedValue(inactiveUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
@@ -278,7 +275,7 @@ describe('UserService', () => {
     });
 
     it('should throw error for unverified email', async () => {
-      const unverifiedUser = { ...mockUser, emailVerified: false };
+      const unverifiedUser = { ...mockUser, emailVerified: false },;
       mockUserRepository.findByEmail.mockResolvedValue(unverifiedUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
@@ -292,4 +289,6 @@ describe('UserService', () => {
     it('should return user profile from cache if available', async () => {
       mockCacheService.get.mockResolvedValue(mockUser);
 
-}}}
+}
+}
+});

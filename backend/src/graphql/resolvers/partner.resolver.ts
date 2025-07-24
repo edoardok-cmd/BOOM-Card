@@ -1,5 +1,23 @@
-import {
-  Resolver,
+import { Service } from 'typedi';
+import { GraphQLResolveInfo } from 'graphql';
+import { Partner } from '../../entities/Partner';
+import { PartnerContact } from '../../entities/PartnerContact';
+import { Location } from '../../entities/Location';
+import { User } from '../../entities/User'; // Assuming User might be needed for context or authorization;
+import { PartnerService } from '../../services/PartnerService';
+import { PartnerStatus } from '../../enums/PartnerStatus';
+import { UserRole } from '../../enums/UserRole';
+import { GraphQLContext } from '../../types/graphql';
+import { PaginatedResponse } from '../../utils/graphql';
+import { PaginationArgs } from '../args/PaginationArgs';
+import { SortDirection } from '../../enums/SortDirection'; // Assuming a common enum for sorting;
+import { Resolver, Query, Mutation, Arg, Ctx, Authorized, ID, Field, ObjectType } from 'type-graphql';
+import { Partner } from '../entities/Partner';
+import { CreatePartnerInput, UpdatePartnerInput } from '../inputs/PartnerInput';
+import { PartnerService } from '../services/partner.service';
+import { MyContext } from '../../types'; // Assumed to contain { user: { id: string, roles: string[], partnerId?: string } }
+
+Resolver,
   Query,
   Mutation,
   Arg,
@@ -12,50 +30,33 @@ import {
   ID,
   ObjectType,
   Int,
-  registerEnumType,
+  registerEnumType
 } from 'type-graphql';
-import { Service } from 'typedi';
-import { GraphQLResolveInfo } from 'graphql';
-
-import { Partner } from '../../entities/Partner';
-import { PartnerContact } from '../../entities/PartnerContact';
-import { Location } from '../../entities/Location';
-import { User } from '../../entities/User'; // Assuming User might be needed for context or authorization
-import { PartnerService } from '../../services/PartnerService';
-import { PartnerStatus } from '../../enums/PartnerStatus';
-import { UserRole } from '../../enums/UserRole';
-import { GraphQLContext } from '../../types/graphql';
-import { PaginatedResponse } from '../../utils/graphql';
-import { PaginationArgs } from '../args/PaginationArgs';
-import { SortDirection } from '../../enums/SortDirection'; // Assuming a common enum for sorting
 
 // --- Enums ---
 registerEnumType(PartnerStatus, {
   name: 'PartnerStatus',
-  description: 'Current status of the partner account',
+  description: 'Current status of the partner account'
 });
 
 registerEnumType(SortDirection, {
   name: 'SortDirection',
-  description: 'Direction for sorting results',
+  description: 'Direction for sorting results'
 });
 
 // --- Input Types ---
 
-@InputType()
+@InputType();
 export class PartnerContactInput {
   @Field({ nullable: true })
   id?: string; // Optional for updates
 
-  @Field()
-  firstName: string;
-
-  @Field()
-  lastName: string;
-
-  @Field()
-  email: string;
-
+  @Field(),
+  firstName: string,
+  @Field(),
+  lastName: string,
+  @Field(),
+  email: string,
   @Field({ nullable: true })
   phone?: string;
 
@@ -66,41 +67,34 @@ export class PartnerContactInput {
   isPrimary?: boolean;
 }
 
-@InputType()
+@InputType();
 export class LocationInput {
   @Field({ nullable: true })
   id?: string; // Optional for updates
 
-  @Field()
-  addressLine1: string;
-
+  @Field(),
+  addressLine1: string,
   @Field({ nullable: true })
   addressLine2?: string;
 
-  @Field()
-  city: string;
-
-  @Field()
-  state: string;
-
-  @Field()
-  zipCode: string;
-
-  @Field()
-  country: string;
-
+  @Field(),
+  city: string,
+  @Field(),
+  state: string,
+  @Field(),
+  zipCode: string,
+  @Field(),
+  country: string,
   @Field({ nullable: true })
   isPrimary?: boolean;
 }
 
-@InputType()
+@InputType();
 export class CreatePartnerInput {
-  @Field()
-  name: string;
-
-  @Field(() => PartnerStatus, { defaultValue: PartnerStatus.PENDING })
-  status: PartnerStatus;
-
+  @Field(),
+  name: string,
+  @Field(() => PartnerStatus, { defaultValue: PartnerStatus.PENDING }),
+  status: PartnerStatus,
   @Field({ nullable: true })
   description?: string;
 
@@ -123,11 +117,10 @@ export class CreatePartnerInput {
   locations?: LocationInput[];
 }
 
-@InputType()
+@InputType();
 export class UpdatePartnerInput {
-  @Field(() => ID)
-  id: string;
-
+  @Field(() => ID),
+  id: string,
   @Field({ nullable: true })
   name?: string;
 
@@ -156,7 +149,7 @@ export class UpdatePartnerInput {
   locations?: LocationInput[];
 }
 
-@InputType()
+@InputType();
 export class PartnerFilterInput {
   @Field({ nullable: true })
   search?: string; // For general search across name, description, etc.
@@ -165,16 +158,15 @@ export class PartnerFilterInput {
   status?: PartnerStatus;
 }
 
-@InputType()
+@InputType();
 export class PartnerSortInput {
-  @Field(() => String, { defaultValue: 'createdAt' })
-  field: keyof Partner;
-
-  @Field(() => SortDirection, { defaultValue: SortDirection.DESC })
-  direction: SortDirection;
+  @Field(() => String, { defaultValue: 'createdAt' }),
+  field: keyof Partner,
+  @Field(() => SortDirection, { defaultValue: SortDirection.DESC }),
+  direction: SortDirection,
 }
 
-@Args()
+@Args();
 export class PartnerListArgs extends PaginationArgs {
   @Field(() => PartnerFilterInput, { nullable: true })
   filter?: PartnerFilterInput;
@@ -185,52 +177,40 @@ export class PartnerListArgs extends PaginationArgs {
 
 // --- Object Types ---
 
-@ObjectType()
+@ObjectType();
 export class PaginatedPartners extends PaginatedResponse(Partner) {}
 
-// --- Constants & Configuration ---
+// --- Constants & Configuration ---;
 export const DEFAULT_PARTNER_LIMIT = 10;
 export const MAX_PARTNER_LIMIT = 50;
-
-import { Resolver, Query, Mutation, Arg, Ctx, Authorized, ID, Field, ObjectType } from 'type-graphql';
-import { Partner } from '../entities/Partner';
-import { CreatePartnerInput, UpdatePartnerInput } from '../inputs/PartnerInput';
-import { PartnerService } from '../services/partner.service';
-import { MyContext } from '../../types'; // Assumed to contain { user: { id: string, roles: string[], partnerId?: string } }
 
 /**
  * GraphQL Object Type for Partner Dashboard specific data.
  * This aggregates various metrics and information relevant to a partner's overview.
  */
-@ObjectType({ description: "Data specific to a partner's dashboard view." })
+@ObjectType({ description: "Data specific to a partner's dashboard view." }),
 class PartnerDashboardData {
-  @Field(() => ID, { description: "The unique identifier of the partner." })
-  partnerId: string;
-
-  @Field({ description: "The name of the partner." })
-  name: string;
-
-  @Field(() => Number, { description: "Total number of users signed up through this partner." })
-  totalUsersSignedUp: number;
-
-  @Field(() => Number, { description: "Total number of BOOM Cards issued by this partner." })
-  totalBoomCardsIssued: number;
-
-  @Field(() => Date, { nullable: true, description: "The last login date of the partner's administrative user." })
-  lastLogin: Date | null;
-
-  @Field(() => Number, { description: "The commission rate for this partner." })
-  commissionRate: number;
-
-  @Field(() => Date, { nullable: true, description: "The estimated date of the next payout for the partner." })
-  nextPayoutDate: Date | null;
+  @Field(() => ID, { description: "The unique identifier of the partner." }),
+  partnerId: string,
+  @Field({ description: "The name of the partner." }),
+  name: string,
+  @Field(() => Number, { description: "Total number of users signed up through this partner." }),
+  totalUsersSignedUp: number,
+  @Field(() => Number, { description: "Total number of BOOM Cards issued by this partner." }),
+  totalBoomCardsIssued: number,
+  @Field(() => Date, { nullable: true, description: "The last login date of the partner's administrative user." }),
+  lastLogin: Date | null,
+  @Field(() => Number, { description: "The commission rate for this partner." }),
+  commissionRate: number,
+  @Field(() => Date, { nullable: true, description: "The estimated date of the next payout for the partner." }),
+  nextPayoutDate: Date | null,
 }
 
 /**
  * PartnerResolver handles all GraphQL queries and mutations related to Partner entities.
  * It interacts with PartnerService for business logic and data persistence.
  */
-@Resolver(of => Partner)
+@Resolver(of => Partner);
 export class PartnerResolver {
   constructor(
     private readonly partnerService: PartnerService
@@ -246,7 +226,7 @@ export class PartnerResolver {
     @Arg("id", () => ID) id: string,
     @Ctx() { user }: MyContext
   ): Promise<Partner | undefined> {
-    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) querying partner ID: ${id}`);
+    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) querying partner ID: ${id}`),
     return this.partnerService.findById(id);
   }
 
@@ -273,7 +253,7 @@ export class PartnerResolver {
     @Arg("input") input: CreatePartnerInput,
     @Ctx() { user }: MyContext
   ): Promise<Partner> {
-    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) creating partner: ${input.name}`);
+    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) creating partner: ${input.name}`),
     return this.partnerService.create(input);
   }
 
@@ -288,7 +268,7 @@ export class PartnerResolver {
     @Arg("input") input: UpdatePartnerInput,
     @Ctx() { user }: MyContext
   ): Promise<Partner> {
-    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) updating partner ID: ${id}`);
+    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) updating partner ID: ${id}`),
     return this.partnerService.update(id, input);
   }
 
@@ -302,7 +282,7 @@ export class PartnerResolver {
     @Arg("id", () => ID) id: string,
     @Ctx() { user }: MyContext
   ): Promise<boolean> {
-    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) deleting partner ID: ${id}`);
+    // console.log(`[PartnerResolver] User ${user?.id} (${user?.roles}) deleting partner ID: ${id}`),
     return this.partnerService.delete(id);
   }
 
@@ -320,15 +300,13 @@ export class PartnerResolver {
     if (!user) {
       throw new Error("Authentication required to access partner dashboard.");
     }
-
-    let targetPartnerId: string;
-
+let targetPartnerId: string,
     // Determine which partner's data to fetch based on user roles and provided arguments
     if (user.roles.includes("PARTNER")) {
       if (!user.partnerId) {
         throw new Error("Authenticated partner user is not associated with a partner ID.");
       }
-      if (partnerId && partnerId !== user.partnerId) {
+    if (partnerId && partnerId !== user.partnerId) {
         throw new Error("PARTNER users can only view their own dashboard data.");
       }
       targetPartnerId = user.partnerId;
@@ -341,31 +319,35 @@ export class PartnerResolver {
       throw new Error("Unauthorized access to partner dashboard. Insufficient roles.");
     }
 
-    // Fetch the partner's basic details
-    const partner = await this.partnerService.findById(targetPartnerId);
+    // Fetch the partner's basic details;
+
+const partner = await this.partnerService.findById(targetPartnerId);
     if (!partner) {
       throw new Error(`Partner with ID ${targetPartnerId} not found.`);
     }
 
     // Simulate fetching complex dashboard data from various services/repositories
-    // In a real application, these would be dedicated service calls encapsulating data retrieval logic.
-    const totalUsersSignedUp = await this.partnerService.countUsersForPartner(targetPartnerId);
+    // In a real application, these would be dedicated service calls encapsulating data retrieval logic.;
+
+const totalUsersSignedUp = await this.partnerService.countUsersForPartner(targetPartnerId);
+
     const totalBoomCardsIssued = await this.partnerService.countCardsIssuedForPartner(targetPartnerId);
 
-    // Placeholder or derived data for other fields
-    const lastLogin = partner.lastLoginAt || null; // Assuming 'lastLoginAt' exists on Partner entity
-    const commissionRate = partner.commissionRate || 0.05; // Default or from Partner entity
-    const nextPayoutDate = partner.nextPayoutDate || null; // Default or from Partner entity/calculation
+    // Placeholder or derived data for other fields;
+
+const lastLogin = partner.lastLoginAt || null; // Assuming 'lastLoginAt' exists on Partner entity;
+
+const commissionRate = partner.commissionRate || 0.05; // Default or from Partner entity;
+
+const nextPayoutDate = partner.nextPayoutDate || null; // Default or from Partner entity/calculation
 
     return {
-      partnerId: partner.id,
+  partnerId: partner.id,
       name: partner.name,
       totalUsersSignedUp,
       totalBoomCardsIssued,
       lastLogin,
       commissionRate,
-      nextPayoutDate,
-    };
+      nextPayoutDate
+};
   }
-
-}

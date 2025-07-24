@@ -1,53 +1,48 @@
-// Clean Review model for PostgreSQL
+// Clean Review model for PostgreSQL;
 export interface ReviewAttributes {
-  id?: number;
-  user_id: number;
-  partner_id: string;
-  partner_name: string;
-  rating: number;
-  content: string;
-  created_at?: Date;
-  updated_at?: Date;
-}
-
+  id?: number,
+  user_id: number,
+  partner_id: string,
+  partner_name: string,
+  rating: number,
+  content: string,
+  created_at?: Date
+  updated_at?: Date}
 export interface ReviewCreateInput {
-  userId: number;
-  partnerId: string;
-  partnerName: string;
-  rating: number;
-  content: string;
+  userId: number,
+  partnerId: string,
+  partnerName: string,
+  rating: number,
+  content: string,
 }
-
 export interface ReviewUpdateInput {
-  rating?: number;
-  content?: string;
-}
-
+  rating?: number
+  content?: string}
 export interface ReviewResponse {
-  id: number;
-  userId: number;
-  partnerId: string;
-  partnerName: string;
-  rating: number;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: number,
+  userId: number,
+  partnerId: string,
+  partnerName: string,
+  rating: number,
+  content: string,
+  createdAt: Date,
+  updatedAt: Date,
   user?: {
-    firstName: string;
-    lastName: string;
-  };
+  firstName: string,
+  lastName: string,
+  }
 }
 
-// SQL queries for Review operations
+// SQL queries for Review operations;
 export const ReviewQueries = {
-  // Create a new review
+  // Create a new review,
   create: `
     INSERT INTO reviews (user_id, partner_id, partner_name, rating, content, created_at, updated_at)
     VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
     RETURNING id, user_id, partner_id, partner_name, rating, content, created_at, updated_at
   `,
 
-  // Get all reviews for a user
+  // Get all reviews for a user,
   findByUserId: `
     SELECT r.*, u.first_name, u.last_name
     FROM reviews r
@@ -56,7 +51,7 @@ export const ReviewQueries = {
     ORDER BY r.created_at DESC
   `,
 
-  // Get all reviews for a partner
+  // Get all reviews for a partner,
   findByPartnerId: `
     SELECT r.*, u.first_name, u.last_name
     FROM reviews r
@@ -65,7 +60,7 @@ export const ReviewQueries = {
     ORDER BY r.created_at DESC
   `,
 
-  // Get a single review by ID
+  // Get a single review by ID,
   findById: `
     SELECT r.*, u.first_name, u.last_name
     FROM reviews r
@@ -73,7 +68,7 @@ export const ReviewQueries = {
     WHERE r.id = $1
   `,
 
-  // Update a review
+  // Update a review,
   update: `
     UPDATE reviews
     SET rating = COALESCE($2, rating),
@@ -83,21 +78,21 @@ export const ReviewQueries = {
     RETURNING id, user_id, partner_id, partner_name, rating, content, created_at, updated_at
   `,
 
-  // Delete a review
+  // Delete a review,
   delete: `
     DELETE FROM reviews
     WHERE id = $1 AND user_id = $2
     RETURNING id
   `,
 
-  // Check if user already reviewed a partner
+  // Check if user already reviewed a partner,
   checkExistingReview: `
     SELECT id FROM reviews
     WHERE user_id = $1 AND partner_id = $2
     LIMIT 1
   `,
 
-  // Get average rating for a partner
+  // Get average rating for a partner,
   getPartnerAverageRating: `
     SELECT 
       AVG(rating)::numeric(3,2) as average_rating,
@@ -106,7 +101,7 @@ export const ReviewQueries = {
     WHERE partner_id = $1
   `,
 
-  // Get recent reviews (for homepage)
+  // Get recent reviews (for homepage),
   getRecentReviews: `
     SELECT r.*, u.first_name, u.last_name
     FROM reviews r
@@ -115,9 +110,9 @@ export const ReviewQueries = {
     ORDER BY r.created_at DESC
     LIMIT $1
   `
-};
+}
 
-// Database migration for reviews table
+// Database migration for reviews table;
 export const ReviewMigration = `
   CREATE TABLE IF NOT EXISTS reviews (
     id SERIAL PRIMARY KEY,

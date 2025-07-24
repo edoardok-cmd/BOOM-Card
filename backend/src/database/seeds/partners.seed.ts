@@ -1,68 +1,66 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
-
+;
 interface PartnerSeed {
   id: string;
-  business_name: string;
-  legal_name: string;
-  business_type: 'restaurant' | 'hotel' | 'spa' | 'entertainment' | 'service';
-  category: string;
-  subcategory?: string;
-  description_en: string;
-  description_bg: string;
-  logo_url?: string;
-  cover_image_url?: string;
-  website?: string;
-  email: string;
-  phone: string;
-  registration_number: string;
-  vat_number?: string;
-  status: 'active' | 'pending' | 'suspended' | 'inactive';
-  discount_percentage: number;
-  discount_conditions_en?: string;
-  discount_conditions_bg?: string;
-  featured: boolean;
-  rating?: number;
-  price_range?: 1 | 2 | 3 | 4;
-  amenities?: string[];
-  cuisines?: string[];
-  dietary_options?: string[];
-  opening_hours?: Record<string, { open: string; close: string }>;
+  business_name: string,
+  legal_name: string,
+  business_type: 'restaurant' | 'hotel' | 'spa' | 'entertainment' | 'service',
+  category: string,
+  subcategory?: string,
+  description_en: string,
+  description_bg: string,
+  logo_url?: string
+  cover_image_url?: string
+  website?: string,
+  email: string,
+  phone: string,
+  registration_number: string,
+  vat_number?: string,
+  status: 'active' | 'pending' | 'suspended' | 'inactive',
+  discount_percentage: number,
+  discount_conditions_en?: string
+  discount_conditions_bg?: string,
+  featured: boolean,
+  rating?: number
+  price_range?: 1 | 2 | 3 | 4
+  amenities?: string[]
+  cuisines?: string[]
+  dietary_options?: string[]
+  opening_hours?: Record<string, { open: string; close: string }>,
   social_media?: {
     facebook?: string;
     instagram?: string;
     twitter?: string;
-  };
-  contract_start_date: Date;
-  contract_end_date?: Date;
-  commission_rate: number;
-  payment_terms: number;
-  created_at: Date;
-  updated_at: Date;
+  },
+    contract_start_date: Date,
+  contract_end_date?: Date,
+  commission_rate: number,
+  payment_terms: number,
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface LocationSeed {
   id: string;
-  partner_id: string;
-  name: string;
-  address_line1: string;
-  address_line2?: string;
-  city: string;
-  postal_code: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  phone?: string;
-  email?: string;
-  is_primary: boolean;
-  created_at: Date;
-  updated_at: Date;
+  partner_id: string,
+  name: string,
+  address_line1: string,
+  address_line2?: string,
+  city: string,
+  postal_code: string,
+  country: string,
+  latitude: number,
+  longitude: number,
+  phone?: string
+  email?: string,
+  is_primary: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
-
 const partners: PartnerSeed[] = [
   // Restaurants
   {
-    id: uuidv4(),
+  id: uuidv4(),
     business_name: 'The Grand Sofia',
     legal_name: 'Grand Sofia Restaurant Ltd.',
     business_type: 'restaurant',
@@ -88,7 +86,7 @@ const partners: PartnerSeed[] = [
     cuisines: ['european', 'bulgarian', 'mediterranean'],
     dietary_options: ['vegetarian', 'vegan', 'gluten_free'],
     opening_hours: {
-      monday: { open: '12:00', close: '23:00' },
+  monday: { open: '12:00', close: '23:00' },
       tuesday: { open: '12:00', close: '23:00' },
       wednesday: { open: '12:00', close: '23:00' },
       thursday: { open: '12:00', close: '23:00' },
@@ -96,7 +94,7 @@ const partners: PartnerSeed[] = [
       saturday: { open: '12:00', close: '00:00' },
       sunday: { open: '12:00', close: '22:00' },
     social_media: {
-      facebook: 'https://facebook.com/grandsofia',
+  facebook: 'https://facebook.com/grandsofia',
       instagram: 'https://instagram.com/grandsofia'
     },
     contract_start_date: new Date('2024-01-01'),
@@ -106,7 +104,7 @@ const partners: PartnerSeed[] = [
     updated_at: new Date()
   },
   {
-    id: uuidv4(),
+  id: uuidv4(),
     business_name: 'Sofia Sky Bar',
     legal_name: 'Sky Entertainment Ltd.',
     business_type: 'entertainment',
@@ -130,7 +128,7 @@ const partners: PartnerSeed[] = [
     price_range: 3,
     amenities: ['wifi', 'air_conditioning', 'live_music', 'outdoor_seating', 'valet_parking'],
     opening_hours: {
-      monday: { open: '18:00', close: '02:00' },
+  monday: { open: '18:00', close: '02:00' },
       tuesday: { open: '18:00', close: '02:00' },
       wednesday: { open: '18:00', close: '02:00' },
       thursday: { open: '18:00', close: '03:00' },
@@ -138,7 +136,7 @@ const partners: PartnerSeed[] = [
       saturday: { open: '18:00', close: '04:00' },
       sunday: { open: '18:00', close: '02:00' },
     social_media: {
-      facebook: 'https://facebook.com/sofiaskybar',
+  facebook: 'https://facebook.com/sofiaskybar',
       instagram: 'https://instagram.com/sofiaskybar',
       twitter: 'https://twitter.com/sofiaskybar'
     },
@@ -149,7 +147,7 @@ const partners: PartnerSeed[] = [
     updated_at: new Date()
   },
   {
-    id: uuidv4(),
+  id: uuidv4(),
     business_name: 'Harmony Spa & Wellness',
     legal_name: 'Harmony Wellness Centers Ltd.',
     business_type: 'spa',
@@ -173,7 +171,7 @@ const partners: PartnerSeed[] = [
     price_range: 3,
     amenities: ['parking', 'wifi', 'wheelchair_accessible', 'locker_room', 'shower', 'sauna', 'pool'],
     opening_hours: {
-      monday: { open: '09:00', close: '21:00' },
+  monday: { open: '09:00', close: '21:00' },
       tuesday: { open: '09:00', close: '21:00' },
       wednesday: { open: '09:00', close: '21:00' },
       thursday: { open: '09:00', close: '21:00' },
@@ -181,7 +179,7 @@ const partners: PartnerSeed[] = [
       saturday: { open: '09:00', close: '22:00' },
       sunday: { open: '10:00', close: '20:00' },
     social_media: {
-      facebook: 'https://facebook.com/harmonyspa',
+  facebook: 'https://facebook.com/harmonyspa',
       instagram: 'https://instagram.com/harmonyspa'
     },
     contract_start_date: new Date('2024-02-01'),
@@ -191,7 +189,7 @@ const partners: PartnerSeed[] = [
     updated_at: new Date()
   },
   {
-    id: uuidv4(),
+  id: uuidv4(),
     business_name: 'Grand Hotel Sofia',
     legal_name: 'Grand Hotels International Bulgaria Ltd.',
     business_type: 'hotel',
@@ -203,6 +201,6 @@ const partners: PartnerSeed[] = [
     cover_image_url: '/uploads/partners/grand-hotel-cover.jpg',
     website: 'https://www.grandhotelso
 }
-}
+
 }
 }

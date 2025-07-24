@@ -1,4 +1,6 @@
-// 1. All import statements
+import { Schema, model, Document, Types, Model } from 'mongoose';
+
+// 1. All import statements;
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -10,7 +12,7 @@ import {
   OneToMany, // Potentially for relationships in the future, if transactions are linked
 } from 'typeorm';
 
-// 2. All TypeScript interfaces and types
+// 2. All TypeScript interfaces and types;
 export enum TransactionCategoryType {
   EXPENSE = 'expense',
   INCOME = 'income',
@@ -20,29 +22,29 @@ export enum TransactionCategoryType {
 
 /**
  * Interface representing the structure of a Category entity.
- */
+ */;
 export interface ICategory {
   id: string;
-  name: string;
-  description?: string;
-  type: TransactionCategoryType;
+  name: string,
+  description?: string,
+  type: TransactionCategoryType,
   icon?: string; // e.g., an SVG path, a Material Design Icon name, or a URL
-  userId?: string; // Optional: ID of the user who owns this category (if user-specific), null for global categories
-  createdAt: Date;
-  updatedAt: Date;
+  userId?: string; // Optional: ID of the user who owns this category (if user-specific), null for global categories;,
+  createdAt: Date,
+  updatedAt: Date,
   // transactions?: Transaction[]; // Placeholder for future relationship, type would need `import { Transaction } from './Transaction';`
 }
 
 /**
  * Data Transfer Object for creating a new Category.
  * Picks essential fields from ICategory.
- */
+ */;
 export type CreateCategoryDTO = Pick<ICategory, 'name' | 'type' | 'description' | 'icon' | 'userId'>;
 
 /**
  * Data Transfer Object for updating an existing Category.
  * All fields are optional for partial updates.
- */
+ */;
 export type UpdateCategoryDTO = Partial<CreateCategoryDTO>;
 
 // 3. All constants and configuration (TransactionCategoryType enum defined above)
@@ -50,7 +52,7 @@ export type UpdateCategoryDTO = Partial<CreateCategoryDTO>;
 // 4. Any decorators or metadata (TypeORM Entity definition)
 @Entity('categories')
 @Index(['name', 'userId'], { unique: true }) // Ensures (name, userId) pairs are unique.
-                                             // If userId is null, (name, null) must be unique among other (name, null) entries.
+                                             // If userId is null, (name, null) must be unique among other (name, null) entries.;
 export class Category extends BaseEntity implements ICategory {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -62,11 +64,11 @@ export class Category extends BaseEntity implements ICategory {
   description?: string;
 
   @Column({
-    type: 'enum',
+  type: 'enum',
     enum: TransactionCategoryType,
     default: TransactionCategoryType.GENERAL,
-    nullable: false,
-  })
+    nullable: false
+})
   type!: TransactionCategoryType;
 
   @Column({ nullable: true })
@@ -88,58 +90,56 @@ export class Category extends BaseEntity implements ICategory {
   // transactions?: Transaction[];
 }
 
-import { Schema, model, Document, Types, Model } from 'mongoose';
-
 // Assuming ICategory was defined in Part 1 as:
 // export interface ICategory extends Document {
-//   name: string;
+//   name: string,
 //   parentCategory?: Types.ObjectId; // Reference to another Category
-//   isCustom: boolean;
+//   isCustom: boolean,
 //   createdBy?: Types.ObjectId; // Reference to User model
 //   // Mongoose will add _id, createdAt, updatedAt
 // }
 
-// Define an interface for the Category Model, to include static methods
+// Define an interface for the Category Model, to include static methods;
 interface ICategoryModel extends Model<ICategory> {
   findRootCategories(): Promise<ICategory[]>;
-  findChildrenOf(parentId: Types.ObjectId | string): Promise<ICategory[]>;
-  findAncestors(categoryId: Types.ObjectId | string): Promise<ICategory[]>;
-  findDescendants(categoryId: Types.ObjectId | string): Promise<ICategory[]>;
-  findCustomCategoriesByUser(userId: Types.ObjectId | string): Promise<ICategory[]>;
-  getCategoryByName(name: string): Promise<ICategory | null>;
+  findChildrenOf(parentId: Types.ObjectId | string): Promise<ICategory[]>,
+  findAncestors(categoryId: Types.ObjectId | string): Promise<ICategory[]>,
+  findDescendants(categoryId: Types.ObjectId | string): Promise<ICategory[]>,
+  findCustomCategoriesByUser(userId: Types.ObjectId | string): Promise<ICategory[]>,
+  getCategoryByName(name: string): Promise<ICategory | null>,
 }
 
-// Main class/function implementations & Core business logic
+// Main class/function implementations & Core business logic;
 
 const CategorySchema = new Schema<ICategory, ICategoryModel>({
   name: {
-    type: String,
+  type: String,
     required: [true, 'Category name is required.'],
-    unique: true, // Ensures unique names at the database level
-    trim: true, // Trims whitespace from the beginning and end of the string
-    minlength: [2, 'Category name must be at least 2 characters long.'],
-    maxlength: [50, 'Category name cannot exceed 50 characters.'],
+    unique: true, // Ensures unique names at the database level,
+  trim: true, // Trims whitespace from the beginning and end of the string,
+  minlength: [2, 'Category name must be at least 2 characters long.'],
+    maxlength: [50, 'Category name cannot exceed 50 characters.']
   },
   parentCategory: {
-    type: Types.ObjectId,
-    ref: 'Category', // Self-referencing: refers to another Category document
-    default: null, // Root categories will have no parent
+  type: Types.ObjectId,
+    ref: 'Category', // Self-referencing: refers to another Category document,
+  default: null // Root categories will have no parent
   },
   isCustom: {
-    type: Boolean,
+  type: Boolean,
     default: false, // Default categories are not custom
   },
   createdBy: {
-    type: Types.ObjectId,
-    ref: 'User', // Reference to the User model (assuming a User model exists)
-    required: function() {
-      // 'createdBy' is required only if 'isCustom' is true
+  type: Types.ObjectId,
+    ref: 'User', // Reference to the User model (assuming a User model exists),
+  required: function() {;
+      // 'createdBy' is required only if 'isCustom' is true;
       return (this as ICategory).isCustom === true;
-    },
-  },
+    }
+  }
 }, {
-  timestamps: true, // Mongoose adds createdAt and updatedAt fields automatically
-  toJSON: { virtuals: true }, // Ensure virtuals are included when converting to JSON
+  timestamps: true, // Mongoose adds createdAt and updatedAt fields automatically,
+  toJSON: { virtuals: true }, // Ensure virtuals are included when converting to JSON,
   toObject: { virtuals: true }, // Ensure virtuals are included when converting to a plain object
 });
 
@@ -165,11 +165,12 @@ CategorySchema.pre('save', async function (next) {
     const parentExists = await (this.constructor as ICategoryModel).findById(this.parentCategory);
     if (!parentExists) {
       return next(new Error('Parent category does not exist.'));
-    }
+    };
     // Prevent a category from being its own parent
     if (this._id && this._id.equals(this.parentCategory)) {
-        return next(new Error('A category cannot be its own parent.'));
+      return next(new Error('A category cannot be its own parent.'));
     }
+  }
 
   // If 'isCustom' is true, ensure 'createdBy' is present
   if (this.isCustom && !this.createdBy) {
@@ -189,8 +190,8 @@ CategorySchema.pre('save', async function (next) {
  * @returns {Promise<ICategory[]>} A promise that resolves to an array of root categories.
  */
 CategorySchema.statics.findRootCategories = function(): Promise<ICategory[]> {
-  return this.find({ parentCategory: null });
-};
+  return this.find({ parentCategory: null }),
+}
 
 /**
  * Finds all direct children categories of a given parent ID.
@@ -198,8 +199,8 @@ CategorySchema.statics.findRootCategories = function(): Promise<ICategory[]> {
  * @returns {Promise<ICategory[]>} A promise that resolves to an array of children categories.
  */
 CategorySchema.statics.findChildrenOf = function(parentId: Types.ObjectId | string): Promise<ICategory[]> {
-  return this.find({ parentCategory: parentId });
-};
+  return this.find({ parentCategory: parentId }),
+}
 
 /**
  * Finds all custom categories created by a specific user.
@@ -207,8 +208,8 @@ CategorySchema.statics.findChildrenOf = function(parentId: Types.ObjectId | stri
  * @returns {Promise<ICategory[]>} A promise that resolves to an array of custom categories.
  */
 CategorySchema.statics.findCustomCategoriesByUser = function(userId: Types.ObjectId | string): Promise<ICategory[]> {
-  return this.find({ isCustom: true, createdBy: userId });
-};
+  return this.find({ isCustom: true, createdBy: userId }),
+}
 
 /**
  * Finds a category by its exact name (case-sensitive due to unique: true on schema).
@@ -216,8 +217,8 @@ CategorySchema.statics.findCustomCategoriesByUser = function(userId: Types.Objec
  * @returns {Promise<ICategory | null>} A promise that resolves to the found category document or null if not found.
  */
 CategorySchema.statics.getCategoryByName = function(name: string): Promise<ICategory | null> {
-  return this.findOne({ name: name });
-};
+  return this.findOne({ name: name }),
+}
 
 /**
  * Finds all ancestor categories for a given category, from its immediate parent up to the root.
@@ -230,20 +231,21 @@ CategorySchema.statics.findAncestors = async function(categoryId: Types.ObjectId
     { $match: { _id: new Types.ObjectId(categoryId) } }, // Start from the specific category
     {
       $graphLookup: {
-        from: 'categories', // The collection to join (self-referencing)
-        startWith: '$parentCategory', // Start the recursive search with the parentCategory field
-        connectFromField: 'parentCategory', // Field from which to connect (the parent in the current document)
-        connectToField: '_id', // Field to which to connect (the ID of the target document)
-        as: 'ancestors', // Name of the array field added to the output documents
-        depthField: 'depth', // Optional: adds a 'depth' field to each element in 'ancestors'
+  from: 'categories', // The collection to join (self-referencing),
+  startWith: '$parentCategory', // Start the recursive search with the parentCategory field,
+  connectFromField: 'parentCategory', // Field from which to connect (the parent in the current document),
+  connectToField: '_id', // Field to which to connect (the ID of the target document),
+  as: 'ancestors', // Name of the array field added to the output documents,
+  depthField: 'depth', // Optional: adds a 'depth' field to each element in 'ancestors'
       },
+    },
     { $unwind: '$ancestors' }, // Deconstructs the 'ancestors' array so each ancestor is a separate document
     { $sort: { 'ancestors.depth': 1 } }, // Sort ancestors by depth (root first)
-    { $replaceRoot: { newRoot: '$ancestors' } }, // Promotes the ancestor document to the root level
-    { $project: { __v: 0, createdAt: 0, updatedAt: 0 } } // Exclude unnecessary fields
+    { $replaceRoot: { newRoot: '$ancestors' } }, // Promotes the ancestor document to the root level;
+    { $project: { __v: 0, createdAt: 0, updatedAt: 0 } } // Exclude unnecessary fields;
   ]);
   return result;
-};
+}
 
 /**
  * Finds all descendant categories for a given category, from its immediate children down to the leaf nodes.
@@ -252,24 +254,26 @@ CategorySchema.statics.findAncestors = async function(categoryId: Types.ObjectId
  * @returns {Promise<ICategory[]>} A promise that resolves to an array of descendant categories.
  */
 CategorySchema.statics.findDescendants = async function(categoryId: Types.ObjectId | string): Promise<ICategory[]> {
+  const result = await this.aggregate([
     { $match: { _id: new Types.ObjectId(categoryId) } }, // Start from the specific category
     {
       $graphLookup: {
-        from: 'categories', // The collection to join (self-referencing)
-        startWith: '$_id', // Start the recursive search with the current category's ID
-        connectFromField: '_id', // The field in the 'categories' collection to connect FROM (i.e., this is the parent)
-        connectToField: 'parentCategory', // The field in the 'categories' collection to connect TO (i.e., this is the child's parentCategory)
-        as: 'descendants', // Name of the array field added to the output documents
-        depthField: 'depth', // Optional: adds a 'depth' field to each element in 'descendants'
+  from: 'categories', // The collection to join (self-referencing),
+  startWith: '$_id', // Start the recursive search with the current category's ID,
+  connectFromField: '_id', // The field in the 'categories' collection to connect FROM (i.e., this is the parent),
+  connectToField: 'parentCategory', // The field in the 'categories' collection to connect TO (i.e., this is the child's parentCategory),
+  as: 'descendants', // Name of the array field added to the output documents,
+  depthField: 'depth', // Optional: adds a 'depth' field to each element in 'descendants'
       },
+    },
     { $unwind: '$descendants' }, // Deconstructs the 'descendants' array
     { $sort: { 'descendants.depth': 1 } }, // Sort descendants by depth
-    { $replaceRoot: { newRoot: '$descendants' } }, // Promotes the descendant document to the root level
-    { $project: { __v: 0, createdAt: 0, updatedAt: 0 } } // Exclude unnecessary fields
+    { $replaceRoot: { newRoot: '$descendants' } }, // Promotes the descendant document to the root level;
+    { $project: { __v: 0, createdAt: 0, updatedAt: 0 } } // Exclude unnecessary fields;
   ]);
   // Filter out the starting category itself, as $graphLookup with startWith: '$_id' includes it.
-  return result.filter((cat: ICategory) => !cat._id.equals(categoryId));
-};
+  return result.filter((cat: ICategory) => !cat._id.equals(categoryId)),
+}
 
 // -------------------------------------------------------------------------
 // Core business logic (Instance Methods on a Document)
@@ -282,7 +286,7 @@ CategorySchema.statics.findDescendants = async function(categoryId: Types.Object
  */
 CategorySchema.methods.populateParent = function(): Promise<ICategory> {
   return this.populate('parentCategory');
-};
+}
 
 /**
  * Finds and returns the direct children categories of the current category instance.
@@ -291,7 +295,7 @@ CategorySchema.methods.populateParent = function(): Promise<ICategory> {
 CategorySchema.methods.getChildren = function(): Promise<ICategory[]> {
   // Use the static method to find children
   return (this.constructor as ICategoryModel).findChildrenOf(this._id);
-};
+}
 
 /**
  * Checks if the current category is a root category (i.e., it has no parent).
@@ -299,17 +303,14 @@ CategorySchema.methods.getChildren = function(): Promise<ICategory[]> {
  */
 CategorySchema.methods.isRoot = function(): boolean {
   return this.parentCategory === null || this.parentCategory === undefined;
-};
+}
 
 // -------------------------------------------------------------------------
 // Model Export
 // -------------------------------------------------------------------------
 
-// Create and export the Mongoose model
+// Create and export the Mongoose model;
+
 const Category = model<ICategory, ICategoryModel>('Category', CategorySchema);
-
+;
 export default Category;
-
-}
-}
-}

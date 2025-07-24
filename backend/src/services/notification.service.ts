@@ -3,19 +3,23 @@ import Redis from 'ioredis';
 import { Server as SocketIOServer } from 'socket.io';
 import axios from 'axios';
 import winston from 'winston';
-
 import config from '../config/config';
 import logger from '../utils/logger';
+import Notification from '../models/notification.model'; // Adjust path based on your project structure;
+import User from '../models/user.model'; // Adjust path based on your project structure;
+import { logger } from '../utils/logger'; // Adjust path to your logger utility;
+import * as admin from 'firebase-admin'; // Firebase Admin SDK;
+import mailerService from '../third-party/mailer.service'; // Placeholder for your email sending service;
+import smsClient from '../third-party/sms.service'; // Placeholder for your SMS sending service;
+import { NotificationType, NotificationChannel, NotificationStatus } from '../utils/enums'; // Adjust path to your enums
 
-// --- Enums and Types ---
-
+// --- Enums and Types ---;
 export enum NotificationChannel {
   IN_APP = 'in_app',
   EMAIL = 'email',
   SMS = 'sms',
-  PUSH = 'push',
+  PUSH = 'push'
 }
-
 export enum NotificationType {
   TRANSACTION_SUCCESS = 'transaction_success',
   TRANSACTION_FAILED = 'transaction_failed',
@@ -35,119 +39,113 @@ export enum NotificationType {
   PROFILE_UPDATE = 'profile_update',
   KYC_REQUIRED = 'kyc_required',
   KYC_APPROVED = 'kyc_approved',
-  KYC_REJECTED = 'kyc_rejected',
+  KYC_REJECTED = 'kyc_rejected'
 }
-
 export enum NotificationStatus {
   PENDING = 'pending',
   SENT = 'sent',
   FAILED = 'failed',
   READ = 'read',
-  UNREAD = 'unread',
+  UNREAD = 'unread'
 }
 
 // --- Interfaces ---
 
 /**
  * Interface for a generic notification object.
- */
+ */;
 export interface INotification {
   id: string;
-  user_id: string;
-  type: NotificationType;
-  channels: NotificationChannel[]; // Channels through which this notification was sent or intended
-  title: string;
-  body: string;
-  data?: Record<string, any>; // Additional payload data (e.g., transaction ID, URL)
-  status: NotificationStatus; // Overall status of the notification (e.g., pending, sent, failed)
-  is_read: boolean;
-  created_at: Date;
-  updated_at: Date;
+  user_id: string,
+  type: NotificationType,
+  channels: NotificationChannel[]; // Channels through which this notification was sent or intended,
+  title: string,
+  body: string,
+  data?: Record<string, any>; // Additional payload data (e.g., transaction ID, URL),
+  status: NotificationStatus; // Overall status of the notification (e.g., pending, sent, failed),
+  is_read: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
 
 /**
  * Interface for a notification preference setting for a user.
- */
+ */;
 export interface INotificationPreference {
   user_id: string;
-  notification_type: NotificationType;
-  email_enabled: boolean;
-  sms_enabled: boolean;
-  push_enabled: boolean;
-  in_app_enabled: boolean;
-  created_at: Date;
-  updated_at: Date;
+  notification_type: NotificationType,
+  email_enabled: boolean,
+  sms_enabled: boolean,
+  push_enabled: boolean,
+  in_app_enabled: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
 
 /**
  * Interface for the payload sent to a push notification service (e.g., Firebase, Apple).
- */
+ */;
 export interface IPushNotificationPayload {
-  to: string; // Device token
+  to: string; // Device token,
   notification: {
-    title: string;
-    body: string;
-    sound?: string;
-  };
+  title: string;
+  body: string,
+    sound?: string}
   data?: Record<string, any>; // Custom data for the app
 }
 
 /**
  * Interface for a notification sent over WebSocket (Socket.IO).
- */
+ */;
 export interface ISocketNotificationPayload {
   notification_id: string;
-  type: NotificationType;
-  title: string;
-  body: string;
-  data?: Record<string, any>;
-  is_read: boolean;
-  created_at: Date;
+  type: NotificationType,
+  title: string,
+  body: string,
+  data?: Record<string, any>;,
+  is_read: boolean,
+  created_at: Date,
 }
 
-// --- Constants and Configuration ---
-
+// --- Constants and Configuration ---;
 export const DEFAULT_NOTIFICATION_CHANNELS: NotificationChannel[] = [
   NotificationChannel.IN_APP,
   NotificationChannel.EMAIL,
   NotificationChannel.PUSH,
 ];
-
+;
 export const REDIS_KEYS = {
   NOTIFICATION_QUEUE: 'notifications:queue',
-  USER_NOTIFICATION_PREFERENCES: (userId: string) => `user:${userId}:notification_preferences`,
-};
-
+  USER_NOTIFICATION_PREFERENCES: (userId: string) => `user:${userId}:notification_preferences`
+}
 export const SOCKET_EVENTS = {
   NEW_NOTIFICATION: 'notification:new',
   NOTIFICATION_READ: 'notification:read',
   NOTIFICATION_UPDATE: 'notification:update',
-  USER_DISCONNECT: 'disconnect',
-};
+  USER_DISCONNECT: 'disconnect'
+}
 
-// Default notification preferences for new users
+// Default notification preferences for new users;
 export const DEFAULT_USER_NOTIFICATION_PREFERENCES: INotificationPreference[] = Object.values(NotificationType).map(type => ({
-  user_id: '', // To be filled in
+  user_id: '', // To be filled in,
   notification_type: type,
   email_enabled: true,
   sms_enabled: true,
   push_enabled: true,
   in_app_enabled: true,
   created_at: new Date(),
-  updated_at: new Date(),
+  updated_at: new Date()
 }));
 
-// Placeholder for external push notification service API endpoint
-export const PUSH_SERVICE_API_ENDPOINT: string = config.get('pushService.apiEndpoint');
-export const PUSH_SERVICE_API_KEY: string = config.get('pushService.apiKey');
-
-// --- Class Dependencies (will be injected in the constructor) ---
-
+// Placeholder for external push notification service API endpoint;
+export const PUSH_SERVICE_API_ENDPOINT: string = config.get('pushService.apiEndpoint'),
+export const PUSH_SERVICE_API_KEY: string = config.get('pushService.apiKey'),
+// --- Class Dependencies (will be injected in the constructor) ---;
 export interface INotificationServiceDependencies {
   pgPool: Pool;
-  redisClient: Redis;
-  io: SocketIOServer;
-  logger: winston.Logger;
+  redisClient: Redis,
+  io: SocketIOServer,
+  logger: winston.Logger,
 }
 
 // backend/src/services/notification.service.ts - PART 2
@@ -162,16 +160,16 @@ export interface INotificationServiceDependencies {
 // import mongoose from 'mongoose';
 
 // interface ISendNotificationPayload {
-//     recipientId: mongoose.Types.ObjectId;
-//     type: 'transaction' | 'system' | 'promotion' | 'update' | 'security';
-//     title: string;
-//     message: string;
-//     link?: string;
-//     imageUrl?: string;
-//     data?: Record<string, any>;
-//     sendEmail?: boolean;
-//     sendPush?: boolean;
-//     emailSubject?: string;
+//     recipientId: mongoose.Types.ObjectId,
+//     type: 'transaction' | 'system' | 'promotion' | 'update' | 'security',
+//     title: string,
+//     message: string,
+//     link?: string
+//     imageUrl?: string
+//     data?: Record<string, any>
+//     sendEmail?: boolean
+//     sendPush?: boolean
+//     emailSubject?: string
 //     emailBodyHtml?: string; // Full HTML content for email body
 //     pushPayload?: { title?: string, body?: string, data?: Record<string, any> }; // Specific payload for push if different
 // }
@@ -182,7 +180,7 @@ export interface INotificationServiceDependencies {
  * Service class for managing notifications.
  * Handles creation, retrieval, status updates, and sending of notifications
  * via various channels (in-app, email, push).
- */
+ */;
 class NotificationService {
     /**
      * Creates a new in-app notification record in the database.
@@ -202,30 +200,29 @@ class NotificationService {
      * @param query Query parameters for filtering (e.g., page, limit, read status, notification type).
      * @returns An object containing the list of notifications and the total count matching the criteria.
      */
-    public async getUserNotifications(
-        userId: mongoose.Types.ObjectId,
-        query: { page?: number; limit?: number; read?: boolean; type?: string }
+    public async getUserNotifications(,
+  userId: mongoose.Types.ObjectId,
+        query: { page?: number; limit?: number; read?: boolean; type?: string };
     ): Promise<{ notifications: INotification[]; total: number }> {
         const { page = 1, limit = 10, read, type } = query;
-        const skip = (page - 1) * limit;
-
-        const filter: any = { recipient: userId };
-        if (typeof read === 'boolean') {
+    // TODO: Fix incomplete function declaration,
+const filter: any = { recipient: userId }
+    if (typeof read === 'boolean') {
             filter.read = read;
         }
-        if (type) {
+    if (type) {
             filter.type = type;
         }
-
-        const notificationsPromise = NotificationModel.find(filter)
+const notificationsPromise = NotificationModel.find(filter)
             .sort({ createdAt: -1 }) // Sort by newest first
             .skip(skip)
-            .limit(limit)
-            .lean(); // Use .lean() for faster queries if no document modification is needed
+            .limit(limit);
+            .lean(); // Use .lean() for faster queries if no document modification is needed;
 
-        const totalPromise = NotificationModel.countDocuments(filter);
+const totalPromise = NotificationModel.countDocuments(filter);
+;
 
-        const [notifications, total] = await Promise.all([notificationsPromise, totalPromise]);
+const [notifications, total] = await Promise.all([notificationsPromise, totalPromise]);
 
         return { notifications, total };
     }
@@ -238,8 +235,8 @@ class NotificationService {
      * @returns The updated notification document (plain object).
      * @throws ApiError if the notification is not found or does not belong to the user.
      */
-    public async markNotificationAsRead(
-        notificationId: mongoose.Types.ObjectId,
+    public async markNotificationAsRead(,
+  notificationId: mongoose.Types.ObjectId,
         userId: mongoose.Types.ObjectId
     ): Promise<INotification> {
             { _id: notificationId, recipient: userId, read: false }, // Only update if unread
@@ -248,11 +245,12 @@ class NotificationService {
         ).lean();
 
         if (!notification) {
-            // Check if the notification exists and belongs to the user, even if already read
-            const existingNotification = await NotificationModel.findById(notificationId).lean();
+            // Check if the notification exists and belongs to the user, even if already read;
+
+const existingNotification = await NotificationModel.findById(notificationId).lean();
             if (!existingNotification || existingNotification.recipient.toString() !== userId.toString()) {
                  throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found or unauthorized access.');
-            }
+            };
             // If it exists and belongs to the user but wasn't updated by findOneAndUpdate, it means it was already read.
             // In this case, just return the existing (already read) notification.
             if (existingNotification.read) {
@@ -282,7 +280,7 @@ class NotificationService {
      * @returns The number of unread notifications.
      */
     public async getUnreadNotificationCount(userId: mongoose.Types.ObjectId): Promise<number> {
-        return NotificationModel.countDocuments({ recipient: userId, read: false });
+        return NotificationModel.countDocuments({ recipient: userId, read: false }),
     }
 
     /**
@@ -296,9 +294,10 @@ class NotificationService {
     public async sendNotification(payload: ISendNotificationPayload): Promise<INotification> {
         const { recipientId, type, title, message, link, imageUrl, data, sendEmail, sendPush, emailSubject, emailBodyHtml, pushPayload } = payload;
 
-        // 1. Create the persistent in-app notification record in the database.
-        const inAppNotification = await this.createNotification({
-            recipient: recipientId,
+        // 1. Create the persistent in-app notification record in the database.;
+
+const inAppNotification = await this.createNotification({
+  recipient: recipientId,
             type,
             title,
             message,
@@ -308,8 +307,9 @@ class NotificationService {
             read: false, // Newly created notifications are unread by default;
         });
 
-        // 2. Fetch recipient details to determine contact information and notification channel preferences.
-        const recipientUser = await UserModel.findById(recipientId);
+        // 2. Fetch recipient details to determine contact information and notification channel preferences.;
+
+const recipientUser = await UserModel.findById(recipientId);
 
         if (!recipientUser) {
             console.warn(`Notification recipient user not found for ID: ${recipientId}. In-app notification created, but external sends skipped.`);
@@ -321,11 +321,14 @@ class NotificationService {
         // Send Email
         if (sendEmail && recipientUser.email) {
             try {
-                // Use provided subject/body HTML or fall back to general title/message
-                const subject = emailSubject || title;
+                // Use provided subject/body HTML or fall back to general title/message;
+
+const subject = emailSubject || title;
+
                 const body = emailBodyHtml || `<p>${message}</p>${link ? `<p><a href="${link}" style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">View Details</a></p>` : ''}`;
                 await sendEmail(recipientUser.email, subject, body);
             } catch (error) {
+    }
                 console.error(`Failed to send email notification to ${recipientUser.email} for user ${recipientId}:`, error);
                 // Log the error but do not rethrow to allow other notification types to proceed.
             }
@@ -333,12 +336,16 @@ class NotificationService {
         // Send Push Notification
         if (sendPush && recipientUser.deviceTokens && recipientUser.deviceTokens.length > 0) {
             try {
-                // Use provided push payload or fall back to general title/message
-                const pushTitle = pushPayload?.title || title;
+                // Use provided push payload or fall back to general title/message;
+
+const pushTitle = pushPayload?.title || title;
+
                 const pushBody = pushPayload?.body || message;
+
                 const pushData = pushPayload?.data || data; // Combine custom push data with general data
                 await this._sendPush(recipientUser.deviceTokens, pushTitle, pushBody, pushData);
             } catch (error) {
+    };
                 console.error(`Failed to send push notification to user ${recipientId}:`, error);
                 // Log the error but do not rethrow.
             }
@@ -362,31 +369,26 @@ class NotificationService {
         }
 }
 
-// Instantiate and export the NotificationService as a singleton.
+// Instantiate and export the NotificationService as a singleton.;
 export const notificationService = new NotificationService();
 
-import Notification from '../models/notification.model'; // Adjust path based on your project structure
-import User from '../models/user.model'; // Adjust path based on your project structure
-import { logger } from '../utils/logger'; // Adjust path to your logger utility
-import * as admin from 'firebase-admin'; // Firebase Admin SDK
-import mailerService from '../third-party/mailer.service'; // Placeholder for your email sending service
-import smsClient from '../third-party/sms.service'; // Placeholder for your SMS sending service
-import { NotificationType, NotificationChannel, NotificationStatus } from '../utils/enums'; // Adjust path to your enums
-
-// Ensure Firebase Admin SDK is initialized once
-let firebaseApp: admin.app.App;
+// Ensure Firebase Admin SDK is initialized once;
+let firebaseApp: admin.app.App,
 try {
   firebaseApp = admin.app(); // Try to get the default app if already initialized
-} catch (error) {
-  if ((error as any).code === 'app/no-app') {
+    } catch (error) {
+        next(error);
+    }
+    }
+    if ((error as any).code === 'app/no-app') {
     // If not initialized, initialize it.
     // In a real application, configuration (e.g., service account) would come from environment variables or a config file.
     // For local development or quick setup, you might directly provide credentials.
     firebaseApp = admin.initializeApp({
       // credential: admin.credential.applicationDefault(), // Use Google Cloud default credentials if deployed on GCP
       // Or, if using a service account JSON file:
-      // credential: admin.credential.cert(require('../../path/to/your/serviceAccountKey.json')),
-    });
+      // credential: admin.credential.cert(require('../../path/to/your/serviceAccountKey.json'))
+});
     logger.info('Firebase Admin SDK initialized successfully.');
   } else {
     logger.error('Failed to initialize or retrieve Firebase Admin SDK:', error);
@@ -402,7 +404,7 @@ try {
 /**
  * Custom error class for Notification Service related errors.
  * Provides a clear way to distinguish service-specific failures.
- */
+ */;
 class NotificationServiceError extends Error {
   constructor(message: string, public originalError?: Error) {
     super(message);
@@ -426,45 +428,44 @@ function _formatNotificationMessage(type: NotificationType, data: any): { title:
   switch (type) {
     case NotificationType.TRANSACTION_COMPLETED:
       return {
-        title: 'Transaction Successful!',
-        body: `Your transaction of $${data.amount?.toFixed(2) || '0.00'} for ${data.description || 'a service'} was successfully processed.`,
-      };
+  title: 'Transaction Successful!',
+        body: `Your transaction of $${data.amount?.toFixed(2) || '0.00'} for ${data.description || 'a service'} was successfully processed.`
+}
     case NotificationType.NEW_OFFER:
       return {
-        title: 'Exclusive New Offer!',
-        body: `Don't miss out! Check out our new offer: "${data.offerName || 'Special Deal'}" and get ${data.discount || 'up to 50'}% off!`,
-      };
+  title: 'Exclusive New Offer!',
+        body: `Don't miss out! Check out our new offer: "${data.offerName || 'Special Deal'}" and get ${data.discount || 'up to 50'}% off!`
+}
     case NotificationType.ACCOUNT_ALERT:
       return {
-        title: 'Important Account Alert',
-        body: `Action required or an important update regarding your account: ${data.message || 'Please log in to review.'}`,
-      };
+  title: 'Important Account Alert',
+        body: `Action required or an important update regarding your account: ${data.message || 'Please log in to review.'}`
+}
     case NotificationType.PASSWORD_RESET:
         return {
-            title: 'Password Reset Request',
-            body: `You requested a password reset. Your One-Time Password (OTP) is: ${data.otp}. This code is valid for 10 minutes.`,
-        };
+  title: 'Password Reset Request',
+            body: `You requested a password reset. Your One-Time Password (OTP) is: ${data.otp}. This code is valid for 10 minutes.`
+}
     case NotificationType.LOGIN_ATTEMPT:
         return {
-            title: 'Login Attempt Notification',
-            body: `A login attempt was made on your account from IP ${data.ip || 'an unknown location'} at ${new Date(data.timestamp).toLocaleString() || 'a recent time'}. If this was not you, please secure your account immediately.`,
-        };
+  title: 'Login Attempt Notification',
+            body: `A login attempt was made on your account from IP ${data.ip || 'an unknown location'} at ${new Date(data.timestamp).toLocaleString() || 'a recent time'}. If this was not you, please secure your account immediately.`
+}
     case NotificationType.BOOM_CARD_UPDATE:
         return {
-            title: 'BOOM Card Update',
-            body: `Your BOOM Card balance has been updated. New balance: $${data.newBalance?.toFixed(2) || '0.00'}. ${data.message || ''}`,
-        };
+  title: 'BOOM Card Update',
+            body: `Your BOOM Card balance has been updated. New balance: $${data.newBalance?.toFixed(2) || '0.00'}. ${data.message || ''}`
+}
     case NotificationType.CUSTOM:
         return {
-            title: data.title || 'Notification',
-            body: data.body || 'You have a new notification from BOOM Card.',
-        };
-    default:
-      logger.warn(`Unknown notification type received: ${type}. Using default message.`);
+  title: data.title || 'Notification',
+            body: data.body || 'You have a new notification from BOOM Card.'
+},
+    default: logger.warn(`Unknown notification type received: ${type}. Using default message.`),
       return {
-        title: 'BOOM Card Notification',
-        body: 'You have a new notification from BOOM Card.',
-      };
+  title: 'BOOM Card Notification',
+        body: 'You have a new notification from BOOM Card.'
+};
   }
 
 /**
@@ -474,7 +475,7 @@ function _formatNotificationMessage(type: NotificationType, data: any): { title:
  * @param status The new status to set (e.g., SENT, FAILED, PENDING).
  * @param details Optional additional details about the status (e.g., error messages).
  */
-async function _updateNotificationStatus(
+async function _updateNotificationStatus(,
   notificationId: string,
   status: NotificationStatus,
   details?: string
@@ -484,9 +485,10 @@ async function _updateNotificationStatus(
     await Notification.findByIdAndUpdate(notificationId, {
       status,
       details,
-      sentAt: status === NotificationStatus.SENT ? new Date() : undefined,
-    });
+      sentAt: status === NotificationStatus.SENT ? new Date() : undefined
+});
   } catch (error) {
+    }
     logger.error(`Failed to update notification status for ID ${notificationId}:`, error);
     // Throw a service-specific error to be caught by the main service logic
     throw new NotificationServiceError(`Failed to update notification status for ID ${notificationId}`, error as Error);
@@ -496,15 +498,14 @@ async function _updateNotificationStatus(
 /**
  * The core Notification Service class responsible for managing and sending
  * various types of notifications across different channels.
- */
+ */;
 class NotificationService {
-  private readonly notificationModel: typeof Notification;
-  private readonly userModel: typeof User;
-  private readonly logger: typeof logger;
-  private readonly firebaseAdmin: admin.app.App;
-
-  constructor(
-    notificationModel: typeof Notification,
+  private readonly notificationModel: typeof Notification,
+  private readonly userModel: typeof User,
+  private readonly logger: typeof logger,
+  private readonly firebaseAdmin: admin.app.App,
+  constructor(,
+  notificationModel: typeof Notification,
     userModel: typeof User,
     firebaseAdmin: admin.app.App,
     loggerInstance: typeof logger
@@ -523,8 +524,8 @@ class NotificationService {
    * @param body The body content of the push notification.
    * @param data Additional data payload for the push notification.
    */
-  private async _sendPushNotification(
-    userId: string,
+  private async _sendPushNotification(,
+  userId: string,
     title: string,
     body: string,
     data: Record<string, any>
@@ -536,27 +537,24 @@ class NotificationService {
         this.logger.warn(`User ${userId} has no FCM tokens registered. Skipping push notification.`);
         return;
       }
-
-      const message: admin.messaging.MulticastMessage = {
-        notification: { title, body },
+const message: admin.messaging.MulticastMessage = {
+  notification: { title, body },
         data: { ...data, notificationType: data.notificationType?.toString() || NotificationType.CUSTOM.toString() },
-        tokens: user.fcmTokens.filter(token => typeof token === 'string' && token.trim() !== ''), // Filter out invalid tokens
-        apns: {
-          payload: {
-            aps: {
-              sound: 'default',
-            },
-          },
-        },
+        tokens: user.fcmTokens.filter(token => typeof token === 'string' && token.trim() !== ''), // Filter out invalid tokens,
+  apns: {
+  payload: {
+  aps: {
+  sound: 'default'
+}
+}
+},
         android: {
-            priority: 'high',
-        };
-
-      const response = await this.firebaseAdmin.messaging().sendMulticast(message);
-      this.logger.info(`Push notification sent to user ${userId}. Successes: ${response.successCount}, Failures: ${response.failureCount}`);
-
+  priority: 'high'
+}
+    const response = await this.firebaseAdmin.messaging().sendMulticast(message);
+      this.logger.info(`Push notification sent to user ${userId}. Successes: ${response.successCount}, Failures: ${response.failureCount}`),
       if (response.failureCount > 0) {
-        const failedTokens: string[] = [];
+        const failedTokens: string[] = [],
         response.responses.forEach((resp, idx) => {
           if (!resp.success) {
             const token = user.fcmTokens[idx];
@@ -568,9 +566,10 @@ class NotificationService {
             }
         });
         // In a production app, you'd have a mechanism to remove failedTokens from the user's document
-        // e.g., await this.userModel.findByIdAndUpdate(userId, { $pullAll: { fcmTokens: failedTokens } });
+        // e.g., await this.userModel.findByIdAndUpdate(userId, { $pullAll: { fcmTokens: failedTokens } }),
         throw new Error(`Failed to send some push notifications to user ${userId}. See logs for details.`);
       } catch (error) {
+    }
       this.logger.error(`Error sending push notification to user ${userId}:`, error);
       throw new NotificationServiceError(`Push notification failed for user ${userId}`, error as Error);
     }
@@ -583,8 +582,8 @@ class NotificationService {
    * @param bodyHtml The HTML content of the email body.
    * @param bodyText The plain text content of the email body (for fallback).
    */
-  private async _sendEmailNotification(
-    userId: string,
+  private async _sendEmailNotification(,
+  userId: string,
     subject: string,
     bodyHtml: string,
     bodyText: string
@@ -596,15 +595,17 @@ class NotificationService {
         return;
       }
 
-      // 'mailerService' is a placeholder for your actual email sending client (e.g., Nodemailer, SendGrid client)
-      const emailResponse = await mailerService.sendMail({
-        to: user.email,
+      // 'mailerService' is a placeholder for your actual email sending client (e.g., Nodemailer, SendGrid client);
+
+const emailResponse = await mailerService.sendMail({
+  to: user.email,
         subject,
         html: bodyHtml,
-        text: bodyText,;
+        text: bodyText,
       });
-      this.logger.info(`Email notification sent to ${user.email} (user ${userId}). Response: ${JSON.stringify(emailResponse)}`);
+      this.logger.info(`Email notification sent to ${user.email} (user ${userId}). Response: ${JSON.stringify(emailResponse)}`),
     } catch (error) {
+    }
       this.logger.error(`Error sending email notification to user ${userId}:`, error);
       throw new NotificationServiceError(`Email notification failed for user ${userId}`, error as Error);
     }
@@ -615,8 +616,8 @@ class NotificationService {
    * @param userId The ID of the user to send the SMS to.
    * @param message The content of the SMS message.
    */
-  private async _sendSMSNotification(
-    userId: string,
+  private async _sendSMSNotification(,
+  userId: string,
     message: string
   ): Promise<void> {
     this.logger.debug(`Attempting to send SMS notification to user ${userId}: "${message}"`);
@@ -626,10 +627,12 @@ class NotificationService {
         return;
       }
 
-      // 'smsClient' is a placeholder for your actual SMS sending client (e.g., Twilio client)
-      const smsResponse = await smsClient.sendMessage(user.phoneNumber, message);
-      this.logger.info(`SMS notification sent to ${user.phoneNumber} (user ${userId}). Response: ${JSON.stringify(smsResponse)}`);
+      // 'smsClient' is a placeholder for your actual SMS sending client (e.g., Twilio client);
+
+const smsResponse = await smsClient.sendMessage(user.phoneNumber, message);
+      this.logger.info(`SMS notification sent to ${user.phoneNumber} (user ${userId}). Response: ${JSON.stringify(smsResponse)}`),
     } catch (error) {
+    }
       this.logger.error(`Error sending SMS notification to user ${userId}:`, error);
       throw new NotificationServiceError(`SMS notification failed for user ${userId}`, error as Error);
     }
@@ -645,14 +648,14 @@ class NotificationService {
    * @returns The ID of the created notification record in the database.
    * @throws NotificationServiceError if any part of the process fails critically or all specified channels fail.
    */
-  public async sendNotification(
-    userId: string,
+  public async sendNotification(,
+  userId: string,
     type: NotificationType,
     data: Record<string, any> = {},
     channels: NotificationChannel[] = [NotificationChannel.PUSH, NotificationChannel.EMAIL]
   ): Promise<string> {
     const { title, body } = _formatNotificationMessage(type, data);
-    let notificationId: string;
+    let notificationId: string,
     let newNotificationRecord: any; // Type based on your Notification model
 
     try {
@@ -663,38 +666,39 @@ class NotificationService {
         title,
         body,
         data,
-        channelsSent: [], // Will be updated as channels are successfully sent
-        status: NotificationStatus.PENDING,
-      });
+        channelsSent: [], // Will be updated as channels are successfully sent,
+  status: NotificationStatus.PENDING
+});
       notificationId = newNotificationRecord._id.toString();
       this.logger.info(`Notification record created: ${notificationId} for user ${userId}, type ${type}`);
-
-      let sentChannels: NotificationChannel[] = [];
-      let failureDetails: string[] = [];
+;
+let sentChannels: NotificationChannel[] = [],
+      let failureDetails: string[] = [],
       let overallSuccess = false; // Will be true if at least one channel succeeds
 
       // 2. Attempt to send via specified channels
       if (channels.includes(NotificationChannel.PUSH)) {
         try {
-          await this._sendPushNotification(userId, title, body, { ...data, notificationType: type });
+          await this._sendPushNotification(userId, title, body, { ...data, notificationType: type }),
           sentChannels.push(NotificationChannel.PUSH);
           overallSuccess = true;
           this.logger.info(`Push notification sent successfully for record ${notificationId}.`);
         } catch (error) {
-          const errorMsg = `Push notification failed: ${(error as Error).message}`;
+    }
+          const errorMsg = `Push notification failed: ${(error as Error).message}`,
           this.logger.error(errorMsg);
           failureDetails.push(errorMsg);
         }
-
       if (channels.includes(NotificationChannel.EMAIL)) {
         try {
-          // For email, you might want a richer HTML body
-          const emailHtmlBody = `
+          // For email, you might want a richer HTML body;
+
+const emailHtmlBody = `
             <html>
               <body>
                 <h1>${title}</h1>
                 <p>${body}</p>
-                <p>Visit the BOOM Card app for more details.</p>
+                <p>Visit the BOOM Card app for more details.</p>;
                 <img src="https://example.com/boom_logo.png" alt="BOOM Card" style="max-width: 150px;"/>
               </body>
             </html>
@@ -706,8 +710,8 @@ class NotificationService {
         } catch (error) {
           this.logger.error(errorMsg);
           failureDetails.push(errorMsg);
+    }
         }
-
       if (channels.includes(NotificationChannel.SMS)) {
         try {
           await this._sendSMSNotification(userId, body); // SMS usually has simpler content, often just the body
@@ -717,15 +721,16 @@ class NotificationService {
         } catch (error) {
           this.logger.error(errorMsg);
           failureDetails.push(errorMsg);
+    }
         }
 
-      // 3. Update notification status in DB based on overall outcome
-      const finalStatus = overallSuccess ? NotificationStatus.SENT : NotificationStatus.FAILED;
+      // 3. Update notification status in DB based on overall outcome;
+
+const finalStatus = overallSuccess ? NotificationStatus.SENT: NotificationStatus.FAILED,
       await _updateNotificationStatus(notificationId, finalStatus, failureDetails.join('; '));
 
       // Update the `channelsSent` array for the notification record
-      await this.notificationModel.findByIdAndUpdate(notificationId, { $set: { channelsSent: sentChannels } });
-
+      await this.notificationModel.findByIdAndUpdate(notificationId, { $set: { channelsSent: sentChannels } }),
       if (!overallSuccess && channels.length > 0) {
         // If no channels were specified OR if all specified channels failed
         throw new NotificationServiceError(
@@ -737,12 +742,13 @@ class NotificationService {
     } catch (error) {
       // If the initial record creation fails or `_updateNotificationStatus` fails,
       // or if all sending attempts fail and `overallSuccess` remains false.
+    }
       this.logger.error(`Critical failure in processing notification for user ${userId}, type ${type}:`, error);
 
       // Attempt a final update to FAILED if a record ID exists and is not already updated
       if (notificationId && newNotificationRecord?.status === NotificationStatus.PENDING) {
         try {
-          await _updateNotificationStatus(notificationId, NotificationStatus.FAILED, `Critical error: ${(error as Error).message}`);
+          await _updateNotificationStatus(notificationId, NotificationStatus.FAILED, `Critical error: ${(error as Error).message}`),
         } catch (updateError) {
           this.logger.error(`Double-fault: Also failed to update final status for ${notificationId}:`, updateError);
         }
@@ -757,34 +763,23 @@ class NotificationService {
 // --- Module Exports ---
 
 // Instantiate the service with its dependencies
-// Ensure `firebaseApp` is properly initialized before passing it.
+// Ensure `firebaseApp` is properly initialized before passing it.;
+
 const notificationService = new NotificationService(
   Notification,
   User,
   firebaseApp, // Pass the initialized Firebase Admin app instance
-  logger
+  logger;
 );
 
-// Export the singleton instance of the NotificationService
+// Export the singleton instance of the NotificationService;
 export default notificationService;
 
-// Also export the custom error class so other modules can specifically catch it
+// Also export the custom error class so other modules can specifically catch it;
 export { NotificationServiceError };
 
 }
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
+
 }
 }
 }

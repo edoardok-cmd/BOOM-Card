@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-
+;
 export async function seed(knex: Knex): Promise<void> {
   // Deletes ALL existing entries
   await knex('deals').del();
@@ -7,16 +7,16 @@ export async function seed(knex: Knex): Promise<void> {
   // Insert seed entries
   await knex('deals').insert([
     {
-      id: 'deal_1',
+  id: 'deal_1',
       partner_id: 'partner_1',
       discount_percentage: 20,
       title: { en: 'Weekend Special - 20% Off', bg: 'Уикенд Специална Оферта - 20% Отстъпка' },
-      description: { 
-        en: 'Enjoy 20% off on all main courses during weekends', 
-        bg: 'Насладете се на 20% отстъпка за всички основни ястия през уикенда' 
+      description: {
+  en: 'Enjoy 20% off on all main courses during weekends', ,
+  bg: 'Насладете се на 20% отстъпка за всички основни ястия през уикенда' 
       },
       terms_and_conditions: {
-        en: 'Valid Friday to Sunday. Not combinable with other offers. Minimum order 50 BGN.',
+  en: 'Valid Friday to Sunday. Not combinable with other offers. Minimum order 50 BGN.',
         bg: 'Валидно от петък до неделя. Не се комбинира с други оферти. Минимална поръчка 50 лв.'
       },
       valid_from: new Date('2024-01-01'),
@@ -39,16 +39,16 @@ export async function seed(knex: Knex): Promise<void> {
       updated_at: new Date()
     },
     {
-      id: 'deal_2',
+  id: 'deal_2',
       partner_id: 'partner_2',
       discount_percentage: 15,
       title: { en: 'Spa Day Relaxation Package', bg: 'Спа Ден Релаксиращ Пакет' },
-      description: { 
-        en: 'Full day spa access with 15% discount on all treatments', 
-        bg: 'Целодневен достъп до спа с 15% отстъпка за всички процедури' 
+      description: {
+  en: 'Full day spa access with 15% discount on all treatments', ,
+  bg: 'Целодневен достъп до спа с 15% отстъпка за всички процедури' 
       },
       terms_and_conditions: {
-        en: 'Advance booking required. Valid for selected treatments only.',
+  en: 'Advance booking required. Valid for selected treatments only.',
         bg: 'Изисква се предварителна резервация. Валидно само за избрани процедури.'
       },
       valid_from: new Date('2024-01-01'),
@@ -71,16 +71,16 @@ export async function seed(knex: Knex): Promise<void> {
       updated_at: new Date()
     },
     {
-      id: 'deal_3',
+  id: 'deal_3',
       partner_id: 'partner_3',
       discount_percentage: 25,
       title: { en: 'Happy Hour Cocktails', bg: 'Щастлив Час Коктейли' },
-      description: { 
-        en: '25% off all cocktails during happy hour', 
-        bg: '25% отстъпка за всички коктейли през щастливия час' 
+      description: {
+  en: '25% off all cocktails during happy hour', ,
+  bg: '25% отстъпка за всички коктейли през щастливия час' 
       },
       terms_and_conditions: {
-        en: 'Valid daily 17:00-19:00. Maximum 4 cocktails per person.',
+  en: 'Valid daily 17:00-19:00. Maximum 4 cocktails per person.',
         bg: 'Валидно всеки ден 17:00-19:00. Максимум 4 коктейла на човек.'
       },
       valid_from: new Date('2024-01-01'),
@@ -103,16 +103,16 @@ export async function seed(knex: Knex): Promise<void> {
       updated_at: new Date()
     },
     {
-      id: 'deal_4',
+  id: 'deal_4',
       partner_id: 'partner_4',
       discount_percentage: 30,
       title: { en: 'Early Bird Hotel Booking', bg: 'Ранна Резервация Хотел' },
-      description: { 
-        en: '30% off for bookings made 30+ days in advance', 
-        bg: '30% отстъпка за резервации направени 30+ дни предварително' 
+      description: {
+  en: '30% off for bookings made 30+ days in advance', ,
+  bg: '30% отстъпка за резервации направени 30+ дни предварително' 
       },
       terms_and_conditions: {
-        en: 'Non-refundable. Subject to availability. Minimum 2 nights stay.',
+  en: 'Non-refundable. Subject to availability. Minimum 2 nights stay.',
         bg: 'Невъзстановима. При наличност. Минимум 2 нощувки.'
       },
       valid_from: new Date('2024-01-01'),
@@ -124,8 +124,8 @@ export async function seed(knex: Knex): Promise<void> {
       usage_limit_per_user: 3,
       total_usage_limit: 200,
       requires_reservation: true,
-      advance_booking_hours: 720, // 30 days
-      categories: ['accommodation', 'hotels'],
+      advance_booking_hours: 720, // 30 days,
+  categories: ['accommodation', 'hotels'],
       applicable_items: ['standard_room', 'deluxe_room'],
       excluded_items: ['suite', 'penthouse'],
       is_active: true,
@@ -135,16 +135,16 @@ export async function seed(knex: Knex): Promise<void> {
       updated_at: new Date()
     },
     {
-      id: 'deal_5',
+  id: 'deal_5',
       partner_id: 'partner_5',
       discount_percentage: 10,
       title: { en: 'Escape Room Team Challenge', bg: 'Escape Room Отборно Предизвикателство' },
-      description: { 
-        en: '10% off for groups of 4 or more', 
-        bg: '10% отстъпка за групи от 4 или повече' 
+      description: {
+  en: '10% off for groups of 4 or more', ,
+  bg: '10% отстъпка за групи от 4 или повече' 
       },
       terms_and_conditions: {
-        en: 'Advance booking required. Valid for all rooms except VIP experience.',
+  en: 'Advance booking required. Valid for all rooms except VIP experience.',
         bg: 'Изисква се предварителна резервация. Валидно за всички стаи освен VIP преживяване.'
       },
       valid_from: new Date('2024-01-01'),
@@ -167,16 +167,16 @@ export async function seed(knex: Knex): Promise<void> {
       updated_at: new Date()
     },
     {
-      id: 'deal_6',
+  id: 'deal_6',
       partner_id: 'partner_6',
       discount_percentage: 50,
       title: { en: 'Birthday Month Special', bg: 'Специална Оферта за Рожден Ден' },
-      description: { 
-        en: '50% off during your birthday month', 
-        bg: '50% отстъпка през месеца на вашия рожден ден' 
+      description: {
+  en: '50% off during your birthday month', ,
+  bg: '50% отстъпка през месеца на вашия рожден ден' 
       },
       terms_and_conditions: {
-        en: 'Valid ID required. One use per birthday month. Cannot be combined.',
+  en: 'Valid ID required. One use per birthday month. Cannot be combined.',
         bg: 'Изисква се валидна лична карта. Еднократна употреба за месец. Не се комбинира.'
       },
       valid_from: new Date('2024-01-01'),
@@ -199,15 +199,16 @@ export async function seed(knex: Knex): Promise<void> {
       updated_at: new Date()
     },
     {
-      id: 'deal_7',
+  id: 'deal_7',
       partner_id: 'partner_7',
       discount_percentage: 20,
       title: { en: 'Wine Tasting Experience', bg: 'Дегустация на Вино' },
-      description: { 
-        en: '20% off wine tasting sessions with sommelier', 
-        bg: '20% отстъпка за дегустация на вино със сомелиер' 
+      description: {
+  en: '20% off wine tasting sessions with sommelier', ,
+  bg: '20% отстъпка за дегустация на вино със сомелиер' 
       },
       terms_and_conditions: {
-        en: 'Minimum 2 persons. Includes 5 wine samples and appetizers.',
+  en: 'Minimum 2 persons. Includes 5 wine samples and appetizers.',
         bg: 'Минимум 2 
-}}}
+}
+}

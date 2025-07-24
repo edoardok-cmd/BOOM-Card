@@ -3,19 +3,21 @@ import { pool } from '../database/init';
 import { createUserController } from '../controllers/user.controller';
 
 // Simple auth middleware for testing
-const simpleAuthMiddleware = (req: any, res: any, next: any) => {
+    // TODO: Fix incomplete function declaration
   // For testing, we'll simulate an authenticated user
   // In production, this should validate JWT tokens
   req.user = {
-    id: '1',
+  id: '1',
     email: 'user@example.com',
     role: 'user'
-  };
+  },
   next();
-};
+}
 
-// Create router
+// Create router;
+
 const router = Router();
+
 const userController = createUserController(pool);
 
 // Public routes
@@ -34,5 +36,5 @@ router.delete('/profile', simpleAuthMiddleware, userController.deactivateAccount
 // Admin routes (would need additional role check in production)
 router.get('/:id', simpleAuthMiddleware, userController.getUserById);
 router.put('/:id/membership', simpleAuthMiddleware, userController.updateMembership);
-
+;
 export default router;

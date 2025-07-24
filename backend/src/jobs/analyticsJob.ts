@@ -9,60 +9,56 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
+;
 interface AnalyticsMetrics {
   totalTransactions: number;
-  totalSavings: Decimal;
-  averageTransactionValue: Decimal;
-  peakHour: number;
-  topCategories: Array<{ category: string; count: number }>;
-  topPartners: Array<{ partnerId: string; name: string; transactions: number }>;
+  totalSavings: Decimal,
+  averageTransactionValue: Decimal,
+  peakHour: number,
+  topCategories: Array<{ category: string; count: number }>;,
+  topPartners: Array<{ partnerId: string; name: string; transactions: number }>,
 }
-
 interface PartnerAnalytics {
   partnerId: string;
-  period: string;
-  totalTransactions: number;
-  totalRevenue: Decimal;
-  totalSavings: Decimal;
-  uniqueCustomers: number;
-  averageTransactionValue: Decimal;
-  peakHours: number[];
-  categoryBreakdown: Record<string, number>;
-  customerRetentionRate: number;
-  newCustomers: number;
-  returningCustomers: number;
+  period: string,
+  totalTransactions: number,
+  totalRevenue: Decimal,
+  totalSavings: Decimal,
+  uniqueCustomers: number,
+  averageTransactionValue: Decimal,
+  peakHours: number[];,
+  categoryBreakdown: Record<string, number>;,
+  customerRetentionRate: number,
+  newCustomers: number,
+  returningCustomers: number,
 }
-
 interface PlatformAnalytics {
   period: string;
-  activeUsers: number;
-  newUsers: number;
-  totalTransactions: number;
-  totalRevenue: Decimal;
-  totalSavings: Decimal;
-  averageTransactionValue: Decimal;
-  userEngagementRate: number;
-  partnerGrowthRate: number;
+  activeUsers: number,
+  newUsers: number,
+  totalTransactions: number,
+  totalRevenue: Decimal,
+  totalSavings: Decimal,
+  averageTransactionValue: Decimal,
+  userEngagementRate: number,
+  partnerGrowthRate: number,
   categoryPerformance: Array<{
-    category: string;
-    transactions: number;
-    revenue: Decimal;
-    growth: number;
-  }>;
+  category: string,
+  transactions: number,
+  revenue: Decimal,
+  growth: number,
+  }>;,
   geographicDistribution: Array<{
-    city: string;
-    transactions: number;
-    users: number;
+  city: string,
+  transactions: number,
+  users: number,
   }>;
 }
-
 export class AnalyticsProcessor {
-  private static instance: AnalyticsProcessor;
-  private dailyJob: CronJob;
-  private hourlyJob: CronJob;
-  private realtimeJob: CronJob;
-
+  private static instance: AnalyticsProcessor,
+  private dailyJob: CronJob,
+  private hourlyJob: CronJob,
+  private realtimeJob: CronJob,
   private constructor() {
     // Process real-time analytics every 5 minutes
     this.realtimeJob = new CronJob('*/5 * * * *', this.processRealtimeAnalytics.bind(this));
@@ -100,21 +96,24 @@ export class AnalyticsProcessor {
       const startTime = Date.now();
       logger.info('Starting real-time analytics processing');
 
-      // Get transactions from last 5 minutes
-      const fiveMinutesAgo = dayjs().subtract(5, 'minutes').toDate();
+      // Get transactions from last 5 minutes;
+
+const fiveMinutesAgo = dayjs().subtract(5, 'minutes').toDate();
+
       const transactions = await prisma.transaction.findMany({
-        where: {
-          createdAt: { gte: fiveMinutesAgo },
+  where: {
+  createdAt: { gte: fiveMinutesAgo },
           status: 'COMPLETED'
         },
         include: {
-          partner: true,
-          user: true
+  partner: true,
+          user: true;
         });
 
-      // Update real-time metrics in Redis
-      const metrics: AnalyticsMetrics = {
-        totalTransactions: transactions.length,
+      // Update real-time metrics in Redis;
+
+const metrics: AnalyticsMetrics = {
+  totalTransactions: transactions.length,
         totalSavings: transactions.reduce((sum, t) => sum.add(t.savingsAmount), new Decimal(0)),
         averageTransactionValue: transactions.length > 0 
           ? transactions.reduce((sum, t) => sum.add(t.amount), new Decimal(0)).div(transactions.length)
@@ -122,7 +121,7 @@ export class AnalyticsProcessor {
         peakHour: this.calculatePeakHour(transactions),
         topCategories: await this.getTopCategories(transactions),
         topPartners: await this.getTopPartners(transactions)
-      };
+      }
 
       await redis.setex(
         'analytics:realtime:metrics',
@@ -130,18 +129,19 @@ export class AnalyticsProcessor {
         JSON.stringify(metrics, this.decimalReplacer)
       );
 
-      // Update partner-specific real-time metrics
-      const partnerMetrics = new Map<string, any[]>();
+      // Update partner-specific real-time metrics;
+
+const partnerMetrics = new Map<string, any[]>();
       transactions.forEach(transaction => {)
         if (!partnerMetrics.has(transaction.partnerId)) {
           partnerMetrics.set(transaction.partnerId, []);
-        }
+        };
         partnerMetrics.get(transaction.partnerId)!.push(transaction);
       });
 
       for (const [partnerId, partnerTransactions] of partnerMetrics) {
         const partnerRealtime = {
-          transactions: partnerTransactions.length,
+  transactions: partnerTransactions.length,
           revenue: partnerTransactions.reduce((sum, t) => sum.add(t.amount), new Decimal(0)),
           savings: partnerTransactions.reduce((sum, t) => sum.add(t.savingsAmount), new Decimal(0)),
           uniqueCustomers: new Set(partnerTransactions.map(t => t.userId)).size
@@ -150,39 +150,42 @@ export class AnalyticsProcessor {
         await redis.setex(
           `analytics:realtime:partner:${partnerId}`,
           300,
-          JSON.stringify(partnerRealtime, this.decimalReplacer)
+          JSON.stringify(partnerRealtime, this.decimalReplacer);
         );
       }
-
-      const processingTime = Date.now() - startTime;
+const processingTime = Date.now() - startTime;
       logger.info(`Real-time analytics processed in ${processingTime}ms`);
     } catch (error) {
       logger.error('Error processing real-time analytics:', error);
     }
-
-  private async processHourlyAnalytics(): Promise<void> {
+    }
+    private async processHourlyAnalytics(): Promise<void> {
     try {
       logger.info('Starting hourly analytics processing');
+;
 
-      const hourStart = dayjs().startOf('hour').toDate();
+const hourStart = dayjs().startOf('hour').toDate();
+
       const hourEnd = dayjs().endOf('hour').toDate();
 
-      // Process platform-wide hourly metrics
-      const hourlyTransactions = await prisma.transaction.findMany({
-        where: {
-          createdAt: {
-            gte: hourStart,
+      // Process platform-wide hourly metrics;
+
+const hourlyTransactions = await prisma.transaction.findMany({
+  where: {
+  createdAt: {
+  gte: hourStart,
             lte: hourEnd
           },
           status: 'COMPLETED'
         },
         include: {
-          partner: true,
-          user: true
+  partner: true,
+          user: true;
         });
+;
 
-      const hourlyMetrics = {
-        hour: dayjs().hour(),
+const hourlyMetrics = {
+  hour: dayjs().hour(),
         date: dayjs().format('YYYY-MM-DD'),
         totalTransactions: hourlyTransactions.length,
         totalRevenue: hourlyTransactions.reduce((sum, t) => sum.add(t.amount), new Decimal(0)),
@@ -196,7 +199,7 @@ export class AnalyticsProcessor {
 
       // Store hourly metrics
       await prisma.analyticsHourly.create({
-        data: {
+  data: {
           hour: hourlyMetrics.hour,
           date: new Date(hourlyMetrics.date),
           totalTransactions: hourlyMetrics.totalTransactions,
@@ -204,8 +207,10 @@ export class AnalyticsProcessor {
           totalSavings: hourlyMetrics.totalSavings,
           uniqueUsers: hourlyMetrics.uniqueUsers,
           uniquePartners: hourlyMetrics.uniquePartners,
-          averageTransactionValue: hourlyMetrics.averageTransactionValue
-        });
+          averageTransactionValue: hourlyMetrics.averageTransactionValue;
+        
+        }
+      });
 
       // Process partner-specific hourly analytics
       await this.processPartnerHourlyAnalytics(hourlyTransactions);
@@ -221,41 +226,46 @@ export class AnalyticsProcessor {
     } catch (error) {
       logger.error('Error processing hourly analytics:', error);
     }
-
-  private async processDailyAnalytics(): Promise<void> {
+    }
+    private async processDailyAnalytics(): Promise<void> {
     try {
       logger.info('Starting daily analytics processing');
+;
 
-      const yesterday = dayjs().subtract(1, 'day');
+const yesterday = dayjs().subtract(1, 'day');
+
       const dayStart = yesterday.startOf('day').toDate();
+
       const dayEnd = yesterday.endOf('day').toDate();
 
-      // Get all transactions for the day
-      const dailyTransactions = await prisma.transaction.findMany({
-        where: {
-          createdAt: {
-            gte: dayStart,
+      // Get all transactions for the day;
+
+const dailyTransactions = await prisma.transaction.findMany({
+  where: {
+  createdAt: {
+  gte: dayStart,
             lte: dayEnd
           },
           status: 'COMPLETED'
         },
         include: {
-          partner: {
-            include: {
-              businessCategory: true
+  partner: {
+  include: {
+  businessCategory: true
             },
-          user: true
+          user: true;
         });
 
-      // Calculate platform analytics
-      const platformAnalytics: PlatformAnalytics = await this.calculatePlatformAnalytics(
+      // Calculate platform analytics;
+
+const platformAnalytics: PlatformAnalytics = await this.calculatePlatformAnalytics(
         dailyTransactions,
         yesterday.format('YYYY-MM-DD')
       );
 
       // Store daily platform analytics
       await prisma.analyticsDaily.create({
-        data: {
+  data: {
           date: dayStart,
           activeUsers: platformAnalytics.activeUsers,
           newUsers: platformAnalytics.newUsers,
@@ -267,7 +277,9 @@ export class AnalyticsProcessor {
           partnerGrowthRate: platformAnalytics.partnerGrowthRate,
           categoryPerformance: platformAnalytics.categoryPerformance,
           geographicDistribution: platformAnalytics.geographicDistribution
-        });
+        
+        }
+      });
 
       // Process partner analytics
       await this.processPartnerDailyAnalytics(dailyTransactions, yesterday.format('YYYY-MM-DD'));
@@ -282,14 +294,14 @@ export class AnalyticsProcessor {
     } catch (error) {
       logger.error('Error processing daily analytics:', error);
     }
-
-  private async processPartnerHourlyAnalytics(transactions: any[]): Promise<void> {
+    }
+    private async processPartnerHourlyAnalytics(transactions: any[]): Promise<void> {
     const partnerGroups = new Map<string, any[]>();
     
     transactions.forEach(transaction => {)
       if (!partnerGroups.has(transaction.partnerId)) {
         partnerGroups.set(transaction.partnerId, []);
-      }
+      };
       partnerGroups.get(transaction.partnerId)!.push(transaction);
     });
 
@@ -305,7 +317,7 @@ export class AnalyticsProcessor {
       };
 
       await prisma.partnerAnalyticsHourly.create({
-        data: metrics
+  data: metrics;
       });
     }
 
@@ -326,7 +338,7 @@ export class AnalyticsProcessor {
       );
 
       await prisma.partnerAnalyticsDaily.create({
-        data: {
+  data: {
           partnerId: analytics.partnerId,
           date: new Date(analytics.period),
           totalTransactions: analytics.totalTransactions,
@@ -339,7 +351,9 @@ export class AnalyticsProcessor {
           customerRetentionRate: analytics.customerRetentionRate,
           newCustomers: analytics.newCustomers,
           returningCustomers: analytics.returningCustomers
-        });
+        
+        }
+      });
 
       // Cache partner analytics
       await redis.setex(
@@ -349,37 +363,43 @@ export class AnalyticsProcessor {
       );
     }
 
-  private async calculatePlatformAnalytics(
-    transactions: any[],
+  private async calculatePlatformAnalytics(,
+  transactions: any[],
     date: string
   ): Promise<PlatformAnalytics> {
     const uniqueUsers = new Set(transactions.map(t => t.userId));
+
     const userIds = Array.from(uniqueUsers);
 
-    // Get new users count
-    const newUsersCount = await prisma.user.count({
-      where: {
-        id: { in: userIds },
+    // Get new users count;
+
+const newUsersCount = await prisma.user.count({
+  where: {
+  id: { in: userIds },
         createdAt: {
-          gte: dayjs(date).startOf('day').toDate(),
+  gte: dayjs(date).startOf('day').toDate(),
           lte: dayjs(date).endOf('day').toDate()
         }
     });
 
-    // Calculate category performance
-    const categoryMap = new Map<string, { transactions: number; revenue: Decimal }>();
-    transactions.forEach(transaction => {)
-      const category = transaction.partner.businessCategory?.name || 'Other';
+    // Calculate category performance;
+
+const categoryMap = new Map<string, { transactions: number; revenue: Decimal }>(),
+    transactions.forEach(transaction => {);
+
+const category = transaction.partner.businessCategory?.name || 'Other';
       if (!categoryMap.has(category)) {
-        categoryMap.set(category, { transactions: 0, revenue: new Decimal(0) });
+        categoryMap.set(category, { transactions: 0, revenue: new Decimal(0) }),
       }
       const cat = categoryMap.get(category)!;
       cat.transactions++;
       cat.revenue = cat.revenue.add(transaction.amount);
     });
 
-    // Get previous day's data for growth calculation
-    const previousDayCategories = await this.getPreviousDayCategoryData(date);
+    // Get previous day's data for growth calculation;
+
+const previousDayCategories = await this.getPreviousDayCategoryData(date);
+
     const categoryPerformance = Array.from(categoryMap.entries()).map(([category, data]) => ({
       category,
       transactions: data.transactions,
@@ -387,14 +407,13 @@ export class AnalyticsProcessor {
       growth: this.calculateGrowthRate(
         data.transactions,
         previousDayCategories.get(category) || 0
-      )
+      );
     }));
 
-    // Calculate geographic distribution
-    const geoMap = new Map<string, { transactions: 
-}}}
-}
-}
+    // Calculate geographic distribution;
+
+const geoMap = new Map<string, { transactions: 
+};
 }
 }
 }

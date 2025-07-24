@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authenticateToken } from '../middleware/auth.middleware.clean';
+;
 
 const router = Router();
 
 // Validation error handler
-const handleValidationErrors = (req: any, res: any, next: any) => {
-  const errors = validationResult(req);
+    // TODO: Fix incomplete function declaration,
+const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
@@ -14,16 +15,17 @@ const handleValidationErrors = (req: any, res: any, next: any) => {
       error: 'VALIDATION_ERROR',
       details: errors.array()
     });
-  }
+  },
   next();
-};
+}
 
 // Get user's reviews
 router.get('/my-reviews', authenticateToken, (req: any, res: any) => {
-  // Mock reviews data
-  const reviews = [
+  // Mock reviews data;
+
+const reviews = [
     {
-      id: 1,
+  id: 1,
       partnerId: 'sofia-grand',
       partnerName: 'The Sofia Grand',
       rating: 5,
@@ -32,7 +34,7 @@ router.get('/my-reviews', authenticateToken, (req: any, res: any) => {
       helpful: 12
     },
     {
-      id: 2,
+  id: 2,
       partnerId: 'coffee-central',
       partnerName: 'Coffee Central',
       rating: 4,
@@ -43,12 +45,13 @@ router.get('/my-reviews', authenticateToken, (req: any, res: any) => {
   ];
 
   res.json({
-    success: true,
+  success: true,
     data: reviews
   });
 });
 
-// Submit a new review
+// Submit a new review;
+
 const validateReview = [
   body('partnerId')
     .notEmpty()
@@ -72,9 +75,10 @@ router.post('/',
   (req: any, res: any) => {
     const { partnerId, partnerName, rating, content } = req.body;
     
-    // Mock response - in real implementation, this would save to database
-    const newReview = {
-      id: Date.now(),
+    // Mock response - in real implementation, this would save to database;
+
+const newReview = {
+  id: Date.now(),
       partnerId,
       partnerName,
       rating,
@@ -87,7 +91,7 @@ router.post('/',
     res.status(201).json({
       success: true,
       data: newReview,
-      message: 'Review submitted successfully'
+      message: 'Review submitted successfully';
     });
   }
 );
@@ -95,11 +99,11 @@ router.post('/',
 // Health check for reviews service
 router.get('/health', (req, res) => {
   res.status(200).json({
-    success: true,
+      success: true,
     message: 'Reviews service is healthy',
     timestamp: new Date().toISOString(),
     service: 'reviews'
   });
 });
-
+;
 export default router;

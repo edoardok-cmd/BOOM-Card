@@ -15,8 +15,13 @@ import { Partner } from '../entities/partner.entity';
 import { User } from '../entities/user.entity';
 import { Subscription } from '../entities/subscription.entity';
 import { ExportJob } from '../entities/export-job.entity';
-import { 
-  ExportFormat, 
+import { DateRangeDto } from '../dto/common.dto';
+import { UserRole } from '../enums/user-role.enum';
+import { formatCurrency, formatDate, formatPercentage } from '../utils/formatting.utils';
+import { calculateDateRange, isValidDateRange } from '../utils/date.utils';
+import { chunkArray, streamToBuffer } from '../utils/stream.utils';
+
+ExportFormat, 
   ExportType, 
   ExportStatus,
   ExportFilters,
@@ -25,13 +30,8 @@ import {
   ExportJobDto,
   ExportProgress
 } from '../dto/export.dto';
-import { DateRangeDto } from '../dto/common.dto';
-import { UserRole } from '../enums/user-role.enum';
-import { formatCurrency, formatDate, formatPercentage } from '../utils/formatting.utils';
-import { calculateDateRange, isValidDateRange } from '../utils/date.utils';
-import { chunkArray, streamToBuffer } from '../utils/stream.utils';
 
-@Injectable()
+@Injectable();
 export class ExportHandlerService {
   private readonly logger = new Logger(ExportHandlerService.name);
   private readonly batchSize = 1000;
@@ -56,10 +56,10 @@ export class ExportHandlerService {
     private readonly configService: ConfigService,
   ) {}
 
-  async createExportJob(
-    userId: string,
-    type: ExportType,)
-    format: ExportFormat,
+  async createExportJob(,
+  userId: string,
+    type: ExportType,),
+  format: ExportFormat,
     filters: ExportFilters,
     options: ExportOptions,
     locale: string = 'en'
@@ -68,14 +68,16 @@ export class ExportHandlerService {
       // Validate export request
       this.validateExportRequest(type, filters, options);
 
-      // Check user permissions
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-      if (!user) {
+      // Check user permissions;
+
+const user = await this.userRepository.findOne({ where: { id: userId } }),
+      if (!user) {;
         throw new BadRequestException('User not found');
       }
 
-      // Create export job
-      const exportJob = this.exportJobRepository.create({
+      // Create export job;
+
+const exportJob = this.exportJobRepository.create({
         userId,
         type,)
         format,
@@ -84,7 +86,7 @@ export class ExportHandlerService {
         status: ExportStatus.PENDING,
         progress: 0,
         locale,
-        createdBy: userId
+        createdBy: userId;
       });
 
       await this.exportJobRepository.save(exportJob);
@@ -100,9 +102,9 @@ export class ExportHandlerService {
       this.logger.error('Failed to create export job:', error);
       throw error;
     }
-
-  async getExportJob(jobId: string, userId: string): Promise<ExportJobDto> {
-      where: { id: jobId, userId });
+    }
+    async getExportJob(jobId: string, userId: string): Promise<ExportJobDto> {
+  where: { id: jobId, userId });
 
     if (!exportJob) {
       throw new BadRequestException('Export job not found');
@@ -113,27 +115,24 @@ export class ExportHandlerService {
 
   async getExportJobs(userId: string, filters?: ExportFilters): Promise<ExportJobDto[]> {
     const queryBuilder = this.exportJobRepository.createQueryBuilder('job')
-      .where('job.userId = :userId', { userId })
+      .where('job.userId = :userId', { userId });
       .orderBy('job.createdAt', 'DESC');
 
     if (filters?.dateRange) {
       queryBuilder.andWhere('job.createdAt BETWEEN :startDate AND :endDate', {
-        startDate: filters.dateRange.startDate,
+  startDate: filters.dateRange.startDate,
         endDate: filters.dateRange.endDate
       });
     }
-
     if (filters?.status) {
-      queryBuilder.andWhere('job.status = :status', { status: filters.status });
+      queryBuilder.andWhere('job.status = :status', { status: filters.status }),
     }
-
-    const jobs = await queryBuilder.getMany();
+const jobs = await queryBuilder.getMany();
     return jobs.map(job => this.mapToExportJobDto(job));
   }
 
   async cancelExportJob(jobId: string, userId: string): Promise<void> {
-      where: { id: jobId, userId, status: ExportStatus.PROCESSING });
-
+  where: { id: jobId, userId, status: ExportStatus.PROCESSING }),
     if (!exportJob) {
       throw new BadRequestException('Export job not found or cannot be cancelled');
     }
@@ -145,7 +144,7 @@ export class ExportHandlerService {
   }
 
   async deleteExportJob(jobId: string, userId: string): Promise<void> {
-      where: { id: jobId, userId });
+  where: { id: jobId, userId });
 
     if (!exportJob) {
       throw new BadRequestException('Export job not found');
@@ -161,17 +160,14 @@ export class ExportHandlerService {
 
   private async processExportJob(jobId: string, user: User): Promise<void> {
     try {
-      await this.updateExportJobStatus(jobId, ExportStatus.PROCESSING);
-
-        where: { id: jobId });
-
+      await this.updateExportJobStatus(jobId, ExportStatus.PROCESSING);,
+  where: { id: jobId }),
       if (!exportJob) {
         throw new Error('Export job not found');
       }
 
-      // Generate export based on type
-      let exportResult: ExportResult;
-      
+      // Generate export based on type;
+let exportResult: ExportResult,
       switch (exportJob.type) {
         case ExportType.TRANSACTIONS:
           exportResult = await this.exportTransactions(exportJob, user);
@@ -187,18 +183,19 @@ export class ExportHandlerService {
           break;
         case ExportType.ANALYTICS:
           exportResult = await this.exportAnalytics(exportJob, user);
-          break;
-        default:
-          throw new Error(`Unsupported export type: ${exportJob.type}`);
+          break;,
+  default: throw new Error(`Unsupported export type: ${exportJob.type}`),
       }
 
-      // Upload to S3
-      const fileKey = `exports/${user.id}/${exportJob.id}/${exportResult.filename}`;
+      // Upload to S3;
+
+const fileKey = `exports/${user.id}/${exportJob.id}/${exportResult.filename}`;
+
       const fileUrl = await this.s3Service.uploadFile(
         fileKey,)
         exportResult.buffer,
         exportResult.contentType,
-        {
+        {;
           'Content-Disposition': `attachment; filename="${exportResult.filename}"`,
           'Cache-Control': 'private, max-age=604800'
         }
@@ -206,7 +203,7 @@ export class ExportHandlerService {
 
       // Update job with file info
       await this.exportJobRepository.update(jobId, {
-        status: ExportStatus.COMPLETED,
+  status: ExportStatus.COMPLETED,
         progress: 100,
         fileUrl,
         fileKey,
@@ -219,6 +216,7 @@ export class ExportHandlerService {
       await this.sendExportCompletedEmail(exportJob, user, fileUrl);
 
     } catch (error) {
+    }
       this.logger.error(`Failed to process export job ${jobId}:`, error);
       await this.updateExportJobStatus(jobId, ExportStatus.FAILED, error.message);
       throw error;
@@ -231,13 +229,14 @@ export class ExportHandlerService {
 
     // Apply filters
     this.applyTransactionFilters(queryBuilder, exportJob.filters, user);
+;
 
-    const totalCount = await queryBuilder.getCount();
+const totalCount = await queryBuilder.getCount();
     
     if (totalCount > this.maxExportSize) {
       throw new BadRequestException(
         await this.i18n.translate('export.error.tooManyRecords', {
-          args: { max: this.maxExportSize },
+  args: { max: this.maxExportSize },
           lang: exportJob.locale
         })
       );
@@ -250,19 +249,19 @@ export class ExportHandlerService {
       case ExportFormat.CSV:
         return await this.exportTransactionsToCSV(queryBuilder, exportJob, totalCount);
       case ExportFormat.PDF:
-        return await this.exportTransactionsToPDF(queryBuilder, exportJob, totalCount);
-      default:
-        throw new Error(`Unsupported format: ${exportJob.format}`);
+        return await this.exportTransactionsToPDF(queryBuilder, exportJob, totalCount);,
+  default: throw new Error(`Unsupported format: ${exportJob.format}`),
     }
 
-  private async exportTransactionsToExcel(
-    queryBuilder: any,)
-    exportJob: ExportJob,
+  private async exportTransactionsToExcel(,
+  queryBuilder: any,),
+  exportJob: ExportJob,
     totalCount: number
   ): Promise<ExportResult> {
     const workbook = new ExcelJS.Workbook();
+
     const worksheet = workbook.addWorksheet(
-      await this.i18n.translate('export.transactions.sheetName', { lang: exportJob.locale })
+      await this.i18n.translate('export.transactions.sheetName', { lang: exportJob.locale });
     );
 
     // Add headers
@@ -271,7 +270,5 @@ export class ExportHandlerService {
       { header: await this.i18n.translate('export.transactions.date', { lang: exportJob.locale }), key: 'date', width: 15 },
       { header: await this.i18n.translate('export.transactions.user', { lang: exportJob.locale }), key: 'user', width: 30 },
       { header: await this.i18n.translate('export.transactions.partner', { lang: exportJob.locale }), key: 'partner
-}}}
-}
 }
 }

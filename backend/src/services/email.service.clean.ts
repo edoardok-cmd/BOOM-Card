@@ -1,29 +1,24 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import { htmlToText } from 'html-to-text';
-
+;
 interface EmailOptions {
   to: string;
-  subject: string;
-  html: string;
-  text?: string;
-}
-
+  subject: string,
+  html: string,
+  text?: string}
 interface VerificationEmailData {
   userName: string;
-  verificationLink: string;
+  verificationLink: string,
 }
-
 interface PasswordResetEmailData {
   userName: string;
-  resetLink: string;
+  resetLink: string,
 }
-
 class EmailService {
-  private transporter: Transporter;
-  private fromEmail: string;
-  private fromName: string;
-  private isTestMode: boolean;
-
+  private transporter: Transporter,
+  private fromEmail: string,
+  private fromName: string,
+  private isTestMode: boolean,
   constructor() {
     // Check if we're in test/development mode
     this.isTestMode = process.env.NODE_ENV !== 'production' || !process.env.SMTP_HOST;
@@ -46,11 +41,11 @@ class EmailService {
     } else {
       // Use production SMTP settings
       this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
         port: parseInt(process.env.SMTP_PORT || '587'),
         secure: process.env.SMTP_SECURE === 'true',
         auth: {
-          user: process.env.SMTP_USER || '',
+  user: process.env.SMTP_USER || '',
           pass: process.env.SMTP_PASS || ''
         }
       });
@@ -61,22 +56,22 @@ class EmailService {
   }
 
   private async setupTestTransporter() {
-    // Create a test account if needed
-    const testAccount = await nodemailer.createTestAccount();
+    // Create a test account if needed;
+
+const testAccount = await nodemailer.createTestAccount();
     
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
+  host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
       auth: {
-        user: testAccount.user,
+  user: testAccount.user,
         pass: testAccount.pass
-      }
+      };
     });
 
     console.log('📧 Email service running in TEST mode');
-    console.log(`📧 Test email account: ${testAccount.user}`);
-    
+    console.log(`📧 Test email account: ${testAccount.user}`),
     // Verify connection after setting up test transporter
     this.verifyConnection();
   }
@@ -89,35 +84,33 @@ class EmailService {
       console.error('❌ Email service error:', error);
       if (!this.isTestMode) {
         console.error('Please check your SMTP configuration');
-      }
     }
+}
   }
 
   private async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; previewUrl?: string; error?: string }> {
     try {
       const mailOptions = {
-        from: `"${this.fromName}" <${this.fromEmail}>`,
+  from: `"${this.fromName}" <${this.fromEmail}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text || htmlToText(options.html, { wordwrap: 130 })
-      };
-
-      const info = await this.transporter.sendMail(mailOptions);
+      }
+    const info = await this.transporter.sendMail(mailOptions);
       
-      console.log(`📧 Email sent to ${options.to} - Message ID: ${info.messageId}`);
-
-      const result: any = {
-        success: true,
+      console.log(`📧 Email sent to ${options.to} - Message ID: ${info.messageId}`),
+const result: any = {
+  success: true,
         messageId: info.messageId
-      };
+      }
 
       // Get preview URL for test emails
       if (this.isTestMode) {
         const previewUrl = nodemailer.getTestMessageUrl(info);
         if (previewUrl) {
           result.previewUrl = previewUrl;
-          console.log(`📧 Preview URL: ${previewUrl}`);
+          console.log(`📧 Preview URL: ${previewUrl}`),
         }
       }
 
@@ -125,7 +118,7 @@ class EmailService {
     } catch (error: any) {
       console.error(`❌ Failed to send email to ${options.to}:`, error);
       return {
-        success: false,
+  success: false,
         error: error.message || 'Failed to send email'
       };
     }
@@ -133,8 +126,9 @@ class EmailService {
 
   public async sendVerificationEmail(to: string, data: VerificationEmailData) {
     const subject = 'Verify Your BOOM Card Account';
-    
-    const html = `
+;
+
+const html = `;
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
           <h1 style="color: #333; margin: 0;">BOOM Card</h1>
@@ -150,8 +144,8 @@ class EmailService {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${data.verificationLink}" 
-               style="background-color: #007bff; color: white; padding: 12px 30px; 
-                      text-decoration: none; border-radius: 5px; display: inline-block;
+               style="background-color: #007bff; color: white; padding: 12px 30px,
+                      text-decoration: none; border-radius: 5px; display: inline-block,
                       font-size: 16px; font-weight: bold;">
               Verify Email Address
             </a>
@@ -184,8 +178,9 @@ class EmailService {
 
   public async sendPasswordResetEmail(to: string, data: PasswordResetEmailData) {
     const subject = 'Reset Your BOOM Card Password';
-    
-    const html = `
+;
+
+const html = `;
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
           <h1 style="color: #333; margin: 0;">BOOM Card</h1>
@@ -205,8 +200,8 @@ class EmailService {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${data.resetLink}" 
-               style="background-color: #dc3545; color: white; padding: 12px 30px; 
-                      text-decoration: none; border-radius: 5px; display: inline-block;
+               style="background-color: #dc3545; color: white; padding: 12px 30px,
+                      text-decoration: none; border-radius: 5px; display: inline-block,
                       font-size: 16px; font-weight: bold;">
               Reset Password
             </a>
@@ -239,8 +234,9 @@ class EmailService {
 
   public async sendWelcomeEmail(to: string, userName: string) {
     const subject = 'Welcome to BOOM Card!';
-    
-    const html = `
+;
+
+const html = `;
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #f8f9fa; padding: 20px; text-align: center;">
           <h1 style="color: #333; margin: 0;">BOOM Card</h1>
@@ -267,8 +263,8 @@ class EmailService {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${process.env.FRONTEND_URL || 'http://localhost:3001'}/partners" 
-               style="background-color: #28a745; color: white; padding: 12px 30px; 
-                      text-decoration: none; border-radius: 5px; display: inline-block;
+               style="background-color: #28a745; color: white; padding: 12px 30px,
+                      text-decoration: none; border-radius: 5px; display: inline-block,
                       font-size: 16px; font-weight: bold;">
               Explore Partners
             </a>
@@ -291,6 +287,7 @@ class EmailService {
   }
 }
 
-// Export singleton instance
+// Export singleton instance;
+
 const emailService = new EmailService();
 export default emailService;

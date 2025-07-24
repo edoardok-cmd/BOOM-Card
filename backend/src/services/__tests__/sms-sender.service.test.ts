@@ -11,99 +11,98 @@ import { RateLimiterService } from '../rate-limiter.service';
 import * as twilio from 'twilio';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-
+;
 interface MockSmsProvider extends SmsProvider {
-  sendSms: jest.MockedFunction<(message: SmsMessage) => Promise<SmsDeliveryStatus>>;
-  getDeliveryStatus: jest.MockedFunction<(messageId: string) => Promise<SmsDeliveryStatus>>;
-  validatePhoneNumber: jest.MockedFunction<(phoneNumber: string) => Promise<boolean>>;
-  getBalance: jest.MockedFunction<() => Promise<number>>;
+  sendSms: jest.MockedFunction<(message: SmsMessage) => Promise<SmsDeliveryStatus>>,
+  getDeliveryStatus: jest.MockedFunction<(messageId: string) => Promise<SmsDeliveryStatus>>,
+  validatePhoneNumber: jest.MockedFunction<(phoneNumber: string) => Promise<boolean>>,
+  getBalance: jest.MockedFunction<() => Promise<number>>,
 }
-
+;
 interface TestSmsMessage extends SmsMessage {
   testId?: string;
   mockDelay?: number;
   shouldFail?: boolean;
 }
-
+;
 interface SmsTestCase {
   name: string;
-  message: TestSmsMessage;
-  expectedStatus: SmsDeliveryStatus['status'];
+  message: TestSmsMessage,
+  expectedStatus: SmsDeliveryStatus['status'],
   expectedProvider?: SmsProviderType;
   expectRetry?: boolean;
   expectFallback?: boolean;
 }
-
-const TEST_PHONE_NUMBERS = {
+;
+// const TEST_PHONE_NUMBERS = {
   VALID_US: '+1234567890',
   VALID_UK: '+441234567890',
   VALID_CA: '+16134567890',
   INVALID_FORMAT: '1234567890',
   BLOCKED: '+19999999999',
-  RATE_LIMITED: '+18888888888',
+  RATE_LIMITED: '+18888888888'; // TODO: Move to proper scope
 } as const;
-
-const TEST_MESSAGES = {
+;
+// const TEST_MESSAGES = {
   OTP: 'Your BOOM Card verification code is: 123456',
   TRANSACTION_ALERT: 'BOOM Card: Transaction of $50.00 at Merchant XYZ',
   BALANCE_UPDATE: 'Your BOOM Card balance is now $1,234.56',
   SECURITY_ALERT: 'BOOM Card Security: New login detected from IP 192.168.1.1',
-  PROMOTIONAL: 'BOOM Card: Earn 2x rewards this weekend!',
+  PROMOTIONAL: 'BOOM Card: Earn 2x rewards this weekend!'; // TODO: Move to proper scope
 } as const;
-
+;
 const MOCK_DELIVERY_STATUSES: Record<string, SmsDeliveryStatus> = {
   SENT: {
-    messageId: uuidv4(),
+  messageId: uuidv4(),
     status: 'sent',
     provider: 'twilio',
     sentAt: new Date(),
     deliveredAt: null,
-    errorMessage: null,
-  },
+    errorMessage: null
+},
   DELIVERED: {
-    messageId: uuidv4(),
+  messageId: uuidv4(),
     status: 'delivered',
     provider: 'twilio',
     sentAt: new Date(),
     deliveredAt: new Date(),
-    errorMessage: null,
-  },
+    errorMessage: null
+},
   FAILED: {
-    messageId: uuidv4(),
+  messageId: uuidv4(),
     status: 'failed',
     provider: 'twilio',
     sentAt: new Date(),
     deliveredAt: null,
-    errorMessage: 'Invalid phone number',
-  },
+    errorMessage: 'Invalid phone number'
+},
   QUEUED: {
-    messageId: uuidv4(),
+  messageId: uuidv4(),
     status: 'queued',
     provider: 'vonage',
     sentAt: null,
     deliveredAt: null,
-    errorMessage: null,
-  },
-};
-
-const SMS_RATE_LIMITS = {
+    errorMessage: null
+}
+}
+    // const SMS_RATE_LIMITS = {
   PER_PHONE_HOURLY: 5,
   PER_PHONE_DAILY: 20,
   GLOBAL_HOURLY: 1000,
-  GLOBAL_DAILY: 10000,
+  GLOBAL_DAILY: 10000; // TODO: Move to proper scope
 } as const;
-
-const CIRCUIT_BREAKER_CONFIG = {
+;
+// const CIRCUIT_BREAKER_CONFIG = {
   FAILURE_THRESHOLD: 5,
-  RECOVERY_TIMEOUT: 60000, // 1 minute
-  MONITORING_PERIOD: 300000, // 5 minutes
+  RECOVERY_TIMEOUT: 60000, // 1 minute,
+  MONITORING_PERIOD: 300000, // 5 minutes; // TODO: Move to proper scope
 } as const;
-
-const RETRY_CONFIG = {
+;
+// const RETRY_CONFIG = {
   MAX_ATTEMPTS: 3,
   INITIAL_DELAY: 1000,
   MAX_DELAY: 10000,
-  BACKOFF_MULTIPLIER: 2,
+  BACKOFF_MULTIPLIER: 2; // TODO: Move to proper scope
 } as const;
 
 Execution error

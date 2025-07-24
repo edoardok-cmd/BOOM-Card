@@ -20,109 +20,108 @@ import { MLModelService } from './ml-model.service';
 import { NotificationService } from './notification.service';
 import { FeatureFlagService } from './feature-flag.service';
 import { MetricsService } from './metrics.service';
-
+;
 interface RecommendationContext {
   userId: string;
-  timestamp: Date;
+  timestamp: Date,
   location?: {
-    latitude: number;
-    longitude: number;
-  };
+  latitude: number,
+  longitude: number,
+  }
   currentCardId?: string;
   transactionAmount?: number;
   merchantCategory?: string;
   sessionId?: string;
 }
-
 interface CardRecommendation {
   cardId: string;
-  score: number;
-  reasons: string[];
-  estimatedRewards: number;
-  confidence: number;
+  score: number,
+  reasons: string[];,
+  estimatedRewards: number,
+  confidence: number,
   metadata: {
-    category: string;
-    merchantCompatibility: number;
-    userAffinityScore: number;
-    trendingScore: number;
-  };
+  category: string,
+  merchantCompatibility: number,
+  userAffinityScore: number,
+  trendingScore: number,
+  }
 }
-
 interface MerchantRecommendation {
   merchantId: string;
-  name: string;
-  category: string;
-  distance?: number;
-  averageTransaction: number;
-  rewardMultiplier: number;
-  popularityScore: number;
-  personalizedScore: number;
-  reasons: string[];
+  name: string,
+  category: string,
+  distance?: number,
+  averageTransaction: number,
+  rewardMultiplier: number,
+  popularityScore: number,
+  personalizedScore: number,
+  reasons: string[],
 }
-
 interface RewardOptimization {
   recommendedCard: string;
-  expectedRewards: number;
+  expectedRewards: number,
   alternativeCards: Array<{
-    cardId: string;
-    rewards: number;
-    difference: number;
-  }>;
-  optimizationTips: string[];
+  cardId: string,
+  rewards: number,
+  difference: number,
+  }>;,
+  optimizationTips: string[],
 }
-
 interface UserBehaviorPattern {
-  spendingCategories: Map<string, number>;
+  spendingCategories: Map<string, number>;,
   timePatterns: {
-    dayOfWeek: number[];
-    hourOfDay: number[];
-  };
-  merchantPreferences: string[];
-  averageTransactionSize: number;
-  rewardsSensitivity: number;
+  dayOfWeek: number[];,
+  hourOfDay: number[];
+  },
+    merchantPreferences: string[];,
+  averageTransactionSize: number,
+  rewardsSensitivity: number,
 }
-
 interface RecommendationModel {
   version: string;
-  accuracy: number;
-  features: string[];
-  lastUpdated: Date;
+  accuracy: number,
+  features: string[];,
+  lastUpdated: Date,
   performanceMetrics: {
-    precision: number;
-    recall: number;
-    f1Score: number;
-  };
+  precision: number,
+  recall: number,
+  f1Score: number,
+  }
 }
-
 interface RecommendationResult<T> {
-  recommendations: T[];
-  context: RecommendationContext;
-  modelVersion: string;
-  processingTime: number;
-  cacheHit: boolean;
+  recommendations: T[];,
+  context: RecommendationContext,
+  modelVersion: string,
+  processingTime: number,
+  cacheHit: boolean,
 }
-
 interface FeatureVector {
-  userFeatures: number[];
-  contextFeatures: number[];
-  historicalFeatures: number[];
+  userFeatures: number[];,
+  contextFeatures: number[];,
+  historicalFeatures: number[];,
   seasonalFeatures: number[];
 }
-
 interface ModelPrediction {
   cardId: string;
-  probability: number;
-  features: FeatureVector;
+  probability: number,
+  features: FeatureVector,
 }
+const RECOMMENDATION_CACHE_TTL = 300; // 5 minutes;
 
-const RECOMMENDATION_CACHE_TTL = 300; // 5 minutes
 const MAX_RECOMMENDATIONS = 10;
+
 const MIN_CONFIDENCE_THRESHOLD = 0.7;
+
 const FEATURE_DIMENSIONS = 128;
-const MODEL_UPDATE_INTERVAL = 86400000; // 24 hours
+
+const MODEL_UPDATE_INTERVAL = 86400000; // 24 hours;
+
 const PERSONALIZATION_WEIGHT = 0.6;
+
 const TRENDING_WEIGHT = 0.2;
+
 const REWARD_OPTIMIZATION_WEIGHT = 0.2;
+;
 
 const SPENDING_CATEGORIES = {
   DINING: 'dining',
@@ -134,16 +133,18 @@ const SPENDING_CATEGORIES = {
   UTILITIES: 'utilities',
   HEALTHCARE: 'healthcare',
   EDUCATION: 'education',
-  OTHER: 'other'
+  OTHER: 'other';
 } as const;
+;
 
 const RECOMMENDATION_EVENTS = {
   GENERATED: 'recommendation.generated',
   CLICKED: 'recommendation.clicked',
   CONVERTED: 'recommendation.converted',
   DISMISSED: 'recommendation.dismissed',
-  EXPIRED: 'recommendation.expired'
+  EXPIRED: 'recommendation.expired';
 } as const;
+;
 
 const CACHE_KEYS = {
   USER_RECOMMENDATIONS: 'recommendations:user:',
@@ -152,25 +153,23 @@ const CACHE_KEYS = {
   USER_BEHAVIOR: 'behavior:user:',
   MODEL_FEATURES: 'features:model:',
   TRENDING_CARDS: 'trending:cards',
-  POPULAR_MERCHANTS: 'popular:merchants'
+  POPULAR_MERCHANTS: 'popular:merchants';
 } as const;
 
-@Injectable()
+@Injectable();
 export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
-  private recommendationModel: tf.LayersModel | null = null;
-  private openaiClient: OpenAI;
-  private modelUpdateTimer: NodeJS.Timeout | null = null;
-
+  private recommendationModel: tf.LayersModel | null = null,
+  private openaiClient: OpenAI,
+  private modelUpdateTimer: NodeJS.Timeout | null = null,
 export class RecommendationService {
-  private aiService: AIService;
-  private userService: UserService;
-  private cardService: CardService;
-  private cacheService: CacheService;
-  private logger: Logger;
-
-  constructor(
-    aiService: AIService,
+  private aiService: AIService,
+  private userService: UserService,
+  private cardService: CardService,
+  private cacheService: CacheService,
+  private logger: Logger,
+  constructor(,
+  aiService: AIService,
     userService: UserService,
     cardService: CardService,
     cacheService: CacheService,
@@ -185,18 +184,20 @@ export class RecommendationService {
 
   async generateRecommendations(userId: string, options?: RecommendationOptions): Promise<Recommendation[]> {
     try {
-      const cacheKey = `recommendations:${userId}:${JSON.stringify(options)}`;
+      const cacheKey = `recommendations: ${userId}:${JSON.stringify(options)}`,
       const cached = await this.cacheService.get<Recommendation[]>(cacheKey);
       
       if (cached && options?.useCache !== false) {
         return cached;
-      }
+      };
+const userProfile = await this.userService.getUserProfile(userId);
 
-      const userProfile = await this.userService.getUserProfile(userId);
       const userHistory = await this.getUserHistory(userId);
-      const preferences = await this.getUserPreferences(userId);
 
-      const context: RecommendationContext = {
+      const preferences = await this.getUserPreferences(userId);
+;
+
+const context: RecommendationContext = {
         userId,
         userProfile,
         history: userHistory,
@@ -204,27 +205,30 @@ export class RecommendationService {
         currentContext: await this.getCurrentContext(userId),
         options
       };
+    const recommendations = await this.generateAIRecommendations(context);
 
-      const recommendations = await this.generateAIRecommendations(context);
       const filtered = await this.filterRecommendations(recommendations, context);
+
       const ranked = await this.rankRecommendations(filtered, context);
 
       await this.cacheService.set(cacheKey, ranked, options?.cacheTTL || 3600);
       
       return ranked;
     } catch (error) {
+    };
       this.logger.error('Failed to generate recommendations', { userId, error });
       throw new Error('Failed to generate recommendations');
     }
 
   private async generateAIRecommendations(context: RecommendationContext): Promise<Recommendation[]> {
     const prompt = this.buildRecommendationPrompt(context);
-    
-    const aiResponse = await this.aiService.generateCompletion({
+;
+
+const aiResponse = await this.aiService.generateCompletion({
       prompt,
       maxTokens: 2000,
       temperature: 0.7,
-      model: 'gpt-4'
+      model: 'gpt-4';
     });
 
     return this.parseAIResponse(aiResponse, context);
@@ -242,8 +246,8 @@ export class RecommendationService {
       
       Recent Activity:
       ${context.history.slice(0, 10).map(h => `- ${h.type}: ${h.description}`).join('\n')}
-      
-      Preferences:
+,
+  Preferences:
       - Categories: ${context.preferences.categories.join(', ')}
       - Notification Frequency: ${context.preferences.notificationFrequency}
       
@@ -262,7 +266,7 @@ export class RecommendationService {
     try {
       const parsed = JSON.parse(response);
       return parsed.recommendations.map((rec: any) => ({
-        id: generateUUID(),
+  id: generateUUID(),
         userId: context.userId,
         type: rec.type,
         title: rec.title,
@@ -278,23 +282,22 @@ export class RecommendationService {
         updatedAt: new Date()
       }));
     } catch (error) {
+    }
       this.logger.error('Failed to parse AI response', { error });
       return [];
     }
 
-  private async filterRecommendations(
-    recommendations: Recommendation[], 
-    context: RecommendationContext
+  private async filterRecommendations(,
+  recommendations: Recommendation[], ,
+  context: RecommendationContext
   ): Promise<Recommendation[]> {
     return recommendations.filter(rec => {)
       if (context.options?.excludeTypes?.includes(rec.type)) {
         return false;
       }
-
       if (context.preferences.blockedCategories?.includes(rec.type)) {
         return false;
       }
-
       if (context.options?.minPriority && 
           this.getPriorityValue(rec.priority) < this.getPriorityValue(context.options.minPriority)) {
         return false;
@@ -304,18 +307,19 @@ export class RecommendationService {
     });
   }
 
-  private async rankRecommendations(
-    recommendations: Recommendation[], 
-    context: RecommendationContext
+  private async rankRecommendations(,
+  recommendations: Recommendation[], ,
+  context: RecommendationContext
   ): Promise<Recommendation[]> {
     const scored = recommendations.map(rec => ({
-      recommendation: rec,
-      score: this.calculateRecommendationScore(rec, context)
+  recommendation: rec,
+      score: this.calculateRecommendationScore(rec, context);
     }));
 
     scored.sort((a, b) => b.score - a.score);
+;
 
-    const limit = context.options?.limit || 10;
+const limit = context.options?.limit || 10;
     return scored.slice(0, limit).map(s => s.recommendation);
   }
 
@@ -326,38 +330,38 @@ export class RecommendationService {
 
     if (context.preferences.categories.includes(rec.type)) {
       score += 5;
-    }
-
-    const recentInteractions = context.history.filter(h => h.type === rec.type).length;
+    };
+const recentInteractions = context.history.filter(h => h.type === rec.type).length;
     score += Math.min(recentInteractions * 2, 10);
 
     if (rec.metadata?.personalizationScore) {
       score += rec.metadata.personalizationScore;
-    }
+    };
 
     return score;
   }
 
   private getPriorityValue(priority: RecommendationPriority): number {
     switch (priority) {
-      case 'critical': return 4;
-      case 'high': return 3;
-      case 'medium': return 2;
-      case 'low': return 1;
-      default: return 0;
+      case 'critical': return 4,
+      case 'high': return 3,
+      case 'medium': return 2,
+      case 'low': return 1,
+  default: return 0,
     }
 
   async getRecommendationById(id: string): Promise<Recommendation | null> {
     try {
       return await this.cardService.getRecommendation(id);
     } catch (error) {
+    }
       this.logger.error('Failed to get recommendation', { id, error });
       return null;
     }
 
-  async updateRecommendationStatus(
-    id: string, 
-    status: RecommendationStatus, 
+  async updateRecommendationStatus(,
+  id: string, ,
+  status: RecommendationStatus, 
     feedback?: RecommendationFeedback
   ): Promise<void> {
     try {
@@ -369,6 +373,7 @@ export class RecommendationService {
 
       await this.invalidateCache(id);
     } catch (error) {
+    }
       this.logger.error('Failed to update recommendation status', { id, status, error });
       throw error;
     }
@@ -376,8 +381,9 @@ export class RecommendationService {
   private async processFeedback(recommendationId: string, feedback: RecommendationFeedback): Promise<void> {
     const recommendation = await this.getRecommendationById(recommendationId);
     if (!recommendation) return;
+;
 
-    const feedbackData = {
+const feedbackData = {
       recommendationId,
       userId: recommendation.userId,
       rating: feedback.rating,
@@ -385,7 +391,6 @@ export class RecommendationService {
       comment: feedback.comment,
       timestamp: new Date()
     };
-
     await this.cardService.saveFeedback(feedbackData);
 
     if (feedback.rating <= 2 || feedback.useful === false) {
@@ -396,7 +401,7 @@ export class RecommendationService {
     }
 
   private async getUserHistory(userId: string): Promise<UserHistory[]> {
-    return await this.userService.getUserHistory(userId, { limit: 50 });
+    return await this.userService.getUserHistory(userId, { limit: 50 }),
   }
 
   private async getUserPreferences(userId: string): Promise<UserPreferences> {
@@ -405,7 +410,7 @@ export class RecommendationService {
 
   private async getCurrentContext(userId: string): Promise<any> {
     return {
-      location: await this.userService.getUserLocation(userId),
+  location: await this.userService.getUserLocation(userId),
       timeOfDay: new Date().getHours(),
       dayOfWeek: new Date().getDay(),
       season: this.getCurrentSeason()
@@ -422,20 +427,21 @@ export class RecommendationService {
 
   private async invalidateCache(recommendationId: string): Promise<void> {
     if (recommendation) {
-      await this.cacheService.invalidate(`recommendations:${recommendation.userId}:*`);
+      await this.cacheService.invalidate(`recommendations: ${recommendation.userId}:*`),
     }
 
   async getRecommendationAnalytics(userId: string, period: string): Promise<RecommendationAnalytics> {
     try {
       
       return {
-        totalGenerated: recommendations.length,
+  totalGenerated: recommendations.length,
         acceptanceRate: this.calculateAcceptanceRate(recommendations),
         averageRating: this.calculateAverageRating(recommendations),
         topCategories: this.getTopCategories(recommendations),
         engagementMetrics: await this.calculateEngagementMetrics(recommendations)
-      };
+      }
     } catch (error) {
+    }
       this.logger.error('Failed to get recommendation analytics', { userId, error });
       throw error;
     }
@@ -448,10 +454,11 @@ export class RecommendationService {
   private calculateAverageRating(recommendations: Recommendation[]): number {
     const rated = recommendations.filter(r => r.metadata?.feedback?.rating);
     if (rated.length === 0) return 0;
-    
-    const sum = rated.reduce((acc, r) => acc + (r.metadata.feedback.rating || 0), 0);
+;
+
+const sum = rated.reduce((acc, r) => acc + (r.metadata.feedback.rating || 0), 0);
     return sum / rated.length;
-  }
+  };
 
   private getTopCategories(recommendations: Recommendation[]): Array<{ type: string; count: number }> {
     const categories = recommendations.reduce((acc, r) => {
@@ -467,21 +474,23 @@ export class RecommendationService {
 
   private async calculateEngagementMetrics(recommendations: Recommendation[]): Promise<any> {
     return {
-      clickThrough: recommendations.filter(r => r.metadata?.clicked).length,
+  clickThrough: recommendations.filter(r => r.metadata?.clicked).length,
       timeToAction: this.calculateAverageTimeToAction(recommendations),
       conversionRate: this.calculateConversionRate(recommendations)
     };
   }
 
   private calculateAverageTimeToAction(recommendations: Recommendation[]): number {
-    const actioned = recommendations.filter(r => 
-      r.status === 'completed' && r.metadata?.completedAt
+    const actioned = recommendations.filter(r => {
+    r.status === 'completed' && r.metadata?.completedAt;
     );
 
     if (actioned.length === 0) return 0;
+;
 
-    const totalTime = actioned.reduce((acc, r) => {
+const totalTime = actioned.reduce((acc, r) => {
       const created = new Date(r.createdAt).getTime();
+
       const completed = new Date(r.metadata.completedAt).getTime();
       return acc + (completed - created);
     }, 0);
@@ -492,33 +501,36 @@ export class RecommendationService {
   private calculateConversionRate(recommendations: Recommendation[]): number {
     const converted = recommendations.filter(r => r.metadata?.converted).length;
     return recommendations.length > 0 ? (converted / recommendations.length) * 100 : 0;
-  }
+  };
 
-// Route Handlers
+// Route Handlers;
 export const recommendationRoutes = {
-  generateRecommendations: async (req: Request, res: Response): Promise<void> => {
+  generateRecommendations = async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
+
       const options = req.body as RecommendationOptions;
-      
-      const service = req.app.get('recommendationService') as RecommendationService;
+;
+
+const service = req.app.get('recommendationService') as RecommendationService;
       
       res.json({
-        success: true,
+  success: true,
         data: recommendations,
         count: recommendations.length
       });
     } catch (error) {
       res.status(500).json({
-        success: false,
+      success: false,
         error: 'Failed to generate recommendations'
+    }
       });
     },
+,
+  getRecommendation = async (req: Request, res: Response): Promise<void>
 
-  getRecommendation: async (req: Request, res: Response): Promise<void>
-
-  private async generateAIRecommendations(
-    card: Card,
+  private async generateAIRecommendations(,
+  card: Card,
     context: BoomCardContext
   ): Promise<AIRecommendation[]> {
     
@@ -528,9 +540,9 @@ export const recommendationRoutes = {
         temperature: 0.7,
         maxTokens: 1000,
         context: {
-          cardType: card.type,
+  cardType: card.type,
           userProfile: context.userProfile,
-          marketData: context.marketData
+          marketData: context.marketData;
         });
 
       return this.parseAIResponse(response);
@@ -538,9 +550,9 @@ export const recommendationRoutes = {
       logger.error('Failed to generate AI recommendations:', error);
       return this.getFallbackRecommendations(card, context);
     }
-
-  private buildRecommendationPrompt(
-    card: Card,
+    }
+    private buildRecommendationPrompt(,
+  card: Card,
     context: BoomCardContext
   ): string {
     const { userProfile, marketData, transactionHistory } = context;
@@ -576,7 +588,7 @@ export const recommendationRoutes = {
     try {
       
       return recommendations.map(rec => ({
-        id: this.generateRecommendationId(),
+  id: this.generateRecommendationId(),
         type: rec.type as RecommendationType,
         title: rec.title,
         description: rec.description,
@@ -591,17 +603,16 @@ export const recommendationRoutes = {
       logger.error('Failed to parse AI response:', error);
       return [];
     }
-
-  private getFallbackRecommendations(
-    card: Card,
+    }
+    private getFallbackRecommendations(,
+  card: Card,
     context: BoomCardContext
   ): AIRecommendation[] {
-    const recommendations: AIRecommendation[] = [];
-    
+    const recommendations: AIRecommendation[] = [],
     // Basic utilization recommendation
     if (card.utilizationRate > 70) {
       recommendations.push({
-        id: this.generateRecommendationId(),
+  id: this.generateRecommendationId(),
         type: 'payment',
         title: 'High Credit Utilization Alert',
         description: 'Your credit utilization is above 70%. Consider making a payment to improve your credit score.',
@@ -613,7 +624,7 @@ export const recommendationRoutes = {
           'Set up automatic payments to avoid high balances'
         ],
         metrics: {
-          currentUtilization: card.utilizationRate,
+  currentUtilization: card.utilizationRate,
           recommendedUtilization: 30,
           potentialScoreImprovement: 20
         },
@@ -625,7 +636,7 @@ export const recommendationRoutes = {
     // Basic rewards recommendation
     if (context.userProfile.monthlySpending > 1000) {
       recommendations.push({
-        id: this.generateRecommendationId(),
+  id: this.generateRecommendationId(),
         type: 'rewards',
         title: 'Maximize Your Rewards',
         description: 'Based on your spending patterns, you could earn more rewards.',
@@ -637,7 +648,7 @@ export const recommendationRoutes = {
           'Review and redeem accumulated rewards'
         ],
         metrics: {
-          currentRewardsRate: 1.5,
+  currentRewardsRate: 1.5,
           potentialRewardsRate: 3.0,
           estimatedMonthlyRewards: 45
         },
@@ -655,20 +666,19 @@ export const recommendationRoutes = {
 
   private calculateExpirationDate(type: string): Date {
     const expirationDays = {
-      payment: 7,
+  payment: 7,
       spending: 30,
       rewards: 30,
       upgrade: 60,
       security: 14,
       savings: 45
     };
-    
     const days = expirationDays[type as keyof typeof expirationDays] || 30;
     return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
   }
 
-  private async cacheRecommendations(
-    key: string,
+  private async cacheRecommendations(,
+  key: string,
     recommendations: Recommendation[]
   ): Promise<void> {
     try {
@@ -676,9 +686,9 @@ export const recommendationRoutes = {
     } catch (error) {
       logger.error('Failed to cache recommendations:', error);
     }
-
-  private async getCachedRecommendations(
-    key: string
+    }
+    private async getCachedRecommendations(,
+  key: string
   ): Promise<Recommendation[] | null> {
     try {
       return await this.cache.get<Recommendation[]>(key);
@@ -686,16 +696,16 @@ export const recommendationRoutes = {
       logger.error('Failed to get cached recommendations:', error);
       return null;
     }
-
-  private async trackRecommendation(
-    recommendation: Recommendation,
+    }
+    private async trackRecommendation(,
+  recommendation: Recommendation,
     action: 'viewed' | 'dismissed' | 'acted'
   ): Promise<void> {
     try {
       await this.analytics.track({
-        event: 'recommendation_interaction',
+  event: 'recommendation_interaction',
         properties: {
-          recommendationId: recommendation.id,
+  recommendationId: recommendation.id,
           recommendationType: recommendation.type,
           action,
           timestamp: new Date()
@@ -703,8 +713,8 @@ export const recommendationRoutes = {
     } catch (error) {
       logger.error('Failed to track recommendation:', error);
     }
-
-  private formatRecommendation(recommendation: AIRecommendation): Recommendation {
+    }
+    private formatRecommendation(recommendation: AIRecommendation): Recommendation {
     return {
       ...recommendation,
       formattedDate: formatDate(recommendation.createdAt),
@@ -716,52 +726,42 @@ export const recommendationRoutes = {
 
   private calculateTimeRemaining(expiresAt: Date): string {
     const now = new Date();
+
     const diff = expiresAt.getTime() - now.getTime();
     
     if (diff <= 0) return 'Expired';
+;
+
+const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} remaining`;
-    return `${hours} hour${hours > 1 ? 's' : ''} remaining`;
+    if (days > 0) return `${days} day${days > 1 ? 's': ''} remaining`,
+    return `${hours} hour${hours > 1 ? 's': ''} remaining`,
   }
 
   private calculateImpactScore(recommendation: AIRecommendation): number {
     const impactWeights = {
-      minimal: 1,
+  minimal: 1,
       moderate: 2,
       significant: 3,
       critical: 4
     };
-    
     const priorityWeights = {
-      low: 1,
+  low: 1,
       medium: 2,
       high: 3,
       urgent: 4
     };
-    
     const impactScore = impactWeights[recommendation.impact] || 2;
+
     const priorityScore = priorityWeights[recommendation.priority] || 2;
     
     return (impactScore + priorityScore) / 2;
   }
-
 export default RecommendationService;
 export { RecommendationService };
 
 }
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
+
 }
 }
 }

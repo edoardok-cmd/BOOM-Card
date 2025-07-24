@@ -1,4 +1,3 @@
-// 1. All import statements
 import { Request, Response, NextFunction } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiResponse } from '../utils/ApiResponse';
@@ -7,60 +6,62 @@ import HttpStatus from 'http-status';
 import { AdminService } from '../services/admin.service';
 import { UserRole } from '../constants/roles'; // Assuming UserRole enum/const is defined here
 
+// 1. All import statements
+
 // 2. All TypeScript interfaces and types
 
 /**
  * Extends the Express Request object to include properties
  * populated by authentication and authorization middleware.
- */
+ */;
 interface AuthenticatedAdminRequest extends Request {
   user?: {
-    id: string;
-    email: string;
-    role: UserRole;
+  id: string,
+  email: string,
+  role: UserRole;
     // Add any other user properties expected from the auth middleware
-  };
+  }
 }
 
 /**
  * Interface for the request body when an admin creates a new user.
- */
+ */;
 interface ICreateUserByAdminDto {
   username: string;
-  email: string;
-  password?: string; // Optional if system generates or uses external auth
-  role: UserRole;
-  isActive?: boolean;
+  email: string,
+  password?: string; // Optional if system generates or uses external auth,
+  role: UserRole,
+  isActive?: boolean
 }
 
 /**
  * Interface for the request body when an admin updates an existing user.
- */
+ */;
 interface IUpdateUserByAdminDto {
   userId: string; // The ID of the user to be updated
-  username?: string;
-  email?: string;
-  role?: UserRole;
-  isActive?: boolean;
+  username?: string
+  email?: string
+  role?: UserRole
+  isActive?: boolean
   // Add other fields an admin might update, e.g., password reset, etc.
 }
 
 /**
  * Interface for the request body when an admin manages product details.
- */
+ */;
 interface IManageProductDto {
   productId: string;
-  name?: string;
-  description?: string;
-  price?: number;
-  stock?: number;
-  imageUrl?: string;
-  isActive?: boolean;
+  name?: string
+  description?: string
+  price?: number
+  stock?: number
+  imageUrl?: string
+  isActive?: boolean
 }
 
 /**
  * Interface for the request body when an admin updates a transaction's status.
- */
+ */;
 interface IUpdateTransactionStatusDto {
   transactionId: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled'; // Example statuses
@@ -71,13 +72,15 @@ interface IUpdateTransactionStatusDto {
 
 /**
  * Default number of items per page for pagination in admin listings.
- */
-const DEFAULT_PAGE_LIMIT = 10;
+ */;
+
+    const DEFAULT_PAGE_LIMIT = 10;
 
 /**
  * Default page number for pagination in admin listings.
- */
-const DEFAULT_PAGE_NUMBER = 1;
+ */;
+
+    const DEFAULT_PAGE_NUMBER = 1;
 
 // 4. Any decorators or metadata
 // In a typical Express.js setup, decorators are not used directly on controller methods
@@ -87,15 +90,15 @@ const DEFAULT_PAGE_NUMBER = 1;
 
 // Remove duplicate imports - these are already imported above
 
-// Extending Request type to include user, as set by authentication middleware
+// Extending Request type to include user, as set by authentication middleware;
 interface AuthenticatedRequest extends Request {
   user?: IUser; // Assumes IUser is imported and correctly represents your user model
-}
+};
 
 /**
  * AdminController handles all administrative operations in the BOOM Card backend.
  * All methods are wrapped with `asyncHandler` to catch and forward errors to the Express error middleware.
- */
+ */;
 class AdminController {
 
   // --- User Management ---
@@ -106,14 +109,15 @@ class AdminController {
    * @access Private/Admin
    */
   public static getAllUsers = asyncHandler(async (req: Request, res: Response) => {
-    // Exclude sensitive information like password and Mongoose internal fields
+    // Exclude sensitive information like password and Mongoose internal fields;
+
     const users = await User.find().select('-password -__v');
 
     res.status(200).json({
       success: true,
       count: users.length,
-      users,
-    });
+      users
+});
   });
 
   /**
@@ -125,17 +129,16 @@ class AdminController {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return next(new CustomError('Invalid User ID format.', 400));
     }
-
-    const user = await User.findById(req.params.id).select('-password -__v');
+const user = await User.findById(req.params.id).select('-password -__v');
 
     if (!user) {
       return next(new CustomError('User not found.', 404));
-    }
+    };
 
     res.status(200).json({
       success: true,
-      user,
-    });
+      user
+});
   });
 
   /**
@@ -145,22 +148,22 @@ class AdminController {
    */
   public static updateUserRole = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { role } = req.body;
+
     const userId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return next(new CustomError('Invalid User ID format.', 400));
-    }
+    };
 
     // Basic validation for role input
     if (!role || !['user', 'admin'].includes(role.toLowerCase())) {
       return next(new CustomError('Please provide a valid role (user or admin).', 400));
     }
-
-    const user = await User.findById(userId);
+const user = await User.findById(userId);
 
     if (!user) {
       return next(new CustomError('User not found.', 404));
-    }
+    };
 
     // Prevent an admin from demoting themselves to a non-admin role
     if (user._id.toString() === req.user?._id.toString() && role.toLowerCase() !== 'admin') {
@@ -174,12 +177,12 @@ class AdminController {
       success: true,
       message: 'User role updated successfully.',
       user: {
-        _id: user._id,
+  _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
-      },
-    });
+        role: user.role
+}
+});
   });
 
   /**
@@ -192,13 +195,12 @@ class AdminController {
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return next(new CustomError('Invalid User ID format.', 400));
-    }
-
-    const userToDelete = await User.findById(userId);
+    };
+const userToDelete = await User.findById(userId);
 
     if (!userToDelete) {
       return next(new CustomError('User not found.', 404));
-    }
+    };
 
     // Prevent an admin from deleting their own account
     if (userToDelete._id.toString() === req.user?._id.toString()) {
@@ -209,8 +211,8 @@ class AdminController {
 
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully.',
-    });
+      message: 'User deleted successfully.'
+});
   });
 
   // --- Product Management ---
@@ -223,6 +225,7 @@ class AdminController {
   public static createProduct = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     // The user who created the product (admin's ID)
     req.body.user = req.user?._id;
+;
 
     const { name, description, price, category, stock, images } = req.body;
 
@@ -236,14 +239,13 @@ class AdminController {
     if (!Array.isArray(images) || images.length === 0 || !images[0].url) {
       return next(new CustomError('Product must have at least one image with a URL.', 400));
     }
-
-    const product = await Product.create(req.body);
+const product = await Product.create(req.body);
 
     res.status(201).json({
       success: true,
       message: 'Product created successfully.',
-      product,
-    });
+      product
+});
   });
 
   /**
@@ -256,9 +258,8 @@ class AdminController {
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return next(new CustomError('Invalid Product ID format.', 400));
-    }
-
-    let product = await Product.findById(productId);
+    };
+let product = await Product.findById(productId);
 
     if (!product) {
       return next(new CustomError('Product not found.', 404));
@@ -266,16 +267,16 @@ class AdminController {
 
     // Update the product with new data
     product = await Product.findByIdAndUpdate(productId, req.body, {
-      new: true, // Return the updated document
-      runValidators: true, // Run Mongoose validators on update
-      useFindAndModify: false, // Recommended: use native findOneAndUpdate()
+  new: true, // Return the updated document,
+  runValidators: true, // Run Mongoose validators on update,
+  useFindAndModify: false; // Recommended: use native findOneAndUpdate()
     });
 
     res.status(200).json({
       success: true,
       message: 'Product updated successfully.',
-      product,
-    });
+      product
+});
   });
 
   /**
@@ -288,21 +289,20 @@ class AdminController {
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return next(new CustomError('Invalid Product ID format.', 400));
-    }
-
-    const product = await Product.findById(productId);
+    };
+const product = await Product.findById(productId);
 
     if (!product) {
       return next(new CustomError('Product not found.', 404));
-    }
+    };
 
     // In a real application, you might also delete associated images from cloud storage here
     await product.deleteOne();
 
     res.status(200).json({
       success: true,
-      message: 'Product deleted successfully.',
-    });
+      message: 'Product deleted successfully.'
+});
   });
 
   /**
@@ -316,8 +316,8 @@ class AdminController {
     res.status(200).json({
       success: true,
       count: products.length,
-      products,
-    });
+      products
+});
   });
 
   // --- Order Management ---
@@ -328,11 +328,12 @@ class AdminController {
    * @access Private/Admin
    */
   public static getAllOrders = asyncHandler(async (req: Request, res: Response) => {
-    // Populate user information for each order
+    // Populate user information for each order;
+
     const orders = await Order.find().populate('user', 'name email');
 
-    // Calculate total revenue from all orders
-    let totalAmount = 0;
+    // Calculate total revenue from all orders;
+let totalAmount = 0;
     orders.forEach(order => {
       totalAmount += order.totalPrice;
     });
@@ -341,8 +342,8 @@ class AdminController {
       success: true,
       count: orders.length,
       totalAmount,
-      orders,
-    });
+      orders
+});
   });
 
   /**
@@ -355,21 +356,22 @@ class AdminController {
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return next(new CustomError('Invalid Order ID format.', 400));
-    }
+    };
 
-    // Populate user and product details for a comprehensive view
+    // Populate user and product details for a comprehensive view;
+
     const order = await Order.findById(orderId)
-      .populate('user', 'name email')
+      .populate('user', 'name email');
       .populate('orderItems.product', 'name price images');
 
     if (!order) {
       return next(new CustomError('Order not found.', 404));
-    }
+    };
 
     res.status(200).json({
       success: true,
-      order,
-    });
+      order
+});
   });
 
   /**
@@ -378,24 +380,24 @@ class AdminController {
    * @access Private/Admin
    */
   public static updateOrderStatus = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const { status } = req.body; // Expected status: 'Processing', 'Shipped', 'Delivered'
+    const { status } = req.body; // Expected status: 'Processing', 'Shipped', 'Delivered';
+
     const orderId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return next(new CustomError('Invalid Order ID format.', 400));
-    }
-
-    const order = await Order.findById(orderId);
+    };
+const order = await Order.findById(orderId);
 
     if (!order) {
       return next(new CustomError('Order not found.', 404));
-    }
-
+    };
     if (order.orderStatus === 'Delivered') {
       return next(new CustomError('This order has already been delivered.', 400));
     }
 
-    // Helper function to update product stock
+    // Helper function to update product stock;
+
     const updateProductStock = async (productId: mongoose.Types.ObjectId, quantity: number) => {
       const product = await Product.findById(productId);
       if (product) {
@@ -408,8 +410,7 @@ class AdminController {
       } else {
         throw new CustomError(`Product with ID ${productId} not found during stock update.`, 404);
       }
-    };
-
+    }
     if (status === 'Shipped' && order.orderStatus === 'Processing') {
       // If transitioning from Processing to Shipped, decrement stock for each item
       for (const item of order.orderItems) {
@@ -430,8 +431,8 @@ class AdminController {
     res.status(200).json({
       success: true,
       message: 'Order status updated successfully.',
-      order,
-    });
+      order
+});
   });
 
   /**
@@ -444,20 +445,19 @@ class AdminController {
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return next(new CustomError('Invalid Order ID format.', 400));
-    }
-
-    const order = await Order.findById(orderId);
+    };
+const order = await Order.findById(orderId);
 
     if (!order) {
       return next(new CustomError('Order not found.', 404));
-    }
+    };
 
     await order.deleteOne();
 
     res.status(200).json({
       success: true,
-      message: 'Order deleted successfully.',
-    });
+      message: 'Order deleted successfully.'
+});
   });
 
   // --- Dashboard/Statistics ---
@@ -468,51 +468,54 @@ class AdminController {
    * @access Private/Admin
    */
   public static getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
-    // Total counts
+    // Total counts;
+
     const totalUsers = await User.countDocuments();
+
     const totalProducts = await Product.countDocuments();
+
     const totalOrders = await Order.countDocuments();
 
-    // Total revenue from delivered orders
+    // Total revenue from delivered orders;
+
     const revenueResult = await Order.aggregate([
       {
         $match: {
           orderStatus: 'Delivered'
-        }
+        };
       },
       {
         $group: {
           _id: null,
           totalRevenue: { $sum: '$totalPrice' }
-        }
-      }
+};
     ]);
-    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
 
-    // Products out of stock
-    const productsOutOfStock = await Product.countDocuments({ stock: { $lte: 0 } });
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;// Products out of stock;
 
-    // Orders by status
+    const productsOutOfStock = await Product.countDocuments({ stock: { $lte: 0 } });// Orders by status;
+
     const ordersByStatus = await Order.aggregate([
       {
         $group: {
           _id: '$orderStatus',
-          count: { $sum: 1 }
+          count: { $sum: 1 };
         }
       },
       {
         $project: {
-          _id: 0, // Exclude _id
-          status: '$_id',
+          _id: 0, // Exclude _id,
+  status: '$_id',
           count: 1
         }
-      }
+      };
     ]);
 
-    // Example of recent orders (last 5)
+    // Example of recent orders (last 5);
+
     const recentOrders = await Order.find({})
       .sort({ createdAt: -1 })
-      .limit(5)
+      .limit(5);
       .populate('user', 'name email');
 
     res.status(200).json({
@@ -524,12 +527,11 @@ class AdminController {
         totalRevenue,
         productsOutOfStock,
         ordersByStatus,
-        recentOrders,
-      },
-    });
+        recentOrders
+}
+});
   });
 }
-
 export { AdminController };
 
 /**
@@ -538,11 +540,12 @@ export { AdminController };
  * and passes them to the `next` middleware function, which is typically
  * an Express error handling middleware. This avoids repetitive try-catch blocks
  * in every async controller function.
- */
-type AsyncControllerFunction = (req: Request, res: Response, next: NextFunction) => Promise<any>;
+ */;
+type AsyncFunction = (req: Request, res: Response, next: NextFunction) => Promise<any>;
+;
 
-const asyncHandler = (fn: AsyncControllerFunction) =>
-    (req: Request, res: Response, next: NextFunction) => {
+    const asyncHandler = (fn: AsyncFunction) =>
+  (req: Request, res: Response, next: NextFunction) => {
         Promise.resolve(fn(req, res, next)).catch(next);
     };
 
@@ -562,12 +565,10 @@ declare const getAllUsers: AsyncControllerFunction;
 declare const getUserProfile: AsyncControllerFunction;
 declare const updateUserProfile: AsyncControllerFunction;
 declare const deleteUser: AsyncControllerFunction;
-
 declare const getAllProducts: AsyncControllerFunction;
 declare const createProduct: AsyncControllerFunction;
 declare const updateProduct: AsyncControllerFunction;
 declare const deleteProduct: AsyncControllerFunction;
-
 declare const getAllOrders: AsyncControllerFunction;
 declare const updateOrderStatus: AsyncControllerFunction;
 declare const getDashboardStats: AsyncControllerFunction;
@@ -578,5 +579,7 @@ declare const getStockReport: AsyncControllerFunction; // Added a common admin r
 // --- Export Statements ---
 // All controller functions are exported as named exports.
 // This allows them to be imported and used in the Express router setup (e.g., in `backend/src/routes/admin.routes.ts`).
-// Note: The remaining functions and exports would typically be defined above,
+// Note: The remaining functions and exports would typically be defined above;
 // but they appear to be placeholders or from a different part of the file.
+
+}

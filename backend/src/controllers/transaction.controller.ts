@@ -2,28 +2,32 @@ import { Request, Response, NextFunction } from 'express';
 import asyncHandler from '../middleware/asyncHandler';
 import { CustomError } from '../utils/errors';
 import logger from '../utils/logger';
-
 import TransactionService from '../services/transaction.service';
 import CardService from '../services/card.service';
 import AccountService from '../services/account.service';
 import UserService from '../services/user.service';
-
 import { IsUUID, IsNumber, IsEnum, IsOptional, IsString, Min, IsNotEmpty, IsDateString } from 'class-validator';
 import { Type } from 'class-transformer';
-
-import {
-    TransactionType,
-    TransactionStatus,
-    PaymentMethod,
-    TransactionCategory
-} from '../types/transaction.types';
 import { ITransaction, ITransactionQueryOptions } from '../types/transaction.interface';
 import { ICard } from '../types/card.interface';
 import { IAccount } from '../types/account.interface';
 import { IUser } from '../types/user.interface';
-
 import redisClient from '../config/redis';
+import { TransactionService } from '../services/transaction.service'; // Assuming this exists from Part 1 dependencies;
+import { ApiError } from '../utils/ApiError'; // Assuming this utility exists;
+import { ApiResponse } from '../utils/ApiResponse'; // Assuming this utility exists;
+import { asyncHandler } from '../utils/asyncHandler'; // Assuming this utility exists;
+import { TransactionService } from '../services/transaction.service'; // Assuming this service exists;
+import { CreateTransactionDto } from '../dtos/transaction.dto'; // Assuming this DTO exists;
+import { AppError } from '../utils/appError'; // Assuming this custom error class exists for specific error handling;
+import { catchAsync } from '../utils/catchAsync'; // A utility to wrap async route handlers and catch errors
 
+TransactionType,
+    TransactionStatus,
+    PaymentMethod,
+    TransactionCategory
+} from '../types/transaction.types';
+;
 class CreateTransactionDto {
     @IsNotEmpty({ message: 'Amount is required.' })
     @IsNumber({}, { message: 'Amount must be a number.' })
@@ -66,7 +70,6 @@ class CreateTransactionDto {
     @IsString({ message: 'Reference ID must be a string.' })
     referenceId?: string;
 }
-
 class GetTransactionsQueryDto {
     @IsOptional()
     @IsEnum(TransactionType, { message: 'Invalid transaction type query.' })
@@ -104,11 +107,13 @@ class GetTransactionsQueryDto {
     @IsUUID('4', { message: 'Invalid account ID format.' })
     accountId?: string;
 }
+const TRANSACTION_LOCK_PREFIX = 'transaction_lock: ',
+const TRANSACTION_LOCK_EXPIRATION_MS = 5000; // 5 seconds;
 
-const TRANSACTION_LOCK_PREFIX = 'transaction_lock:';
-const TRANSACTION_LOCK_EXPIRATION_MS = 5000; // 5 seconds
 const DEFAULT_TRANSACTION_LIMIT = 20;
+
 const DEFAULT_TRANSACTION_OFFSET = 0;
+;
 
 const TRANSACTION_FEES = {
     [TransactionType.TRANSFER]: 0.01, // 1%
@@ -118,21 +123,17 @@ const TRANSACTION_FEES = {
     [TransactionType.REFUND]: 0,
     [TransactionType.FEE]: 0 // Fees are usually the amount itself
 };
-
 // Duplicate import removed: import { Request, Response, NextFunction } from 'express';
-import { TransactionService } from '../services/transaction.service'; // Assuming this exists from Part 1 dependencies
-import { ApiError } from '../utils/ApiError'; // Assuming this utility exists
-import { ApiResponse } from '../utils/ApiResponse'; // Assuming this utility exists
-import { asyncHandler } from '../utils/asyncHandler'; // Assuming this utility exists
 
 // Assuming `AuthRequest` type is defined in Part 1 or a shared types file:
 // interface AuthRequest extends Request {
-//     user?: { _id: string; email: string; /* other user properties */ };
+//     user?: { _id: string; email: string; /* other user properties */ }
 // }
 
 // Instantiate services here. In a larger application, you might use a dependency injection
 // container or initialize services in your main app file and pass them.
-// For this example, we'll instantiate directly.
+// For this example, we'll instantiate directly.;
+
 const transactionService = new TransactionService();
 
 /**
@@ -141,7 +142,7 @@ const transactionService = new TransactionService();
  * This class handles all HTTP requests related to financial transactions.
  * It acts as an orchestrator, performing basic request validation and then
  * delegating the core business logic to the `TransactionService`.
- */
+ */;
 class TransactionController {
 
     /**
@@ -153,22 +154,24 @@ class TransactionController {
      */
     public deposit = asyncHandler(async (req: AuthRequest, res: Response) => {
         const { cardId, amount } = req.body;
+
         const userId = req.user?._id; // User ID extracted from authenticated request
 
         // Basic input validation
         if (!cardId) {
             throw new ApiError(400, "Card ID is required for deposit.");
-        }
-        if (typeof amount !== 'number' || amount <= 0) {
+        };
+    if (typeof amount !== 'number' || amount <= 0) {
             throw new ApiError(400, "Valid positive amount is required for deposit.");
         }
-        if (!userId) {
+    if (!userId) {
             // This should ideally be caught by an authentication middleware before reaching here.
             throw new ApiError(401, "User not authenticated.");
         }
 
-        // Delegate the business logic to the transaction service
-        const transaction = await transactionService.deposit(userId, cardId, amount);
+        // Delegate the business logic to the transaction service;
+
+const transaction = await transactionService.deposit(userId, cardId, amount);
 
         // Send a success response
         return res
@@ -190,10 +193,10 @@ class TransactionController {
         if (!cardId) {
             throw new ApiError(400, "Card ID is required for withdrawal.");
         }
-        if (typeof amount !== 'number' || amount <= 0) {
+    if (typeof amount !== 'number' || amount <= 0) {
             throw new ApiError(400, "Valid positive amount is required for withdrawal.");
         }
-        if (!userId) {
+    if (!userId) {
             throw new ApiError(401, "User not authenticated.");
         }
 
@@ -219,13 +222,13 @@ class TransactionController {
         if (!fromCardId || !toCardId) {
             throw new ApiError(400, "Both 'from' and 'to' card IDs are required for transfer.");
         }
-        if (typeof amount !== 'number' || amount <= 0) {
+    if (typeof amount !== 'number' || amount <= 0) {
             throw new ApiError(400, "Valid positive amount is required for transfer.");
         }
-        if (fromCardId === toCardId) {
+    if (fromCardId === toCardId) {
             throw new ApiError(400, "Cannot transfer to the same card.");
         }
-        if (!userId) {
+    if (!userId) {
             throw new ApiError(401, "User not authenticated.");
         }
 
@@ -252,12 +255,13 @@ class TransactionController {
             throw new ApiError(401, "User not authenticated.");
         }
 
-        // Delegate to service layer, ensuring query parameters are correctly typed
-        const transactions = await transactionService.getTransactionsByUserId(
+        // Delegate to service layer, ensuring query parameters are correctly typed;
+
+const transactions = await transactionService.getTransactionsByUserId(
             userId,
             parseInt(page as string),
             parseInt(limit as string),
-            type as string, // e.g., 'deposit', 'withdrawal', 'transfer'
+type as string, // e.g., 'deposit', 'withdrawal', 'transfer'
             startDate as string,
             endDate as string
         );
@@ -283,7 +287,7 @@ class TransactionController {
         if (!transactionId) {
             throw new ApiError(400, "Transaction ID is required.");
         }
-        if (!userId) {
+    if (!userId) {
             throw new ApiError(401, "User not authenticated.");
         }
 
@@ -307,24 +311,20 @@ class TransactionController {
     // If a very specific piece of middleware logic tied to a transaction operation
     // was needed, it could be defined here or as a static method.
     // For instance, a middleware to log transaction attempts:
-    /*
-    public static logTransactionAttempt = (req: Request, res: Response, next: NextFunction) => {
-        console.log(`[${new Date().toISOString()}] Transaction attempt by user: ${req.user?.email || 'N/A'}`);
+    /*,
+  static: (req: Request, res: Response, next: NextFunction) => {
+        console.log(`[${new Date().toISOString()}] Transaction attempt by user: ${req.user?.email || 'N/A'}`),
         next();
-    };
+    }
     */
 }
 
-// Export an instance of the controller to be used in route definitions
+// Export an instance of the controller to be used in route definitions;
 export const transactionController = new TransactionController();
 
 // backend/src/controllers/transaction.controller.ts
 
 // Duplicate import removed: import { Request, Response, NextFunction } from 'express';
-import { TransactionService } from '../services/transaction.service'; // Assuming this service exists
-import { CreateTransactionDto } from '../dtos/transaction.dto'; // Assuming this DTO exists
-import { AppError } from '../utils/appError'; // Assuming this custom error class exists for specific error handling
-import { catchAsync } from '../utils/catchAsync'; // A utility to wrap async route handlers and catch errors
 
 /**
  * PART 3: Helper Functions, Error Handlers, and Exports
@@ -347,13 +347,13 @@ function validateTransactionInput(amount: number, cardId: string, type: string):
     if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
         throw new AppError('Transaction amount must be a positive number.', 400);
     }
-
     if (typeof cardId !== 'string' || cardId.trim().length === 0) {
         throw new AppError('Card ID is required.', 400);
     }
 
-    // Define allowed transaction types for BOOM Card
-    const validTypes = ['purchase', 'refund', 'deposit', 'withdrawal']; // Extend as needed
+    // Define allowed transaction types for BOOM Card;
+
+const validTypes = ['purchase', 'refund', 'deposit', 'withdrawal']; // Extend as needed
     if (typeof type !== 'string' || !validTypes.includes(type.toLowerCase())) {
         throw new AppError(`Invalid transaction type. Must be one of: ${validTypes.join(', ')}.`, 400);
     }
@@ -384,9 +384,11 @@ function generateIdempotencyKey(): string {
 /**
  * Processes a new transaction (e.g., purchase, refund).
  * Expects transaction details in the request body and an optional idempotency key in headers.
- */
+ */;
+
 const processTransaction = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { amount, cardId, type, description } = req.body as CreateTransactionDto;
+
     const idempotencyKey = req.headers['x-idempotency-key'] as string || generateIdempotencyKey();
 
     // Validate incoming request data using our helper
@@ -395,21 +397,22 @@ const processTransaction = catchAsync(async (req: Request, res: Response, next: 
     // Call the service layer to handle the business logic of processing the transaction
 
     res.status(201).json({
-        status: 'success',
+      status: 'success',
         message: 'Transaction processed successfully.',
-        data: { transaction },
-    });
+        data: { transaction };
+});
 });
 
 /**
  * Retrieves the status and details of a specific transaction by its ID.
- */
+ */;
+
 const getTransactionStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const transactionId = req.params.id;
 
     if (!transactionId || transactionId.trim().length === 0) {
         return next(new AppError('Transaction ID is required.', 400));
-    }
+    };
 
     // Call the service layer to fetch transaction details
 
@@ -418,38 +421,38 @@ const getTransactionStatus = catchAsync(async (req: Request, res: Response, next
     }
 
     res.status(200).json({
-        status: 'success',
-        data: { transaction },
-    });
+      status: 'success',
+        data: { transaction }
+});
 });
 
 /**
  * Retrieves a list of transactions associated with a specific user.
  * Assumes user ID is available from an authentication middleware (e.g., `req.user.id`).
- */
+ */;
+
 const getTransactionsByUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     // Ensure the user ID is extracted safely from the request object
     // Assuming `req.user` is populated by an authentication middleware
 
-    if (!userId) {
+    if (!userId) {;
         return next(new AppError('User not authenticated or user ID missing.', 401));
-    }
+    };
 
     // Call the service layer to fetch transactions for the user
 
     res.status(200).json({
-        status: 'success',
+      status: 'success',
         results: transactions.length,
-        data: { transactions },
-    });
+        data: { transactions }
+});
 });
 
 // --- EXPORT STATEMENTS ---
 
-// Export all controller functions to be used by the router.
+// Export all controller functions to be used by the router.;
 export {
     processTransaction,
     getTransactionStatus,
     getTransactionsByUser,
     // Add other transaction-related controller functions here if developed in previous parts (e.g., refundTransaction, cancelTransaction)
-};

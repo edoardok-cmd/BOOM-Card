@@ -1,65 +1,58 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableIndex } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-
+;
 interface MigrationMetadata {
   version: string;
-  name: string;
-  timestamp: number;
-  description: string;
+  name: string,
+  timestamp: number,
+  description: string,
 }
-
 interface ColumnDefinition {
   name: string;
-  type: string;
-  isPrimary?: boolean;
-  isNullable?: boolean;
-  isUnique?: boolean;
-  default?: any;
-  comment?: string;
-}
-
+  type: string,
+  isPrimary?: boolean
+  isNullable?: boolean
+  isUnique?: boolean
+  default?: any
+  comment?: string}
 interface IndexDefinition {
   name: string;
-  columnNames: string[];
-  isUnique?: boolean;
-  where?: string;
-}
-
+  columnNames: string[],
+  isUnique?: boolean
+  where?: string}
 interface ForeignKeyDefinition {
   name: string;
-  columnNames: string[];
-  referencedTableName: string;
-  referencedColumnNames: string[];
-  onDelete?: string;
-  onUpdate?: string;
-}
-
+  columnNames: string[];,
+  referencedTableName: string,
+  referencedColumnNames: string[],
+  onDelete?: string
+  onUpdate?: string}
 const MIGRATION_METADATA: MigrationMetadata = {
   version: '017',
   name: 'AddCardAnalyticsAndRewardsSystem',
   timestamp: 1736883600000,
   description: 'Add card analytics tracking, rewards system, and performance optimizations'
-};
+}
+    const SCHEMA_NAME = 'public';
 
-const SCHEMA_NAME = 'public';
 const CASCADE_OPTIONS = { onDelete: 'CASCADE', onUpdate: 'CASCADE' };
-const RESTRICT_OPTIONS = { onDelete: 'RESTRICT', onUpdate: 'CASCADE' };
-const SET_NULL_OPTIONS = { onDelete: 'SET NULL', onUpdate: 'CASCADE' };
-
-const TIMESTAMP_COLUMNS: ColumnDefinition[] = [
+    const RESTRICT_OPTIONS = { onDelete: 'RESTRICT', onUpdate: 'CASCADE' };
+    const SET_NULL_OPTIONS = { onDelete: 'SET NULL', onUpdate: 'CASCADE' };
+    const TIMESTAMP_COLUMNS: ColumnDefinition[] = [
   {
-    name: 'created_at',
+  name: 'created_at',
     type: 'timestamp with time zone',
     default: 'CURRENT_TIMESTAMP',
     isNullable: false
   },
   {
-    name: 'updated_at',
+  name: 'updated_at',
     type: 'timestamp with time zone',
     default: 'CURRENT_TIMESTAMP',
     isNullable: false
   }
 ];
+;
 
 const UUID_PRIMARY_KEY: ColumnDefinition = {
   name: 'id',
@@ -67,8 +60,7 @@ const UUID_PRIMARY_KEY: ColumnDefinition = {
   isPrimary: true,
   default: 'uuid_generate_v4()',
   isNullable: false
-};
-
+}
 export class Migration017AddDynamicPricingHistory implements Migration {
   async up(queryInterface: QueryInterface): Promise<void> {
     const transaction = await queryInterface.sequelize.transaction();
@@ -76,110 +68,110 @@ export class Migration017AddDynamicPricingHistory implements Migration {
     try {
       // Create dynamic_pricing_history table
       await queryInterface.createTable('dynamic_pricing_history', {
-        id: {
-          type: DataTypes.INTEGER,
+  id: {
+  type: DataTypes.INTEGER,
           primaryKey: true,
           autoIncrement: true
         },
         boom_card_id: {
-          type: DataTypes.INTEGER,
+  type: DataTypes.INTEGER,
           allowNull: false,
           references: {
-            model: 'boom_cards',
+  model: 'boom_cards',
             key: 'id'
           },
           onDelete: 'CASCADE'
         },
         timestamp: {
-          type: DataTypes.DATE,
+  type: DataTypes.DATE,
           allowNull: false,
           defaultValue: DataTypes.NOW
         },
         base_price: {
-          type: DataTypes.DECIMAL(10, 2),
+  type: DataTypes.DECIMAL(10, 2),
           allowNull: false
         },
         adjusted_price: {
-          type: DataTypes.DECIMAL(10, 2),
+  type: DataTypes.DECIMAL(10, 2),
           allowNull: false
         },
         price_factors: {
-          type: DataTypes.JSONB,
+  type: DataTypes.JSONB,
           allowNull: false,
           defaultValue: {},
         market_conditions: {
-          type: DataTypes.JSONB,
+  type: DataTypes.JSONB,
           allowNull: false,
           defaultValue: {},
         algorithm_version: {
-          type: DataTypes.STRING(50),
+  type: DataTypes.STRING(50),
           allowNull: false,
           defaultValue: 'v1.0'
         },
         created_at: {
-          type: DataTypes.DATE,
+  type: DataTypes.DATE,
           allowNull: false,
           defaultValue: DataTypes.NOW
         },
         updated_at: {
-          type: DataTypes.DATE,
+  type: DataTypes.DATE,
           allowNull: false,
           defaultValue: DataTypes.NOW
         }, { transaction });
 
       // Create indexes for performance
       await queryInterface.addIndex('dynamic_pricing_history', ['boom_card_id'], {
-        name: 'idx_dynamic_pricing_history_boom_card_id',
+  name: 'idx_dynamic_pricing_history_boom_card_id',
         transaction
       });
 
       await queryInterface.addIndex('dynamic_pricing_history', ['timestamp'], {
-        name: 'idx_dynamic_pricing_history_timestamp',
+  name: 'idx_dynamic_pricing_history_timestamp',
         transaction
       });
 
       await queryInterface.addIndex('dynamic_pricing_history', ['boom_card_id', 'timestamp'], {
-        name: 'idx_dynamic_pricing_history_composite',
+  name: 'idx_dynamic_pricing_history_composite',
         transaction
       });
 
       // Add dynamic pricing columns to boom_cards table
       await queryInterface.addColumn('boom_cards', 'dynamic_pricing_enabled', {
-        type: DataTypes.BOOLEAN,
+  type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'base_price', {
-        type: DataTypes.DECIMAL(10, 2),
+  type: DataTypes.DECIMAL(10, 2),
         allowNull: true
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'current_price', {
-        type: DataTypes.DECIMAL(10, 2),
+  type: DataTypes.DECIMAL(10, 2),
         allowNull: true
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'price_update_frequency', {
-        type: DataTypes.ENUM('HOURLY', 'DAILY', 'WEEKLY', 'REAL_TIME'),
+  type: DataTypes.ENUM('HOURLY', 'DAILY', 'WEEKLY', 'REAL_TIME'),
         defaultValue: 'DAILY',
         allowNull: false
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'min_price', {
-        type: DataTypes.DECIMAL(10, 2),
+  type: DataTypes.DECIMAL(10, 2),
         allowNull: true
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'max_price', {
-        type: DataTypes.DECIMAL(10, 2),
+  type: DataTypes.DECIMAL(10, 2),
         allowNull: true
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'price_factors_config', {
-        type: DataTypes.JSONB,
+  type: DataTypes.JSONB,
         defaultValue: {
-          demand_weight: 0.3,
+  demand_weight: 0.3,
           supply_weight: 0.3,
           time_weight: 0.2,
           competition_weight: 0.2
@@ -188,7 +180,7 @@ export class Migration017AddDynamicPricingHistory implements Migration {
       }, { transaction });
 
       await queryInterface.addColumn('boom_cards', 'last_price_update', {
-        type: DataTypes.DATE,
+  type: DataTypes.DATE,
         allowNull: true
       }, { transaction });
 
@@ -234,9 +226,8 @@ export class Migration017AddDynamicPricingHistory implements Migration {
 
           IF v_base_price IS NULL THEN
             RAISE EXCEPTION 'Base price not set for boom card %', p_boom_card_id;
-          END IF;
-
-          v_adjusted_price := v_base_price * (
+          END IF;,
+  v_adjusted_price:= v_base_price * (
             1 + 
             (p_demand_factor * (v_price_factors_config->>'demand_weight')::DECIMAL) +
             (p_supply_factor * (v_price_factors_config->>'supply_weight')::DECIMAL) +
@@ -245,12 +236,12 @@ export class Migration017AddDynamicPricingHistory implements Migration {
           );
 
           -- Apply price bounds
-          IF v_min_price IS NOT NULL AND v_adjusted_price < v_min_price THEN
-            v_adjusted_price := v_min_price;
+          IF v_min_price IS NOT NULL AND v_adjusted_price < v_min_price THEN,
+  v_adjusted_price: = v_min_price,
           END IF;
 
-          IF v_max_price IS NOT NULL AND v_adjusted_price > v_max_price THEN
-            v_adjusted_price := v_max_price;
+          IF v_max_price IS NOT NULL AND v_adjusted_price > v_max_price THEN,
+  v_adjusted_price: = v_max_price,
           END IF;
 
           RETURN ROUND(v_adjusted_price, 2);
@@ -292,7 +283,7 @@ export class Migration017AddDynamicPricingHistory implements Migration {
       `, { transaction });
 
       await queryInterface.addIndex('boom_card_price_analytics', ['boom_card_id'], {
-        name: 'idx_boom_card_price_analytics_id',
+  name: 'idx_boom_card_price_analytics_id',
         transaction
       });
 
@@ -301,8 +292,8 @@ export class Migration017AddDynamicPricingHistory implements Migration {
       await transaction.rollback();
       throw error;
     }
-
-  async down(queryInterface: QueryInterface): Promise<void> {
+    }
+    async down(queryInterface: QueryInterface): Promise<void> {
 
     try {
       // Drop views
@@ -335,11 +326,9 @@ export class Migration017AddDynamicPricingHistory implements Migration {
       throw error;
     }
 }
-
 export default new Migration017AddDynamicPricingHistory();
 
 }
-}
-}
+
 }
 }

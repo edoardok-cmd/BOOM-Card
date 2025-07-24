@@ -3,23 +3,23 @@ import { HelmetOptions, ContentSecurityPolicyOptions, HstsOptions, ReferrerPolic
 /**
  * Interface for custom Content Security Policy options, extending Helmet's.
  * Directives are typically key-value pairs where the value is an array of strings.
- */
+ */;
 interface BoomCardContentSecurityPolicyOptions extends ContentSecurityPolicyOptions {
   directives?: {
-    [key: string]: string[];
-  };
+    [key: string]: string[],
+  }
 }
 
 /**
  * Interface for custom HSTS options, extending Helmet's.
- */
+ */;
 interface BoomCardHstsOptions extends HstsOptions {
   // No additional properties needed beyond Helmet's HstsOptions for now.
 }
 
 /**
  * Interface for custom Referrer Policy options, extending Helmet's.
- */
+ */;
 interface BoomCardReferrerPolicyOptions extends ReferrerPolicyOptions {
   // No additional properties needed beyond Helmet's ReferrerPolicyOptions for now.
 }
@@ -27,7 +27,7 @@ interface BoomCardReferrerPolicyOptions extends ReferrerPolicyOptions {
 /**
  * Main interface for the BOOM Card Helmet configuration, extending Helmet's core options.
  * Allows for type-safe configuration of all Helmet middleware.
- */
+ */;
 export interface BoomCardHelmetConfig extends HelmetOptions {
   contentSecurityPolicy?: BoomCardContentSecurityPolicyOptions | boolean;
   hsts?: BoomCardHstsOptions | boolean;
@@ -38,19 +38,20 @@ export interface BoomCardHelmetConfig extends HelmetOptions {
 /**
  * Determines if the current environment is production.
  * This is used to apply stricter security policies in production.
- */
+ */;
+
 const isProduction = process.env.NODE_ENV === 'production';
 
 /**
  * Configuration object for Helmet.js security middleware.
  * This object defines various HTTP security headers to protect the BOOM Card backend.
- */
+ */;
 export const BOOM_CARD_HELMET_CONFIG: BoomCardHelmetConfig = {
   // Content Security Policy (CSP): Prevents XSS, clickjacking, and other code injection attacks.
   // Directives are designed for an API backend that primarily serves JSON/XML,
-  // but might serve minimal static content (e.g., error pages, documentation).
+  // but might serve minimal static content (e.g., error pages, documentation).,
   contentSecurityPolicy: {
-    directives: {
+  directives: {
       'default-src': ["'self'"], // Default policy for fetching any type of content.
       'script-src': [
         "'self'", // Allow scripts from the same origin.
@@ -94,47 +95,47 @@ export const BOOM_CARD_HELMET_CONFIG: BoomCardHelmetConfig = {
   },
 
   // Cross-Origin-Embedder-Policy (COEP): Requires resources to declare themselves embeddable.
-  // Helps isolate documents from untrusted origins, enabling powerful features like SharedArrayBuffer.
+  // Helps isolate documents from untrusted origins, enabling powerful features like SharedArrayBuffer.,
   crossOriginEmbedderPolicy: { policy: 'require-corp' }, // 'require-corp' or 'credentialless'
 
   // Cross-Origin-Opener-Policy (COOP): Isolates top-level documents from each other.
-  // Prevents malicious popups from interacting with your page.
+  // Prevents malicious popups from interacting with your page.,
   crossOriginOpenerPolicy: { policy: 'same-origin' }, // 'same-origin', 'same-origin-allow-popups', 'unsafe-none'
 
   // Cross-Origin-Resource-Policy (CORP): Prevents other websites from loading your resources.
-  // Protects sensitive data from being loaded by unauthorized origins.
+  // Protects sensitive data from being loaded by unauthorized origins.,
   crossOriginResourcePolicy: { policy: 'same-origin' }, // 'same-origin', 'same-site', 'cross-origin'
 
-  // DNS Prefetch Control: Controls browser DNS prefetching.
+  // DNS Prefetch Control: Controls browser DNS prefetching.,
   dnsPrefetchControl: { allow: true },
 
-  // X-Frame-Options: Prevents clickjacking by blocking embedding in iframes.
+  // X-Frame-Options: Prevents clickjacking by blocking embedding in iframes.,
   frameguard: { action: 'deny' }, // 'deny', 'sameorigin', 'allow-from' (deprecated in favor of CSP frame-ancestors)
 
-  // X-Powered-By: Removes the X-Powered-By header, which can reveal server technology.
+  // X-Powered-By: Removes the X-Powered-By header, which can reveal server technology.,
   hidePoweredBy: true,
 
-  // HTTP Strict Transport Security (HSTS): Forces HTTPS for subsequent requests.
+  // HTTP Strict Transport Security (HSTS): Forces HTTPS for subsequent requests.,
   hsts: {
-    maxAge: 31536000, // 1 year in seconds. Recommended at least 6 months.
-    includeSubDomains: true, // Apply HSTS to all subdomains.
-    preload: true, // Opt-in for HSTS Preload List for major browsers. (Requires actual submission).
+  maxAge: 31536000, // 1 year in seconds. Recommended at least 6 months.,
+  includeSubDomains: true, // Apply HSTS to all subdomains.,
+  preload: true, // Opt-in for HSTS Preload List for major browsers. (Requires actual submission).
   },
 
-  // X-Download-Options: Prevents IE from executing downloads in the site's context.
+  // X-Download-Options: Prevents IE from executing downloads in the site's context.,
   ieNoOpen: true,
 
-  // X-Content-Type-Options: Prevents browsers from MIME-sniffing a response.
+  // X-Content-Type-Options: Prevents browsers from MIME-sniffing a response.,
   noSniff: true,
 
   // Origin-Agent-Cluster: Isolates the current document's origin to its own process.
-  // Enhances security by limiting side-channel attacks.
+  // Enhances security by limiting side-channel attacks.,
   originAgentCluster: { policy: '?1' }, // Value '?1' is used to opt-in to origin isolation.
 
-  // X-Permitted-Cross-Domain-Policies: Controls how Adobe products (Flash, PDF, etc.) can handle cross-domain requests.
+  // X-Permitted-Cross-Domain-Policies: Controls how Adobe products (Flash, PDF, etc.) can handle cross-domain requests.,
   permittedCrossDomainPolicies: { permittedPolicies: 'none' }, // 'none', 'master-only', 'by-content-type', 'all'
 
-  // Referrer-Policy: Controls the information sent in the Referer header.
+  // Referrer-Policy: Controls the information sent in the Referer header.,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   // 'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-cross-origin',
   // 'same-origin', 'strict-origin', 'strict-origin-when-cross-origin', 'unsafe-url'
@@ -143,13 +144,14 @@ export const BOOM_CARD_HELMET_CONFIG: BoomCardHelmetConfig = {
   // Helmet v4 and newer versions have removed this middleware as it's largely deprecated and can sometimes introduce vulnerabilities.
   // It is generally recommended to rely on a robust CSP instead.
   // xssFilter: true, // Not included in modern Helmet.js configurations.
-};
+}
 
 /**
  * Creates Helmet configuration based on environment
- */
+ */;
 export function createHelmetConfig(env: HelmetEnvironment): HelmetOptions {
   const baseConfig = getBaseConfig();
+
   const envConfig = getEnvironmentConfig(env);
   
   return mergeConfigs(baseConfig, envConfig);
@@ -160,9 +162,9 @@ export function createHelmetConfig(env: HelmetEnvironment): HelmetOptions {
  */
 function getBaseConfig(): HelmetOptions {
   return {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
+  contentSecurityPolicy: {
+  directives: {
+  defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:"],
@@ -170,10 +172,10 @@ function getBaseConfig(): HelmetOptions {
         fontSrc: ["'self'"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
-        frameSrc: ["'none'"],
-      },
-      reportOnly: false,
-    },
+        frameSrc: ["'none'"]
+},
+      reportOnly: false
+},
     crossOriginEmbedderPolicy: true,
     crossOriginOpenerPolicy: { policy: "same-origin" },
     crossOriginResourcePolicy: { policy: "same-origin" },
@@ -181,17 +183,17 @@ function getBaseConfig(): HelmetOptions {
     frameguard: { action: 'deny' },
     hidePoweredBy: true,
     hsts: {
-      maxAge: 31536000,
+  maxAge: 31536000,
       includeSubDomains: true,
-      preload: true,
-    },
+      preload: true
+},
     ieNoOpen: true,
     noSniff: true,
     originAgentCluster: true,
     permittedCrossDomainPolicies: false,
     referrerPolicy: { policy: "no-referrer" },
-    xssFilter: true,
-  };
+    xssFilter: true
+}
 }
 
 /**
@@ -199,49 +201,48 @@ function getBaseConfig(): HelmetOptions {
  */
 function getEnvironmentConfig(env: HelmetEnvironment): Partial<HelmetOptions> {
   const configs: Record<HelmetEnvironment, Partial<HelmetOptions>> = {
-    development: {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
+  development: {
+  contentSecurityPolicy: {
+  directives: {
+  defaultSrc: ["'self'"],
           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "localhost:*"],
           styleSrc: ["'self'", "'unsafe-inline'", "localhost:*"],
           imgSrc: ["'self'", "data:", "https:", "localhost:*"],
-          connectSrc: ["'self'", "ws://localhost:*", "http://localhost:*"],
-        },
-        reportOnly: true,
-      },
-      hsts: false,
-    },
+          connectSrc: ["'self'", "ws://localhost:*", "http://localhost:*"]
+},
+        reportOnly: true
+},
+      hsts: false
+},
     staging: {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
+  contentSecurityPolicy: {
+  directives: {
+  defaultSrc: ["'self'"],
           scriptSrc: ["'self'", "'unsafe-inline'", "*.boom-card-staging.com"],
           styleSrc: ["'self'", "'unsafe-inline'", "*.boom-card-staging.com"],
           imgSrc: ["'self'", "data:", "https:", "*.boom-card-staging.com"],
-          connectSrc: ["'self'", "*.boom-card-staging.com"],
-        },
-      },
-    },
+          connectSrc: ["'self'", "*.boom-card-staging.com"]
+}
+}
+},
     production: {
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
+  contentSecurityPolicy: {
+  directives: {
+  defaultSrc: ["'self'"],
           scriptSrc: ["'self'", "*.boom-card.com"],
           styleSrc: ["'self'", "*.boom-card.com"],
           imgSrc: ["'self'", "data:", "https:", "*.boom-card.com"],
           connectSrc: ["'self'", "*.boom-card.com"],
-          upgradeInsecureRequests: [],
-        },
-      },
-    },
+          upgradeInsecureRequests: []
+}
+}
+},
     testing: {
-      contentSecurityPolicy: false,
-      hsts: false,
-    },
-  };
-
-  return configs[env] || {};
+  contentSecurityPolicy: false,
+      hsts: false
+}
+}
+    return configs[env] || {}
 }
 
 /**
@@ -251,7 +252,7 @@ function mergeConfigs(base: HelmetOptions, env: Partial<HelmetOptions>): HelmetO
   const merged = { ...base };
 
   for (const [key, value] of Object.entries(env)) {
-    if (value === false) {
+    if (value === false) {;
       (merged as any)[key] = false;
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       if (key === 'contentSecurityPolicy' && merged.contentSecurityPolicy && 
@@ -261,7 +262,7 @@ function mergeConfigs(base: HelmetOptions, env: Partial<HelmetOptions>): HelmetO
           value as ContentSecurityPolicyOptions
         );
       } else {
-        (merged as any)[key] = { ...(merged as any)[key], ...value };
+        (merged as any)[key] = { ...(merged as any)[key], ...value }
       } else {
       (merged as any)[key] = value;
     }
@@ -272,18 +273,19 @@ function mergeConfigs(base: HelmetOptions, env: Partial<HelmetOptions>): HelmetO
 /**
  * Merges Content Security Policy configurations
  */
-function mergeCSP(
+function mergeCSP(,
   base: ContentSecurityPolicyOptions | false,
   env: ContentSecurityPolicyOptions
 ): ContentSecurityPolicyOptions | false {
   if (base === false) return env;
   if (!base.directives || !env.directives) return env;
+;
 
-  const merged: ContentSecurityPolicyOptions = {
+const merged: ContentSecurityPolicyOptions = {
     ...base,
     ...env,
-    directives: { ...base.directives },
-  };
+    directives: { ...base.directives }
+}
 
   for (const [directive, value] of Object.entries(env.directives)) {
     merged.directives![directive] = value;
@@ -294,12 +296,13 @@ function mergeCSP(
 
 /**
  * Creates Helmet middleware instance
- */
+ */;
 export function createHelmetMiddleware(options?: HelmetConfigOptions): RequestHandler {
   const env = options?.environment || (process.env.NODE_ENV as HelmetEnvironment) || 'production';
-  const customConfig = options?.customConfig || {};
-  
-  const config = createHelmetConfig(env);
+
+  const customConfig = options?.customConfig || {}
+    const config = createHelmetConfig(env);
+
   const finalConfig = mergeConfigs(config, customConfig);
 
   return helmet(finalConfig);
@@ -307,7 +310,7 @@ export function createHelmetMiddleware(options?: HelmetConfigOptions): RequestHa
 
 /**
  * Express middleware factory for dynamic configuration
- */
+ */;
 export function dynamicHelmet(configFn: (req: Request) => Partial<HelmetOptions>): RequestHandler {
   return (req: Request, res: Response, next: NextFunction) => {
     const dynamicConfig = configFn(req);
@@ -318,41 +321,37 @@ export function dynamicHelmet(configFn: (req: Request) => Partial<HelmetOptions>
 
 /**
  * Helper to add nonce to CSP for inline scripts
- */
+ */;
 export function addNonceToCSP(helmetConfig: HelmetOptions, nonce: string): HelmetOptions {
   if (!helmetConfig.contentSecurityPolicy || 
       typeof helmetConfig.contentSecurityPolicy !== 'object' ||
       !helmetConfig.contentSecurityPolicy.directives) {
     return helmetConfig;
   }
+const csp = config.contentSecurityPolicy as ContentSecurityPolicyOptions;
 
-  const csp = config.contentSecurityPolicy as ContentSecurityPolicyOptions;
   const directives = { ...csp.directives };
-
-  if (directives.scriptSrc) {
+    if (directives.scriptSrc) {;
     directives.scriptSrc = [...directives.scriptSrc, `'nonce-${nonce}'`];
   }
-  if (directives.styleSrc) {
+    if (directives.styleSrc) {
     directives.styleSrc = [...directives.styleSrc, `'nonce-${nonce}'`];
   }
 
   config.contentSecurityPolicy = {
     ...csp,
-    directives,
-  };
-
-  return config;
+    directives
+}
+    return config;
 }
 
 /**
  * Default export
- */
+ */;
 export default {
   createHelmetConfig,
   createHelmetMiddleware,
   dynamicHelmet,
-  addNonceToCSP,
-};
-
+  addNonceToCSP
 }
 }

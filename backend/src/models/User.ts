@@ -1,72 +1,65 @@
-// User model for PostgreSQL
+// User model for PostgreSQL;
 export interface UserAttributes {
-  id?: number;
-  email: string;
-  password?: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  birthDate?: Date;
-  address?: string;
-  memberSince: Date;
-  membershipType: 'Basic' | 'Premium' | 'VIP';
-  cardNumber: string;
-  validUntil: Date;
-  isActive: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
+  id?: number,
+  email: string,
+  password?: string,
+  firstName: string,
+  lastName: string,
+  phone?: string
+  birthDate?: Date
+  address?: string,
+  memberSince: Date,
+  membershipType: 'Basic' | 'Premium' | 'VIP',
+  cardNumber: string,
+  validUntil: Date,
+  isActive: boolean,
+  createdAt?: Date
+  updatedAt?: Date}
 export interface UserCreateInput {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  birthDate?: Date;
-  address?: string;
-  membershipType?: 'Basic' | 'Premium' | 'VIP';
-}
-
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  phone?: string
+  birthDate?: Date
+  address?: string
+  membershipType?: 'Basic' | 'Premium' | 'VIP'}
 export interface UserUpdateInput {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  birthDate?: Date;
-  address?: string;
-  membershipType?: 'Basic' | 'Premium' | 'VIP';
-}
-
+  firstName?: string
+  lastName?: string
+  phone?: string
+  birthDate?: Date
+  address?: string
+  membershipType?: 'Basic' | 'Premium' | 'VIP'}
 export interface UserLoginInput {
-  email: string;
-  password: string;
+  email: string,
+  password: string,
 }
-
 export interface UserResponse {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  birthDate?: Date;
-  address?: string;
-  memberSince: Date;
-  membershipType: 'Basic' | 'Premium' | 'VIP';
-  cardNumber: string;
-  validUntil: Date;
-  isActive: boolean;
+  id: number,
+  email: string,
+  firstName: string,
+  lastName: string,
+  phone?: string
+  birthDate?: Date
+  address?: string,
+  memberSince: Date,
+  membershipType: 'Basic' | 'Premium' | 'VIP',
+  cardNumber: string,
+  validUntil: Date,
+  isActive: boolean,
 }
 
-// SQL queries for User operations
+// SQL queries for User operations;
 export const UserQueries = {
-  // Create a new user
+  // Create a new user,
   create: `
     INSERT INTO users (email, password_hash, first_name, last_name, phone)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING id, email, first_name, last_name, phone, date_of_birth, created_at, updated_at
   `,
 
-  // Find user by email
+  // Find user by email,
   findByEmail: `
     SELECT id, email, password_hash, first_name, last_name, phone, date_of_birth, address,
            member_since, membership_type, card_number, valid_until, is_active, created_at, updated_at
@@ -74,7 +67,7 @@ export const UserQueries = {
     WHERE email = $1
   `,
 
-  // Find user by ID
+  // Find user by ID,
   findById: `
     SELECT id, email, first_name, last_name, phone, date_of_birth, address,
            member_since, membership_type, card_number, valid_until, is_active, created_at, updated_at
@@ -82,7 +75,7 @@ export const UserQueries = {
     WHERE id = $1
   `,
 
-  // Update user profile
+  // Update user profile,
   update: `
     UPDATE users
     SET first_name = COALESCE($2, first_name),
@@ -96,7 +89,7 @@ export const UserQueries = {
               member_since, membership_type, card_number, valid_until, is_active, created_at, updated_at
   `,
 
-  // Update membership
+  // Update membership,
   updateMembership: `
     UPDATE users
     SET membership_type = $2,
@@ -106,7 +99,7 @@ export const UserQueries = {
     RETURNING id, email, first_name, last_name, membership_type, card_number, valid_until
   `,
 
-  // Update password
+  // Update password,
   updatePassword: `
     UPDATE users
     SET password_hash = $2,
@@ -114,21 +107,21 @@ export const UserQueries = {
     WHERE id = $1
   `,
 
-  // Check if email exists
+  // Check if email exists,
   checkEmailExists: `
     SELECT id FROM users WHERE email = $1 LIMIT 1
   `,
 
-  // Deactivate user
+  // Deactivate user,
   deactivate: `
     UPDATE users
     SET is_active = false,
         updated_at = NOW()
     WHERE id = $1
   `
-};
+}
 
-// Database migration for users table
+// Database migration for users table;
 export const UserMigration = `
   CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,

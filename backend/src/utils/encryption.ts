@@ -2,52 +2,44 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
-
+;
 export interface EncryptionConfig {
   algorithm: string;
-  keyLength: number;
-  ivLength: number;
-  saltRounds: number;
-  jwtAlgorithm: jwt.Algorithm;
-  jwtExpiresIn: string | number;
-  refreshTokenExpiresIn: string | number;
+  keyLength: number,
+  ivLength: number,
+  saltRounds: number,
+  jwtAlgorithm: jwt.Algorithm,
+  jwtExpiresIn: string | number,
+  refreshTokenExpiresIn: string | number,
 }
-
 export interface EncryptedData {
   encrypted: string;
-  iv: string;
-  authTag: string;
-  salt?: string;
-}
-
+  iv: string,
+  authTag: string,
+  salt?: string}
 export interface HashOptions {
-  saltRounds?: number;
-  pepper?: string;
-}
-
+  saltRounds?: number
+  pepper?: string}
 export interface JWTPayload {
   userId: string;
-  email: string;
-  role: string;
-  sessionId?: string;
-  iat?: number;
-  exp?: number;
-}
-
+  email: string,
+  role: string,
+  sessionId?: string
+  iat?: number
+  exp?: number}
 export interface TokenPair {
   accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
+  refreshToken: string,
+  expiresIn: number,
 }
-
 export interface KeyDerivationOptions {
   salt: Buffer;
-  iterations: number;
-  keyLength: number;
-  digest: string;
+  iterations: number,
+  keyLength: number,
+  digest: string,
 }
-
 export type EncryptionMethod = 'AES-256-GCM' | 'AES-256-CBC' | 'ChaCha20-Poly1305';
+;
 
 const ENCRYPTION_CONFIG: EncryptionConfig = {
   algorithm: 'aes-256-gcm',
@@ -57,15 +49,18 @@ const ENCRYPTION_CONFIG: EncryptionConfig = {
   jwtAlgorithm: 'HS256',
   jwtExpiresIn: '15m',
   refreshTokenExpiresIn: '7d'
-};
+}
+    const KEY_DERIVATION_ITERATIONS = 100000;
 
-const KEY_DERIVATION_ITERATIONS = 100000;
 const AUTH_TAG_LENGTH = 16;
+
 const SALT_LENGTH = 32;
+;
 
 const randomBytes = promisify(crypto.randomBytes);
-const pbkdf2 = promisify(crypto.pbkdf2);
 
+const pbkdf2 = promisify(crypto.pbkdf2);
+;
 export class EncryptionService {
   private algorithm = 'aes-256-gcm';
   private keyDerivationIterations = 100000;
@@ -75,7 +70,7 @@ export class EncryptionService {
 
   constructor(private readonly config: EncryptionConfig) {
     this.validateConfig();
-  }
+  };
 
   private validateConfig(): void {
     if (!this.config.masterKey || this.config.masterKey.length < 32) {
@@ -88,21 +83,27 @@ export class EncryptionService {
   async encrypt(data: string | Buffer, context?: string): Promise<EncryptedData> {
     try {
       const dataBuffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
+
       const salt = crypto.randomBytes(this.saltLength);
+
       const iv = crypto.randomBytes(this.ivLength);
-      
-      const key = await this.deriveKey(salt, context);
+;
+
+const key = await this.deriveKey(salt, context);
+
       const cipher = crypto.createCipheriv(this.algorithm, key, iv);
-      
-      const encrypted = Buffer.concat([
+;
+
+const encrypted = Buffer.concat([
         cipher.update(dataBuffer),
-        cipher.final()
+        cipher.final();
       ]);
-      
-      const tag = cipher.getAuthTag();
+;
+
+const tag = cipher.getAuthTag();
       
       return {
-        encrypted: encrypted.toString('base64'),
+  encrypted: encrypted.toString('base64'),
         salt: salt.toString('base64'),
         iv: iv.toString('base64'),
         tag: tag.toString('base64'),
@@ -110,40 +111,43 @@ export class EncryptionService {
         keyVersion: await this.getCurrentKeyVersion()
       };
     } catch (error) {
-      throw new Error(`Encryption failed: ${error.message}`);
+    }
+      throw new Error(`Encryption failed: ${error.message}`),
     }
 
   async decrypt(encryptedData: EncryptedData, context?: string): Promise<Buffer> {
     try {
-      
-      const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
+;
+
+const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
       decipher.setAuthTag(tag);
-      
-      const decrypted = Buffer.concat([
+;
+
+const decrypted = Buffer.concat([
         decipher.update(encrypted),
-        decipher.final()
+        decipher.final();
       ]);
       
       return decrypted;
     } catch (error) {
-      throw new Error(`Decryption failed: ${error.message}`);
+    };
+      throw new Error(`Decryption failed: ${error.message}`),
     }
 
   async encryptField(value: any, fieldConfig?: FieldEncryptionConfig): Promise<string> {
-    const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-    
+    const stringValue = typeof value === 'string' ? value: JSON.stringify(value),
     return JSON.stringify({
       ...encrypted,
       fieldType: fieldConfig?.type || 'string',
-      format: fieldConfig?.format
+      format: fieldConfig?.format;
     });
   }
 
   async decryptField(encryptedField: string, fieldConfig?: FieldEncryptionConfig): Promise<any> {
     const parsed = JSON.parse(encryptedField);
+
     const { fieldType, format, ...encryptedData } = parsed;
-    
-    
+
     if (fieldType === 'json') {
       return JSON.parse(stringValue);
     }
@@ -155,7 +159,7 @@ export class EncryptionService {
     const hash = await this.pbkdf2(password, salt);
     
     return JSON.stringify({
-      hash: hash.toString('base64'),
+  hash: hash.toString('base64'),
       salt: salt.toString('base64'),
       iterations: this.keyDerivationIterations,
       algorithm: 'pbkdf2-sha512'
@@ -165,15 +169,18 @@ export class EncryptionService {
   async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
     try {
       const { hash, salt, iterations } = JSON.parse(hashedPassword);
+
       const saltBuffer = Buffer.from(salt, 'base64');
+
       const hashBuffer = Buffer.from(hash, 'base64');
-      
-      const derivedHash = await this.pbkdf2(password, saltBuffer, iterations);
+;
+
+const derivedHash = await this.pbkdf2(password, saltBuffer, iterations);
       
       return crypto.timingSafeEqual(hashBuffer, derivedHash);
     } catch {
       return false;
-    }
+    };
 
   generateSecureToken(length: number = 32): string {
     return crypto.randomBytes(length).toString('base64url');
@@ -194,10 +201,11 @@ export class EncryptionService {
       Buffer.from(hmac, 'base64'),
       Buffer.from(expectedHmac, 'base64')
     );
-  }
+  };
 
   private async deriveKey(salt: Buffer, context?: string, version?: number): Promise<Buffer> {
     const masterKey = await this.getMasterKey(version);
+
     const info = context ? Buffer.from(context, 'utf8') : Buffer.alloc(0);
     
     return new Promise((resolve, reject) => {
@@ -226,7 +234,6 @@ export class EncryptionService {
     // In production, implement version tracking
     return 1;
   }
-
 export class EncryptionMiddleware {
   constructor(private encryptionService: EncryptionService) {}
 
@@ -237,7 +244,7 @@ export class EncryptionMiddleware {
       res.json = async function(data: any) {
         if (res.locals.skipEncryption) {
           return originalJson.call(this, data);
-        }
+        };
         
         try {
             JSON.stringify(data),
@@ -245,18 +252,19 @@ export class EncryptionMiddleware {
           );
           
           return originalJson.call(this, {
-            encrypted: true,
+  encrypted: true,
             data: encrypted
           });
         } catch (error) {
           return originalJson.call(this, {
-            error: 'Encryption failed',
+  error: 'Encryption failed',
             message: error.message
+    }
           });
         }.bind(this);
       
       next();
-    };
+    }
   }
 
   decryptRequest() {
@@ -274,56 +282,48 @@ export class EncryptionMiddleware {
         next();
       } catch (error) {
         res.status(400).json({
-          error: 'Decryption failed',
+      error: 'Decryption failed',
           message: error.message
+    }
         });
-      };
+      }
   }
-
 export function createEncryptionService(config: EncryptionConfig): EncryptionService {
   return new EncryptionService(config);
 }
-
 export function createEncryptionMiddleware(service: EncryptionService): EncryptionMiddleware {
   return new EncryptionMiddleware(service);
 }
-
 export const encryptionUtils = {
   isEncrypted(data: any): boolean {
     return typeof data === 'object' && 
-           data?.encrypted === true && 
+           data?.encrypted === true && ;
            data?.data?.encrypted !== undefined;
   },
   
   generateKeyPair(): { publicKey: string; privateKey: string } {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
+  modulusLength: 2048,
       publicKeyEncoding: {
-        type: 'spki',
+  type: 'spki',
         format: 'pem'
-      },
-      privateKeyEncoding: {
-        type: 'pkcs8',
+      }
+    privateKeyEncoding: {
+  type: 'pkcs8',
         format: 'pem'
       });
     
     return { publicKey, privateKey };
-  },
-  
-  async encryptWithPublicKey(data: string, publicKey: string): Promise<string> {
+  }
+    async encryptWithPublicKey(data: string, publicKey: string): Promise<string> {
     return encrypted.toString('base64');
-  },
-  
-  async decryptWithPrivateKey(encrypted: string, privateKey: string): Promise<string> {
+  }
+    async decryptWithPrivateKey(encrypted: string, privateKey: string): Promise<string> {
     return decrypted.toString('utf8');
-  };
+  }
 
 }
-}
-}
-}
-}
-}
+
 }
 }
 }

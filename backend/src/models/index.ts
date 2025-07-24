@@ -9,72 +9,73 @@ dotenv.config();
 /**
  * Type representing any Sequelize Model's static class, used for dynamic loading.
  * It's generic as we don't know the specific model attributes or creation attributes at this point.
- */
+ */;
 type AnyModelStatic = ModelStatic<Model<any, any>>;
 
 /**
  * Interface for the database object that will be exported,
  * containing the Sequelize instance and all initialized models.
- */
+ */;
 export interface DB {
-  sequelize: Sequelize;
-  Sequelize: typeof Sequelize;
+  sequelize: Sequelize,
+  Sequelize: typeof Sequelize,
   // This index signature allows for dynamic addition of models to the DB object,
   // where the key is the model name (string) and the value is the model's static class.
   // We also explicitly list sequelize and Sequelize to ensure type safety.
-  [key: string]: AnyModelStatic | Sequelize | typeof Sequelize;
+  [key: string]: AnyModelStatic | Sequelize | typeof Sequelize,
 }
 
 // --- Constants and Configuration ---
 
 /**
  * The base name of the current file, used to exclude itself when dynamically loading models.
- */
-const basename: string = path.basename(__filename);
+ */;
 
+const basename: string = path.basename(__filename),
 /**
  * The current environment (e.g., 'development', 'production', 'test').
  * Defaults to 'development' if not set.
- */
-const env: string = process.env.NODE_ENV || 'development';
+ */;
 
+const env: string = process.env.NODE_ENV || 'development',
 /**
  * Database configuration object, loaded from environment variables.
  * This structure matches common Sequelize configuration options.
- */
+ */;
+
 const config: {
   username?: string;
   password?: string;
   database?: string;
   host?: string;
-  port?: number;
-  dialect: 'postgres';
+  port?: number,
+  dialect: 'postgres',
   dialectOptions?: {
-    ssl: {
-      require: boolean;
-      rejectUnauthorized: boolean; // Set to false in dev, true in production with valid certs
-    };
-  };
+  ssl: {
+  require: boolean,
+  rejectUnauthorized: boolean; // Set to false in dev, true in production with valid certs
+    }
+  }
   logging?: boolean;
 } = {
-  username: process.env.DB_USER,
+  username: process.env.DB_USER,,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  database: process.env.DB_NAME,,
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,,
   dialect: 'postgres',
   logging: process.env.NODE_ENV === 'development', // Log SQL queries in development
 
   // SSL configuration for production environments (e.g., Heroku Postgres)
   ...(process.env.NODE_ENV === 'production' && {
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false, // You might want to set this to true for strict production environments with valid CAs
-      },
-    },
-  }),
-};
+  dialectOptions: {
+  ssl: {
+  require: true,,
+  rejectUnauthorized: false, // You might want to set this to true for strict production environments with valid CAs
+      }
+}
+})
+}
 
 // backend/src/models/index.ts - PART 2
 // Assuming Part 1 initialized:
@@ -83,25 +84,23 @@ const config: {
 // import path from 'path';
 // import process from 'process';
 // interface DbConfig { ... }
-// const getAppConfig = (): { [env: string]: DbConfig } => ({ ... });
+// const asyncHandler: (): { [env: string]: DbConfig } => ({ ... }),
 // const basename = path.basename(__filename);
 // const env = process.env.NODE_ENV || 'development';
 // const config = getAppConfig()[env];
 // interface ModelInitializer { ... }
 // interface Db { ... }
-// const db: Db = {} as Db;
-
-let sequelize: Sequelize;
-
+// const db: Db = {} as Db,
+let sequelize: Sequelize,
 // Main class/function implementation: Initialize Sequelize instance
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable]!, config);
 } else {
   sequelize = new Sequelize(config.database!, config.username!, config.password!, {
-    host: config.host,
-    dialect: config.dialect!,
-    logging: config.logging,
-    pool: config.pool,
+  host: config.host,,
+  dialect: config.dialect!,
+    logging: config.logging,,
+  pool: config.pool,
     // Other options specific to your environment/dialect can go here
   });
 }
@@ -128,6 +127,7 @@ fs.readdirSync(__dirname)
     // that takes (sequelize, DataTypes) and returns the initialized model.
     // Example: export default (sequelize: Sequelize, DataTypes: typeof Sequelize.DataTypes) => { ... }
     const modelInitializer: ModelInitializer = require(path.join(__dirname, file)).default;
+
     const model = modelInitializer(sequelize, DataTypes);
     db[model.name] = model;
     console.log(`Model loaded: ${model.name}`); // Log for debugging
@@ -160,13 +160,14 @@ async function connectAndSyncDatabase() {
     console.error('Unable to connect to the database or synchronize models:', error);
     // Exit the process if the database connection fails, as the application cannot function without it.
     process.exit(1);
+    }
   }
 
 // Execute the database connection and sync when this module is initialized.
 connectAndSyncDatabase();
 
 // Export the db object which contains the sequelize instance and all models.
-// This is the primary export of this file.
+// This is the primary export of this file.;
 export default db;
 
 // Note: Middleware functions and Route handlers are not included here as they
@@ -174,4 +175,5 @@ export default db;
 // for database model setup and export.
 
 }
+
 }

@@ -1,75 +1,68 @@
-// Partner model for PostgreSQL
+// Partner model for PostgreSQL;
 export interface PartnerAttributes {
-  id?: number;
-  name: string;
-  slug: string;
-  category: string;
-  description: string;
-  logo?: string;
-  coverImage?: string;
-  address: string;
-  city: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  discountPercentage: number;
-  discountDescription: string;
-  terms?: string;
-  isActive: boolean;
-  isFeatured: boolean;
-  rating?: number;
-  totalReviews?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
+  id?: number,
+  name: string,
+  slug: string,
+  category: string,
+  description: string,
+  logo?: string
+  coverImage?: string,
+  address: string,
+  city: string,
+  phone?: string
+  email?: string
+  website?: string,
+  discountPercentage: number,
+  discountDescription: string,
+  terms?: string,
+  isActive: boolean,
+  isFeatured: boolean,
+  rating?: number
+  totalReviews?: number
+  createdAt?: Date
+  updatedAt?: Date}
 export interface PartnerCreateInput {
-  name: string;
-  category: string;
-  description: string;
-  logo?: string;
-  coverImage?: string;
-  address: string;
-  city: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  discountPercentage: number;
-  discountDescription: string;
-  terms?: string;
-  isFeatured?: boolean;
-}
-
+  name: string,
+  category: string,
+  description: string,
+  logo?: string
+  coverImage?: string,
+  address: string,
+  city: string,
+  phone?: string
+  email?: string
+  website?: string,
+  discountPercentage: number,
+  discountDescription: string,
+  terms?: string
+  isFeatured?: boolean}
 export interface PartnerUpdateInput {
-  name?: string;
-  category?: string;
-  description?: string;
-  logo?: string;
-  coverImage?: string;
-  address?: string;
-  city?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  discountPercentage?: number;
-  discountDescription?: string;
-  terms?: string;
-  isActive?: boolean;
-  isFeatured?: boolean;
-}
-
+  name?: string
+  category?: string
+  description?: string
+  logo?: string
+  coverImage?: string
+  address?: string
+  city?: string
+  phone?: string
+  email?: string
+  website?: string
+  discountPercentage?: number
+  discountDescription?: string
+  terms?: string
+  isActive?: boolean
+  isFeatured?: boolean}
 export interface PartnerSearchFilters {
-  category?: string;
-  city?: string;
-  minDiscount?: number;
-  searchTerm?: string;
-  isActive?: boolean;
-  isFeatured?: boolean;
-}
+  category?: string
+  city?: string
+  minDiscount?: number
+  searchTerm?: string
+  isActive?: boolean
+  isFeatured?: boolean}
 
-// SQL queries for Partner operations
+// SQL queries for Partner operations;
 export const PartnerQueries = {
-  // Create a new partner
+  // Create a new partner,
   create: `
     INSERT INTO partners (name, slug, category, description, logo, cover_image, 
                          address, city, phone, email, website, 
@@ -82,28 +75,28 @@ export const PartnerQueries = {
               is_active, is_featured, created_at, updated_at
   `,
 
-  // Find partner by ID
+  // Find partner by ID,
   findById: `
-    SELECT p.*, 
-           0::numeric(3,2) as rating,
+    SELECT p.*, ,
+  0::numeric(3,2) as rating,
            0::int as total_reviews
     FROM partners p
     WHERE p.id = $1
   `,
 
-  // Find partner by slug
+  // Find partner by slug,
   findBySlug: `
-    SELECT p.*, 
-           0::numeric(3,2) as rating,
+    SELECT p.*, ,
+  0::numeric(3,2) as rating,
            0::int as total_reviews
     FROM partners p
     WHERE p.slug = $1
   `,
 
-  // Find all partners with filters
+  // Find all partners with filters,
   findAll: `
-    SELECT p.*, 
-           0::numeric(3,2) as rating,
+    SELECT p.*, ,
+  0::numeric(3,2) as rating,
            0::int as total_reviews
     FROM partners p
     WHERE 1=1
@@ -120,7 +113,7 @@ export const PartnerQueries = {
     ORDER BY p.is_featured DESC, p.created_at DESC
   `,
 
-  // Update partner
+  // Update partner,
   update: `
     UPDATE partners
     SET name = COALESCE($2, name),
@@ -146,7 +139,7 @@ export const PartnerQueries = {
               is_active, is_featured, created_at, updated_at
   `,
 
-  // Delete partner (soft delete)
+  // Delete partner (soft delete),
   deactivate: `
     UPDATE partners
     SET is_active = false,
@@ -154,7 +147,7 @@ export const PartnerQueries = {
     WHERE id = $1
   `,
 
-  // Get partner categories
+  // Get partner categories,
   getCategories: `
     SELECT DISTINCT category, COUNT(*) as count
     FROM partners
@@ -163,7 +156,7 @@ export const PartnerQueries = {
     ORDER BY count DESC
   `,
 
-  // Get partner cities
+  // Get partner cities,
   getCities: `
     SELECT DISTINCT city, COUNT(*) as count
     FROM partners
@@ -172,10 +165,10 @@ export const PartnerQueries = {
     ORDER BY count DESC
   `,
 
-  // Get featured partners
+  // Get featured partners,
   getFeatured: `
-    SELECT p.*, 
-           0::numeric(3,2) as rating,
+    SELECT p.*, ,
+  0::numeric(3,2) as rating,
            0::int as total_reviews
     FROM partners p
     WHERE p.is_active = true AND p.is_featured = true
@@ -183,13 +176,13 @@ export const PartnerQueries = {
     LIMIT $1
   `,
 
-  // Check if slug exists
+  // Check if slug exists,
   checkSlugExists: `
     SELECT id FROM partners WHERE slug = $1 LIMIT 1
   `
-};
+}
 
-// Database migration for partners table
+// Database migration for partners table;
 export const PartnerMigration = `
   CREATE TABLE IF NOT EXISTS partners (
     id SERIAL PRIMARY KEY,

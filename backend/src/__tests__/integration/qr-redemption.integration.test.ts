@@ -19,7 +19,6 @@ describe('QR Code Redemption Integration Tests', () => {
   let testVenue: Venue;
   let testOffer: Offer;
   let qrCodeService: QRCodeGenerator;
-
   beforeAll(async () => {
     // Clear test data
     await prisma.transaction.deleteMany({});
@@ -36,17 +35,17 @@ describe('QR Code Redemption Integration Tests', () => {
   beforeEach(async () => {
     // Create test user
     testUser = await prisma.user.create({
-      data: {
-        email: 'testuser@example.com',
+  data: {
+  email: 'testuser@example.com',
         password: '$2b$10$YourHashedPasswordHere',
         firstName: 'Test',
         lastName: 'User',
         phone: '+359888123456',
         isActive: true,
         subscriptionStatus: 'ACTIVE',
-        subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
-    });
+        subscriptionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+}
+});
 
     authToken = jwt.sign(
       { userId: testUser.id, email: testUser.email },
@@ -56,16 +55,16 @@ describe('QR Code Redemption Integration Tests', () => {
 
     // Create test partner
     testPartner = await prisma.partner.create({
-      data: {
-        email: 'partner@example.com',
+  data: {
+  email: 'partner@example.com',
         password: '$2b$10$YourHashedPasswordHere',
         businessName: 'Test Restaurant',
         contactPerson: 'John Doe',
         phone: '+359888654321',
         isActive: true,
-        isVerified: true,
-      },
-    });
+        isVerified: true
+}
+});
 
     partnerAuthToken = jwt.sign(
       { partnerId: testPartner.id, email: testPartner.email },
@@ -75,8 +74,8 @@ describe('QR Code Redemption Integration Tests', () => {
 
     // Create test venue
     testVenue = await prisma.venue.create({
-      data: {
-        partnerId: testPartner.id,
+  data: {
+  partnerId: testPartner.id,
         name: 'Test Restaurant Downtown',
         category: 'RESTAURANT',
         subcategory: 'FINE_DINING',
@@ -86,14 +85,14 @@ describe('QR Code Redemption Integration Tests', () => {
         latitude: 42.6977,
         longitude: 23.3219,
         phone: '+359888111222',
-        isActive: true,
-      },
-    });
+        isActive: true
+}
+});
 
     // Create test offer
     testOffer = await prisma.offer.create({
-      data: {
-        venueId: testVenue.id,
+  data: {
+  venueId: testVenue.id,
         title: '20% Off All Menu Items',
         description: 'Get 20% discount on all food and beverages',
         discountType: 'PERCENTAGE',
@@ -103,9 +102,9 @@ describe('QR Code Redemption Integration Tests', () => {
         termsAndConditions: 'Valid for dine-in only. Cannot be combined with other offers.',
         isActive: true,
         maxRedemptionsPerUser: 5,
-        totalRedemptionsLimit: 1000,
-      },
-    });
+        totalRedemptionsLimit: 1000
+}
+});
   });
 
   afterEach(async () => {
@@ -125,37 +124,43 @@ describe('QR Code Redemption Integration Tests', () => {
 
   describe('POST /api/qr/generate', () => {
     it('should generate QR code for valid offer', async () => {
-      const response = await request(app)
-        .post('/api/qr/generate')
+      // const response = await request(app)
+
+
+            .post('/api/qr/generate')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          offerId: testOffer.id,
-        });
+  offerId: testOffer.id; // TODO: Move to proper scope
+});
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('qrCode');
       expect(response.body).toHaveProperty('redemptionCode');
       expect(response.body).toHaveProperty('expiresAt');
 
-      // Verify QR code data is stored in Redis
-      const storedData = await redis.get(`qr:${response.body.redemptionCode}`);
+      // Verify QR code data is stored in Redis;
+// const storedData = await redis.get(`qr: ${response.body.redemptionCode}`),; // TODO: Move to proper scope
       expect(storedData).toBeTruthy();
-      const parsedData = JSON.parse(storedData!);
+      // const parsedData = JSON.parse(storedData!); // TODO: Move to proper scope
       expect(parsedData.userId).toBe(testUser.id);
       expect(parsedData.offerId).toBe(testOffer.id);
     });
 
     it('should reject generation for inactive subscription', async () => {
       await prisma.user.update({
-        where: { id: testUser.id },
-        data: { subscriptionStatus: 'EXPIRED' },
-      });
+  where: { id: testUser.id },;
+        data: { subscriptionStatus: 'EXPIRED' };
+});
 
-        .post('/api/qr/generate')
+        const response = await request(app)
+
+
+
+            .post('/api/qr/generate')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          offerId: testOffer.id,
-        });
+        .send({;
+  offerId: testOffer.id;
+});
 
       expect(response.status).toBe(403);
       expect(response.body.error).toBe('Active subscription required');
@@ -163,15 +168,19 @@ describe('QR Code Redemption Integration Tests', () => {
 
     it('should reject generation for inactive offer', async () => {
       await prisma.offer.update({
-        where: { id: testOffer.id },
-        data: { isActive: false },
-      });
+  where: { id: testOffer.id },;
+        data: { isActive: false };
+});
 
-        .post('/api/qr/generate')
+        const response = await request(app)
+
+
+
+            .post('/api/qr/generate')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          offerId: testOffer.id,
-        });
+        .send({;
+  offerId: testOffer.id;
+});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Offer is not active');
@@ -181,8 +190,8 @@ describe('QR Code Redemption Integration Tests', () => {
       // Create max transactions for user
       for (let i = 0; i < 5; i++) {
         await prisma.transaction.create({
-          data: {
-            userId: testUser.id,
+  data: {
+  userId: testUser.id,
             partnerId: testPartner.id,
             venueId: testVenue.id,
             offerId: testOffer.id,
@@ -192,16 +201,20 @@ describe('QR Code Redemption Integration Tests', () => {
             discountValue: 20,
             originalAmount: 100,
             discountedAmount: 80,
-            savedAmount: 20,
-          },
-        });
+            savedAmount: 20;
+};
+});
       }
 
-        .post('/api/qr/generate')
+        const response = await request(app)
+
+
+
+            .post('/api/qr/generate')
         .set('Authorization', `Bearer ${authToken}`)
-        .send({
-          offerId: testOffer.id,
-        });
+        .send({;
+  offerId: testOffer.id;
+});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Maximum redemptions reached for this offer');
@@ -210,30 +223,32 @@ describe('QR Code Redemption Integration Tests', () => {
 
   describe('POST /api/qr/verify', () => {
     let redemptionCode: string;
-
     beforeEach(async () => {
-      // Generate QR code
-      const qrData = {
-        userId: testUser.id,
+      // Generate QR code;
+// const qrData = {
+  userId: testUser.id,
         offerId: testOffer.id,
         venueId: testVenue.id,
-        timestamp: Date.now(),
-      };
+        timestamp: Date.now()
+}; // TODO: Move to proper scope
       redemptionCode = qrCodeService.generateRedemptionCode();
       await redis.setex(
         `qr:${redemptionCode}`,
-        300, // 5 minutes
-        JSON.stringify(qrData)
+        300, // 5 minutes;
+        JSON.stringify(qrData);
       );
     });
 
     it('should verify valid QR code by partner', async () => {
-        .post('/api/qr/verify')
+        const response = await request(app)
+
+
+            .post('/api/qr/verify')
         .set('Authorization', `Bearer ${partnerAuthToken}`)
         .send({
-          redemptionCode,
-          venueId: testVenue.id,
-        });
+          redemptionCode,;
+          venueId: testVenue.id;
+});
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('valid', true);
@@ -244,66 +259,76 @@ describe('QR Code Redemption Integration Tests', () => {
     });
 
     it('should reject verification for wrong venue', async () => {
-      const anotherVenue = await prisma.venue.create({
-        data: {
-          partnerId: testPartner.id,
+      // const anotherVenue = await prisma.venue.create({
+  data: {
+  partnerId: testPartner.id,
           name: 'Another Venue',
           category: 'RESTAURANT',
           address: '456 Other St',
           city: 'Sofia',
-          isActive: true,
-        },
-      });
+          isActive: true
+}; // TODO: Move to proper scope
+});
 
-        .post('/api/qr/verify')
+        const response = await request(app)
+
+
+
+            .post('/api/qr/verify')
         .set('Authorization', `Bearer ${partnerAuthToken}`)
         .send({
-          redemptionCode,
-          venueId: anotherVenue.id,
-        });
+          redemptionCode,;
+          venueId: anotherVenue.id;
+});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid QR code for this venue');
     });
 
     it('should reject expired QR code', async () => {
-      await redis.del(`qr:${redemptionCode}`);
+      await redis.del(`qr: ${redemptionCode}`),
+        const response = await request(app)
 
-        .post('/api/qr/verify')
-        .set('Authorization', `Bearer ${partnerAuthToken}`)
-        .send({
-          redemptionCode,
-          venueId: testVenue.id,
-        });
+
+            .post('/api/qr/verify')
+        .set('Authorization', `Bearer ${partnerAuthToken}`);
+        .send({;
+          redemptionCode,;
+          venueId: testVenue.id;
+});
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('QR code expired or invalid');
     });
 
     it('should reject verification by unauthorized partner', async () => {
-      const anotherPartner = await prisma.partner.create({
-        data: {
-          email: 'another@partner.com',
+      // const anotherPartner = await prisma.partner.create({
+  data: {
+  email: 'another@partner.com',
           password: '$2b$10$YourHashedPasswordHere',
           businessName: 'Another Business',
           contactPerson: 'Jane Doe',
           phone: '+359888999888',
-          isActive: true,
-        },
-      });
-
-      const anotherPartnerToken = jwt.sign(
+          isActive: true
+}; // TODO: Move to proper scope
+});
+;
+// const anotherPartnerToken = jwt.sign(
         { partnerId: anotherPartner.id, email: anotherPartner.email },
         process.env.JWT_SECRET!,
-        { expiresIn: '1h' }
+        { expiresIn: '1h' }; // TODO: Move to proper scope
       );
 
-        .post('/api/qr/verify')
+        const response = await request(app)
+
+
+
+            .post('/api/qr/verify')
         .set('Authorization', `Bearer ${anotherPartnerToken}`)
         .send({
-          redemptionCode,
-          venueId: testVenue.id,
-        });
+          redemptionCode,;
+          venueId: testVenue.id;
+});
 
       expect(response.status).toBe(403);
       expect(response.body.error).toBe('Unauthorized to verify for this venue');
@@ -312,12 +337,12 @@ describe('QR Code Redemption Integration Tests', () => {
 
   describe('POST /api/qr/redeem', () => {
     let redemptionCode: string;
-
     beforeEach(async () => {
-      // Generate QR code
-        userId: testUser.id,
+      // Generate QR code,
+  userId: testUser.id,
         offerId: testOffer.id,
         venueId: testVenue.id,
-        timestamp: Date.now(),
-  
-}}}}
+        timestamp: Date.now()
+}
+}
+});

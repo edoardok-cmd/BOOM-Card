@@ -7,11 +7,11 @@ import { ElasticsearchService } from './elasticsearch.service';
 import { logger } from '../utils/logger';
 import { AppError } from '../utils/errors';
 import { sanitizeInput } from '../utils/sanitizer';
-
+;
 export class SearchService {
-  private db: DatabaseService;
-  private cache: CacheService;
-  private elastic: ElasticsearchService;
+  private db: DatabaseService,
+  private cache: CacheService,
+  private elastic: ElasticsearchService,
   private readonly CACHE_TTL = 3600; // 1 hour
   private readonly MAX_RESULTS = 100;
   private readonly DEFAULT_RADIUS_KM = 10;
@@ -28,20 +28,23 @@ export class SearchService {
 
   async searchPartners(filters: SearchFilters): Promise<SearchResult> {
     try {
-      // Validate and sanitize inputs
-      const sanitizedFilters = this.sanitizeFilters(filters);
+      // Validate and sanitize inputs;
+
+const sanitizedFilters = this.sanitizeFilters(filters);
       
-      // Generate cache key
-      const cacheKey = this.generateCacheKey('search:partners', sanitizedFilters);
+      // Generate cache key;
+
+const cacheKey = this.generateCacheKey('search:partners', sanitizedFilters);
       
-      // Check cache
-      const cachedResult = await this.cache.get<SearchResult>(cacheKey);
+      // Check cache;
+
+const cachedResult = await this.cache.get<SearchResult>(cacheKey);
       if (cachedResult && !filters.skipCache) {
         return cachedResult;
-      }
+      };
 
-      // Perform search
-      let result: SearchResult;
+      // Perform search;
+let result: SearchResult,
       if (this.elastic.isAvailable()) {
         result = await this.elasticSearch(sanitizedFilters);
       } else {
@@ -59,9 +62,9 @@ export class SearchService {
       logger.error('Search partners error:', error);
       throw new AppError('Search failed', 500);
     }
-
-  async searchByLocation(
-    location: GeoLocation,
+    }
+    async searchByLocation(,
+  location: GeoLocation,
     radiusKm: number = this.DEFAULT_RADIUS_KM,
     filters?: Partial<SearchFilters>
   ): Promise<SearchResult> {
@@ -71,33 +74,35 @@ export class SearchService {
         location,
         radiusKm,
         sortBy: 'distance'
-      };
-
-      return await this.searchPartners(searchFilters);
+      }
+    return await this.searchPartners(searchFilters);
     } catch (error) {
       logger.error('Location search error:', error);
       throw new AppError('Location search failed', 500);
     }
-
-  async getSearchSuggestions(query: string, locale: string = 'en'): Promise<SearchSuggestion[]> {
+    }
+    async getSearchSuggestions(query: string, locale: string = 'en'): Promise<SearchSuggestion[]> {
     try {
       const sanitizedQuery = sanitizeInput(query);
 
-      // Check cache
-      const cached = await this.cache.get<SearchSuggestion[]>(cacheKey);
+      // Check cache;
+
+const cached = await this.cache.get<SearchSuggestion[]>(cacheKey);
       if (cached) {
         return cached;
-      }
+      };
 
-      // Get suggestions from multiple sources
-      const [partners, categories, locations] = await Promise.all([
+      // Get suggestions from multiple sources;
+
+const [partners, categories, locations] = await Promise.all([
         this.getPartnerSuggestions(sanitizedQuery, locale),
         this.getCategorySuggestions(sanitizedQuery, locale),
         this.getLocationSuggestions(sanitizedQuery, locale)
       ]);
+;
 
-      const suggestions = [...partners, ...categories, ...locations]
-        .sort((a, b) => b.score - a.score)
+const suggestions = [...partners, ...categories, ...locations]
+        .sort((a, b) => b.score - a.score);
         .slice(0, 10);
 
       // Cache suggestions
@@ -107,26 +112,27 @@ export class SearchService {
     } catch (error) {
       logger.error('Get suggestions error:', error);
       return [];
+    };
     }
-
-  async getTrendingSearches(locale: string = 'en', limit: number = 10): Promise<string[]> {
+    async getTrendingSearches(locale: string = 'en', limit: number = 10): Promise<string[]> {
     try {
       
       if (cached) {
         return cached;
       }
-
-      const query = `
+const query = `
         SELECT search_term, COUNT(*) as count
         FROM search_logs
         WHERE created_at > NOW() - INTERVAL '24 hours'
           AND locale = $1
         GROUP BY search_term
         ORDER BY count DESC
-        LIMIT $2
+        LIMIT $2;
       `;
+;
 
-      const result = await this.pool.query(query, [locale, limit]);
+const result = await this.pool.query(query, [locale, limit]);
+
       const trending = result.rows.map(row => row.search_term);
 
       await this.cache.set(cacheKey, trending, 3600); // 1 hour
@@ -135,15 +141,16 @@ export class SearchService {
     } catch (error) {
       logger.error('Get trending searches error:', error);
       return [];
+    };
     }
-
-  private async elasticSearch(filters: SearchFilters): Promise<SearchResult> {
+    private async elasticSearch(filters: SearchFilters): Promise<SearchResult> {
     const response = await this.elastic.search('partners', query);
+;
 
-    const partners = response.hits.hits.map((hit: any) => ({
+const partners = response.hits.hits.map((hit: any) => ({
       ...hit._source,
       score: hit._score,
-      highlights: hit.highlight
+      highlights: hit.highlight;
     }));
 
     return {
@@ -157,14 +164,17 @@ export class SearchService {
 
   private async databaseSearch(filters: SearchFilters): Promise<SearchResult> {
     const { query, params } = this.buildDatabaseQuery(filters);
-    const countQuery = this.buildCountQuery(filters);
 
-    const [dataResult, countResult] = await Promise.all([
+    const countQuery = this.buildCountQuery(filters);
+;
+
+const [dataResult, countResult] = await Promise.all([
       this.pool.query(query, params),
       this.pool.query(countQuery.query, countQuery.params)
     ]);
+;
 
-    const total = parseInt(countResult.rows[0].count, 10);
+const total = parseInt(countResult.rows[0].count, 10);
 
     return {
       partners,
@@ -176,14 +186,13 @@ export class SearchService {
   }
 
   private buildElasticQuery(filters: SearchFilters): any {
-    const must: any[] = [];
-    const filter: any[] = [];
-
+    const must: any[] = [],
+    const filter: any[] = [],
     // Text search
     if (filters.query) {
       must.push({
-        multi_match: {
-          query: filters.query,
+  multi_match: {
+  query: filters.query,
           fields: [
             `name.${filters.locale || 'en'}^3`,
             `description.${filters.locale || 'en'}^2`,
@@ -197,21 +206,21 @@ export class SearchService {
 
     // Category filter
     if (filters.category) {
-      filter.push({ term: { category: filters.category } });
+      filter.push({ term: { category: filters.category } }),
     }
 
     // Subcategory filter
     if (filters.subcategory) {
-      filter.push({ term: { subcategory: filters.subcategory } });
+      filter.push({ term: { subcategory: filters.subcategory } }),
     }
 
     // Location filter
     if (filters.location) {
       filter.push({
-        geo_distance: {
-          distance: `${filters.radiusKm || this.DEFAULT_RADIUS_KM}km`,
+  geo_distance: {
+  distance: `${filters.radiusKm || this.DEFAULT_RADIUS_KM}km`,
           location: {
-            lat: filters.location.latitude,
+  lat: filters.location.latitude,
             lon: filters.location.longitude
           }
       });
@@ -220,24 +229,24 @@ export class SearchService {
     // Discount range
     if (filters.minDiscount || filters.maxDiscount) {
       filter.push({
-        range: {
-          discount_percentage: {
-            gte: filters.minDiscount || 0,
+  range: {
+  discount_percentage: {
+  gte: filters.minDiscount || 0,
             lte: filters.maxDiscount || 100
           }
       });
     }
 
     // Active partners only
-    filter.push({ term: { is_active: true } });
+    filter.push({ term: { is_active: true } }),
+    // Build aggregations;
 
-    // Build aggregations
-    const aggs = {
-      categories: {
-        terms: { field: 'category', size: 20 },
+const aggs = {
+  categories: {
+  terms: { field: 'category', size: 20 },
       discount_ranges: {
-        range: {
-          field: 'discount_percentage',
+  range: {
+  field: 'discount_percentage',
           ranges: [
             { to: 10 },
             { from: 10, to: 20 },
@@ -246,12 +255,11 @@ export class SearchService {
           ]
         },
       avg_discount: {
-        avg: { field: 'discount_percentage' }
-    };
-
+  avg: { field: 'discount_percentage' }
+    }
     return {
-      query: {
-        bool: {
+  query: {
+  bool: {
           must,
           filter
         },
@@ -259,21 +267,20 @@ export class SearchService {
       from: ((filters.page || 1) - 1) * (filters.pageSize || 20),
       size: Math.min(filters.pageSize || 20, this.MAX_RESULTS),
       sort: this.buildElasticSort(filters)
-    };
+    }
   }
-
   private buildDatabaseQuery(filters: SearchFilters): { query: string; params: any[] } {
-    const conditions: string[] = ['p.is_active = true'];
-    const params: any[] = [];
+    const conditions: string[] = ['p.is_active = true'],
+    const params: any[] = [],
     let paramIndex = 1;
 
-    // Base query
-    let query = `
+    // Base query;
+let query = `
       SELECT 
         p.*,
         COALESCE(pt.name, p.name) as localized_name,
         COALESCE(pt.description, p.description) as localized_description,
-        array_agg(DISTINCT c.name) as categories
+        array_agg(DISTINCT c.name) as categories;
     `;
 
     // Add distance calculation if location provided
@@ -334,7 +341,6 @@ export class SearchService {
       params.push(filters.minDiscount);
       paramIndex++;
     }
-
     if (filters.maxDiscount !== undefined) {
       conditions.push(`p.discount_percentage <= $${paramIndex}`);
       params.push(filters.maxDiscount);
@@ -357,7 +363,7 @@ export class SearchService {
     query += this.buildDatabaseSort(filters);
 
     // Pagination
-    const offset = ((filters.page || 1) - 1) * (filters.pageSize || 20);
+    // TODO: Fix incomplete function declaration
     query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(filters.pageSize || 20, offset);
 
@@ -365,16 +371,13 @@ export class SearchService {
   }
 
   private buildCountQuery(filters: SearchFilters): { query: string; params: any[] } {
-    const conditions: string[] = ['p.is_active = true'];
-    const params: any[] = [];
-
-
+    const conditions: string[] = ['p.is_active = true'],
+    const params: any[] = [],
     if (filters.query || filters.locale) {
       query += ` LEFT JOIN partner_translations pt ON p.id = pt.partner_id AND pt.locale = $${paramIndex}`;
       params.push(filters.locale || 'en');
       paramIndex++;
     }
-
     if (filters.category) {
       query += `
         LEFT JOIN partner_categories pc ON p.id = pc.partner_id
@@ -394,15 +397,13 @@ export class SearchService {
       params.push(filters.location.longitude, filters.location.latitude, filters.radiusKm || this.DEFAULT_RADIUS_KM);
       paramIndex += 3;
     }
-
     if (filters.query) {
       conditions.push(`
         (
           p.name ILIKE $${paramIndex} OR
           pt.name ILIKE $${paramInde
-}}}}
 }
-}
+
 }
 }
 }

@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-
+;
 export async function up(knex: Knex): Promise<void> {
   // Create enum for notification types
   await knex.raw(`
@@ -65,7 +65,7 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean('sms_enabled').defaultTo(false);
     table.boolean('push_enabled').defaultTo(true);
     table.boolean('in_app_enabled').defaultTo(true);
-    table.jsonb('quiet_hours').defaultTo('{"enabled": false, "start": "22:00", "end": "08:00"}');
+    table.jsonb('quiet_hours').defaultTo('{"enabled": false, "start": "22:00", "end": "08:00"}'),
     table.jsonb('frequency_settings').defaultTo('{}');
     table.timestamps(true, true);
     
@@ -181,17 +181,17 @@ export async function up(knex: Knex): Promise<void> {
   // Insert default notification templates
   await knex('notification_templates').insert([
     {
-      key: 'welcome_user',
+  key: 'welcome_user',
       type: 'system',
       title_template_en: 'Welcome to BOOM Card!',
       title_template_bg: 'Добре дошли в BOOM Card!',
       message_template_en: 'Hi {{name}}, welcome to BOOM Card! Start exploring amazing discounts at restaurants, hotels, and entertainment venues.',
-      message_template_bg: 'Здравейте {{name}}, добре дошли в BOOM Card! Започнете да разглеждате невероятни отстъпки в ресторанти, хотели и места за развлечения.',)
-      variables: JSON.stringify(['name']),
+      message_template_bg: 'Здравейте {{name}}, добре дошли в BOOM Card! Започнете да разглеждате невероятни отстъпки в ресторанти, хотели и места за развлечения.',),
+  variables: JSON.stringify(['name']),
       active: true
     },
     {
-      key: 'subscription_expiring',
+  key: 'subscription_expiring',
       type: 'subscription',
       title_template_en: 'Your subscription expires soon',
       title_template_bg: 'Вашият абонамент изтича скоро',
@@ -203,7 +203,7 @@ export async function up(knex: Knex): Promise<void> {
       active: true
     },
     {
-      key: 'discount_used',
+  key: 'discount_used',
       type: 'discount_used',
       title_template_en: 'Discount applied successfully!',
       title_template_bg: 'Отстъпката е приложена успешно!',
@@ -213,10 +213,11 @@ export async function up(knex: Knex): Promise<void> {
       active: true
     },
     {
-      key: 'new_partner_nearby',
+  key: 'new_partner_nearby',
       type: 'partner_update',
       title_template_en: 'New partner near you!',
       title_template_bg: 'Нов партньор близо до вас!',
       message_template_en: '{{partner_name}} just joined BOOM Card! They offer {{discount}}% discount and are only {{distance}}km away.',
       message_template_bg: '{
-}}}
+}
+}

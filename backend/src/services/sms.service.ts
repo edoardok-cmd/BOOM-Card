@@ -1,32 +1,36 @@
-// 1. All import statements
 import twilio, { Twilio } from 'twilio';
-import config from '../config'; // Assuming a configuration module at ../config
-import logger from '../utils/logger'; // Assuming a logger utility at ../utils/logger
-import { BoomCardError } from '../utils/errors'; // Assuming custom error definitions at ../utils/errors
+import config from '../config'; // Assuming a configuration module at ../config;
+import logger from '../utils/logger'; // Assuming a logger utility at ../utils/logger;
+import { BoomCardError } from '../utils/errors'; // Assuming custom error definitions at ../utils/errors;
+import logger from '../utils/logger';
+import { Twilio } from 'twilio';
+import config from '../config/config';
+
+// 1. All import statements
 
 // 2. All TypeScript interfaces and types
 
 /**
  * Defines the structure for Twilio SMS service configuration.
- */
+ */;
 interface ITwilioConfig {
   accountSid: string;
-  authToken: string;
+  authToken: string,
   phoneNumber?: string; // The Twilio phone number to send from (either this or messagingServiceSid)
   messagingServiceSid?: string; // The Twilio Messaging Service SID (either this or phoneNumber)
 }
 
 /**
  * Defines the payload structure for sending an SMS message.
- */
+ */;
 interface ISendSmsPayload {
-  to: string; // The recipient's phone number, e.g., "+1234567890"
+  to: string; // The recipient's phone number, e.g., "+1234567890",
   body: string; // The content of the SMS message
 }
 
 /**
  * Defines the response structure for an SMS sending operation.
- */
+ */;
 interface ISmsServiceResponse {
   success: boolean;
   message: string; // A human-readable message about the operation's outcome
@@ -39,29 +43,30 @@ interface ISmsServiceResponse {
 /**
  * Twilio configuration loaded from the application's config module.
  * It's assumed that the config module provides access to environment variables.
- */
+ */;
+
 const twilioConfig: ITwilioConfig = {
   accountSid: config.get('TWILIO_ACCOUNT_SID'),
   authToken: config.get('TWILIO_AUTH_TOKEN'),
   phoneNumber: config.get('TWILIO_PHONE_NUMBER'),
-  messagingServiceSid: config.get('TWILIO_MESSAGING_SERVICE_SID'),
-};
+  messagingServiceSid: config.get('TWILIO_MESSAGING_SERVICE_SID')
+}
 
 // Validate essential Twilio configuration
 if (!twilioConfig.accountSid || !twilioConfig.authToken) {
-  logger.error('Twilio: TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN is not configured.');
+  logger.error('Twilio: TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN is not configured.'),
   throw new Error('Twilio credentials are not set in environment variables.');
 }
-
 if (!twilioConfig.phoneNumber && !twilioConfig.messagingServiceSid) {
-  logger.error('Twilio: Either TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID must be configured.');
+  logger.error('Twilio: Either TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID must be configured.'),
   throw new Error('Twilio sender information (phone number or Messaging Service SID) is not set.');
 }
 
 /**
  * Initialize the Twilio client using the configured credentials.
  * This client will be used for all SMS operations.
- */
+ */;
+
 const twilioClient: Twilio = twilio(twilioConfig.accountSid, twilioConfig.authToken);
 
 // 4. Any decorators or metadata
@@ -75,9 +80,9 @@ const twilioClient: Twilio = twilio(twilioConfig.accountSid, twilioConfig.authTo
 
 /**
  * Payload structure for sending a generic SMS message.
- */
+ */;
 interface SendSMSPayload {
-  to: string;        // The recipient's phone number (e.g., '+1234567890')
+  to: string;        // The recipient's phone number (e.g., '+1234567890'),
   message: string;   // The body of the SMS message
   from?: string;     // Optional sender number, overrides the default configured number
 }
@@ -86,7 +91,7 @@ interface SendSMSPayload {
  * Interface for any SMS provider integration (e.g., Twilio, Vonage, AWS SNS).
  * This abstraction allows the SMSService to be agnostic to the underlying SMS vendor,
  * enabling easy swapping of providers without changing core business logic.
- */
+ */;
 export interface ISMSProvider {
   /**
    * Sends a message to a recipient using the specific SMS provider's API.
@@ -95,8 +100,7 @@ export interface ISMSProvider {
    * @param from The sender's phone number (optional, will use provider's default or configured default if not provided).
    * @returns A promise resolving with the provider's specific response, or rejecting on error.
    */
-  sendMessage(to: string, message: string, from?: string): Promise<any>;
-}
+  sendMessage(to: string, message: string, from?: string): Promise<any>}
 
 // Assuming `Logger` and `config` are imported and available from Part 1
 // Example imports (if Part 1 was only raw imports):
@@ -107,11 +111,10 @@ export interface ISMSProvider {
  * SMSService class manages all SMS-related operations for BOOM Card.
  * It provides methods to send various types of SMS messages (generic, OTP, transaction confirmations)
  * by abstracting the concrete SMS provider implementation.
- */
+ */;
 export class SMSService {
-  private smsProvider: ISMSProvider;
-  private defaultSenderNumber: string;
-
+  private smsProvider: ISMSProvider,
+  private defaultSenderNumber: string,
   /**
    * Initializes the SMSService.
    * @param provider An instance of a class that implements the `ISMSProvider` interface.
@@ -119,7 +122,7 @@ export class SMSService {
    */
   constructor(provider: ISMSProvider) {
     if (!provider) {
-      throw new Error('SMSService: An SMS provider instance must be provided.');
+      throw new Error('SMSService: An SMS provider instance must be provided.'),
     }
     this.smsProvider = provider;
 
@@ -128,7 +131,7 @@ export class SMSService {
     this.defaultSenderNumber = config.get('sms.senderNumber') || process.env.SMS_SENDER_NUMBER || '';
 
     if (!this.defaultSenderNumber) {
-      Logger.error('SMSService Warning: SMS_SENDER_NUMBER is not configured. SMS messages may fail or use provider defaults if not specified per message.');
+      Logger.error('SMSService Warning: SMS_SENDER_NUMBER is not configured. SMS messages may fail or use provider defaults if not specified per message.'),
     }
 
     Logger.info('SMSService initialized successfully.');
@@ -149,25 +152,27 @@ export class SMSService {
       Logger.error('Validation Error: Recipient number or message body is missing for SMS.', null, payload);
       throw new Error('Recipient number and message body are required to send SMS.');
     }
-
     if (!from) {
       Logger.error('Configuration Error: SMS sender number is not defined for this message.', null, { to, message });
       throw new Error('SMS sender number is not configured and not provided in payload.');
     }
 
     try {
-      // Log the attempt, censoring part of the message for logs if too long
-      const logMessage = `Attempting to send SMS to ${to} from ${from} with message: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`;
-      Logger.info(logMessage);
+      // Log the attempt, censoring part of the message for logs if too long;
 
-      const response = await this.smsProvider.sendMessage(to, message, from);
+const logMessage = `Attempting to send SMS to ${to} from ${from} with message: "${message.substring(0, 100)}${message.length > 100 ? '...': ''}"`,
+      Logger.info(logMessage);
+;
+
+const response = await this.smsProvider.sendMessage(to, message, from);
 
       Logger.info(`SMS sent successfully to ${to}. Provider response:`, response);
       return response;
     } catch (error) {
+    }
       Logger.error(`Failed to send SMS to ${to}. Error:`, error as Error, { to, message });
       // Re-throw a more generic error to abstract provider-specific errors
-      throw new Error(`Failed to send SMS: ${(error as Error).message || 'An unknown error occurred'}`);
+      throw new Error(`Failed to send SMS: ${(error as Error).message || 'An unknown error occurred'}`),
     }
 
   /**
@@ -179,7 +184,7 @@ export class SMSService {
    * @returns A promise resolving with the SMS provider's response.
    */
   public async sendOTP(to: string, otp: string, purpose: string = 'verification'): Promise<any> {
-    const message = `Your BOOM Card ${purpose} code is: ${otp}. Do not share this code with anyone. It expires in 5 minutes.`;
+    const message = `Your BOOM Card ${purpose} code is: ${otp}. Do not share this code with anyone. It expires in 5 minutes.`,
     return this.sendSMS({ to, message });
   }
 
@@ -191,9 +196,12 @@ export class SMSService {
    */
   public async sendTransactionConfirmation(to: string, transactionDetails: { amount: number; merchant: string; date: Date | string; currency?: string }): Promise<any> {
     const amount = transactionDetails.amount.toFixed(2);
+
     const merchant = transactionDetails.merchant;
-    const date = new Date(transactionDetails.date).toLocaleDateString('en-US'); // Format date nicely
-    const currency = transactionDetails.currency || 'USD';
+
+    const date = new Date(transactionDetails.date).toLocaleDateString('en-US'); // Format date nicely;
+
+const currency = transactionDetails.currency || 'USD';
 
     return this.sendSMS({ to, message });
   }
@@ -217,16 +225,12 @@ export class SMSService {
   // Integrating them here would violate the Single Responsibility Principle.
 }
 
-import logger from '../utils/logger';
-import { Twilio } from 'twilio';
-import config from '../config/config';
-
 // --- Error Handlers ---
 
 /**
  * Custom error class for SMS service-specific failures.
  * This allows for more granular error handling by upstream services.
- */
+ */;
 export class SmsServiceError extends Error {
   public originalError?: any;
 
@@ -242,7 +246,8 @@ export class SmsServiceError extends Error {
 // --- Initialize Twilio Client ---
 // Note: In a larger application, the Twilio client might be initialized
 // in a separate configuration or utility module and imported.
-// For completion, we initialize it here.
+// For completion, we initialize it here.;
+
 const twilioClient = new Twilio(config.twilio.accountSid, config.twilio.authToken);
 
 // --- Helper Functions ---
@@ -261,8 +266,9 @@ function isValidPhoneNumber(phoneNumber: string): boolean {
   }
   // Basic check: starts with '+' and contains only digits after that.
   // Or just contains digits (assuming local numbers might not always have '+').
-  // A proper regex like /^\+[1-9]\d{1,14}$/ for E.164 would be better.
-  const numericPhone = phoneNumber.replace(/\D/g, ''); // Remove non-digits
+  // A proper regex like /^\+[1-9]\d{1,14}$/ for E.164 would be better.;
+
+const numericPhone = phoneNumber.replace(/\D/g, ''); // Remove non-digits
   return numericPhone.length >= 7 && numericPhone.length <= 15; // Common range for phone numbers
 }
 
@@ -276,34 +282,33 @@ function isValidPhoneNumber(phoneNumber: string): boolean {
  * @param {string} message - The body of the SMS message.
  * @returns {Promise<any>} A promise that resolves with the Twilio message SID on success.
  * @throws {SmsServiceError} If the input is invalid or the SMS sending fails.
- */
+ */;
 export async function sendSms(to: string, message: string): Promise<any> {
   // Input Validation
   if (!to || !isValidPhoneNumber(to)) {
-    logger.warn(`[SmsService] Invalid or missing recipient phone number: '${to}'`);
+    logger.warn(`[SmsService] Invalid or missing recipient phone number: '${to}'`),
     throw new SmsServiceError('Invalid or missing recipient phone number.');
   }
-  if (!message || typeof message !== 'string' || message.trim().length === 0) {
-    logger.warn(`[SmsService] Attempted to send an empty or invalid message to: ${to}`);
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    logger.warn(`[SmsService] Attempted to send an empty or invalid message to: ${to}`),
     throw new SmsServiceError('Message body cannot be empty.');
   }
 
   try {
-    logger.info(`[SmsService] Attempting to send SMS to: ${to}`);
+    logger.info(`[SmsService] Attempting to send SMS to: ${to}`),
+    // Call Twilio API to send the message;
 
-    // Call Twilio API to send the message
-    const smsResult = await twilioClient.messages.create({
-      body: message,
-      from: config.twilio.phoneNumber, // Your Twilio phone number, e.g., '+15017122661'
-      to: to,
-    });
+const smsResult = await twilioClient.messages.create({
+  body: message,
+      from: config.twilio.phoneNumber, // Your Twilio phone number, e.g., '+15017122661',
+  to: to;
+});
 
-    logger.info(`[SmsService] SMS sent successfully to ${to}. SID: ${smsResult.sid}`);
+    logger.info(`[SmsService] SMS sent successfully to ${to}. SID: ${smsResult.sid}`),
     return smsResult;
 
   } catch (error: any) {
-    logger.error(`[SmsService] Failed to send SMS to ${to}. Error: ${error.message || error}`);
-
+    logger.error(`[SmsService] Failed to send SMS to ${to}. Error: ${error.message || error}`),
     // Differentiate common Twilio API errors
     if (error.status) {
       if (error.status >= 400 && error.status < 500) {
@@ -323,9 +328,7 @@ export async function sendSms(to: string, message: string): Promise<any> {
 // export const smsService = {
 //   sendSms,
 //   // Add other SMS-related functions here if they were created, e.g., verifyOtp, lookupNumber
-// };
+// }
 
-}
-}
 }
 }

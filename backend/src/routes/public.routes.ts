@@ -6,13 +6,14 @@ import { cache } from '../middleware/cache';
 import { PublicController } from '../controllers/public.controller';
 import { asyncHandler } from '../utils/asyncHandler';
 import { authenticateOptional } from '../middleware/auth';
+;
 
 const router = Router();
+
 const publicController = new PublicController();
 
 // Apply rate limiting to all public routes
-router.use(rateLimiter({ windowMs: 15 * 60 * 1000, max: 100 }));
-
+router.use(rateLimiter({ windowMs: 15 * 60 * 1000, max: 100 })),
 // Home page data
 router.get(
   '/home',
@@ -347,7 +348,7 @@ router.get(
 
 // Health check
 router.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() }),
 });
-
+;
 export default router;

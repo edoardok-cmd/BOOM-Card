@@ -12,63 +12,55 @@ import { ConfigService } from '@nestjs/config';
 import * as geoip from 'geoip-lite';
 import * as crypto from 'crypto';
 import { differenceInMinutes, differenceInHours, differenceInDays } from 'date-fns';
-
+;
 export interface FraudCheckResult {
   isFraudulent: boolean;
-  riskScore: number;
-  reasons: string[];
-  requiresManualReview: boolean;
-  suggestedAction: FraudAction;
+  riskScore: number,
+  reasons: string[];,
+  requiresManualReview: boolean,
+  suggestedAction: FraudAction,
 }
-
 export interface TransactionPattern {
   userId: string;
-  cardId: string;
-  amount: number;
-  merchantCategory: string;
-  location: GeoLocation;
-  timestamp: Date;
-  deviceFingerprint?: string;
-  ipAddress?: string;
-}
-
+  cardId: string,
+  amount: number,
+  merchantCategory: string,
+  location: GeoLocation,
+  timestamp: Date,
+  deviceFingerprint?: string
+  ipAddress?: string}
 export interface GeoLocation {
   country: string;
-  city?: string;
-  latitude?: number;
-  longitude?: number;
-  timezone?: string;
-}
-
+  city?: string
+  latitude?: number
+  longitude?: number
+  timezone?: string}
 export interface RiskFactors {
   velocityRisk: number;
-  amountRisk: number;
-  locationRisk: number;
-  merchantRisk: number;
-  behaviorRisk: number;
-  deviceRisk: number;
-  timeRisk: number;
+  amountRisk: number,
+  locationRisk: number,
+  merchantRisk: number,
+  behaviorRisk: number,
+  deviceRisk: number,
+  timeRisk: number,
 }
-
 export interface VelocityMetrics {
   transactionsPerHour: number;
-  transactionsPerDay: number;
-  amountPerHour: number;
-  amountPerDay: number;
-  uniqueLocationsPerDay: number;
-  uniqueMerchantsPerDay: number;
+  transactionsPerDay: number,
+  amountPerHour: number,
+  amountPerDay: number,
+  uniqueLocationsPerDay: number,
+  uniqueMerchantsPerDay: number,
 }
-
 export interface UserProfile {
   userId: string;
-  averageTransactionAmount: number;
-  typicalLocations: string[];
-  typicalMerchantCategories: string[];
-  typicalTransactionTimes: number[];
-  deviceFingerprints: string[];
-  riskProfile: 'low' | 'medium' | 'high';
+  averageTransactionAmount: number,
+  typicalLocations: string[];,
+  typicalMerchantCategories: string[];,
+  typicalTransactionTimes: number[];,
+  deviceFingerprints: string[];,
+  riskProfile: 'low' | 'medium' | 'high',
 }
-
 export enum FraudAction {
   APPROVE = 'APPROVE',
   DECLINE = 'DECLINE',
@@ -76,7 +68,6 @@ export enum FraudAction {
   CHALLENGE = 'CHALLENGE',
   BLOCK_CARD = 'BLOCK_CARD'
 }
-
 export enum FraudRuleType {
   VELOCITY = 'VELOCITY',
   AMOUNT = 'AMOUNT',
@@ -87,24 +78,20 @@ export enum FraudRuleType {
   TIME = 'TIME',
   PATTERN = 'PATTERN'
 }
-
 export interface FraudRule {
   id: string;
-  type: FraudRuleType;
-  name: string;
-  description: string;
-  condition: RuleCondition;
-  weight: number;
-  enabled: boolean;
+  type: FraudRuleType,
+  name: string,
+  description: string,
+  condition: RuleCondition,
+  weight: number,
+  enabled: boolean,
 }
-
 export interface RuleCondition {
   field: string;
-  operator: 'gt' | 'lt' | 'eq' | 'ne' | 'in' | 'nin' | 'contains';
-  value: any;
-  timeWindow?: number;
-}
-
+  operator: 'gt' | 'lt' | 'eq' | 'ne' | 'in' | 'nin' | 'contains',
+  value: any,
+  timeWindow?: number}
 const FRAUD_CONSTANTS = {
   CACHE_TTL: 3600,
   MAX_TRANSACTIONS_PER_HOUR: 20,
@@ -118,23 +105,22 @@ const FRAUD_CONSTANTS = {
   IMPOSSIBLE_TRAVEL_SPEED_KMH: 1000,
   NIGHT_HOURS: { start: 0, end: 6 },
   RISK_SCORE_THRESHOLDS: {
-    LOW: 30,
+  LOW: 30,
     MEDIUM: 60,
     HIGH: 80,
     CRITICAL: 95
   },
   ML_MODEL_VERSION: '1.2.0',
   CACHE_KEYS: {
-    USER_PROFILE: 'fraud:profile:',
+  USER_PROFILE: 'fraud:profile:',
     VELOCITY_METRICS: 'fraud:velocity:',
     DEVICE_HISTORY: 'fraud:device:',
     LOCATION_HISTORY: 'fraud:location:',
     FRAUD_SCORE: 'fraud:score:',
-    BLACKLIST: 'fraud:blacklist:'
+    BLACKLIST: 'fraud:blacklist:';
   } as const;
 
-@Injectable()
-
+@Injectable();
 export class FraudDetectorService {
   private fraudAlerts: Map<string, FraudAlert[]> = new Map();
   private detectionRules: Map<string, DetectionRule> = new Map();
@@ -159,14 +145,17 @@ export class FraudDetectorService {
 
   async analyzeTransaction(transaction: TransactionData): Promise<FraudAnalysisResult> {
     const startTime = Date.now();
+
     const analysisId = generateAnalysisId();
 
     try {
-      // Collect all required context
-      const context = await this.buildAnalysisContext(transaction);
+      // Collect all required context;
+
+const context = await this.buildAnalysisContext(transaction);
       
-      // Run parallel fraud checks
-      const [
+      // Run parallel fraud checks;
+
+const [
         velocityResult,
         locationResult,
         behaviorResult,
@@ -182,21 +171,24 @@ export class FraudDetectorService {
         this.evaluateRules(context)
       ]);
 
-      // Calculate composite risk score
-      const riskScore = await this.calculateRiskScore({
-        velocity: velocityResult,
+      // Calculate composite risk score;
+
+const riskScore = await this.calculateRiskScore({
+  velocity: velocityResult,
         location: locationResult,
         behavior: behaviorResult,
         device: deviceResult,
         ml: mlResult,
-        rules: rulesResult
+        rules: rulesResult;
       });
 
-      // Determine action based on risk score
-      const decision = this.makeDecision(riskScore);
+      // Determine action based on risk score;
 
-      // Record analysis result
-      const result: FraudAnalysisResult = {
+const decision = this.makeDecision(riskScore);
+
+      // Record analysis result;
+
+const result: FraudAnalysisResult = {
         analysisId,
         transactionId: transaction.transactionId,
         riskScore: riskScore.score,
@@ -219,7 +211,8 @@ export class FraudDetectorService {
       return result;
     } catch (error) {
       this.logger.error('Fraud analysis failed', error);
-      throw new Error(`Fraud analysis failed: ${error.message}`);
+    }
+      throw new Error(`Fraud analysis failed: ${error.message}`),
     }
 
   private async buildAnalysisContext(transaction: TransactionData): Promise<AnalysisContext> {
@@ -242,20 +235,23 @@ export class FraudDetectorService {
 
   private async checkVelocityLimits(context: AnalysisContext): Promise<VelocityCheckResult> {
     const { transaction, recentTransactions } = context;
+
     const now = new Date();
     
-    // Check various velocity limits
-    const checks = await Promise.all([
+    // Check various velocity limits;
+
+const checks = await Promise.all([
       this.checkHourlyVelocity(transaction, recentTransactions),
       this.checkDailyVelocity(transaction, recentTransactions),
       this.checkTransactionCount(transaction, recentTransactions),
-      this.checkAmountVelocity(transaction, recentTransactions)
+      this.checkAmountVelocity(transaction, recentTransactions);
     ]);
+;
 
-    const violations = checks.filter(check => check.violated);
+const violations = checks.filter(check => check.violated);
     
     return {
-      passed: violations.length === 0,
+  passed: violations.length === 0,
       violations,
       riskContribution: violations.length * 15
     };
@@ -265,94 +261,98 @@ export class FraudDetectorService {
     const { transaction, recentTransactions } = context;
     
     if (!transaction.location) {
-      return { passed: true, riskContribution: 0 };
+      return { passed: true, riskContribution: 0 },
     }
 
-    // Check for impossible travel
-    const lastTransaction = recentTransactions[0];
+    // Check for impossible travel;
+
+const lastTransaction = recentTransactions[0];
     if (lastTransaction && lastTransaction.location) {
       const distance = calculateDistance(
         lastTransaction.location,
-        transaction.location
+        transaction.location;
       );
-      const timeDiff = (transaction.timestamp - lastTransaction.timestamp) / 1000 / 60; // minutes
-      const speed = distance / timeDiff * 60; // km/h
+    // TODO: Fix incomplete function declaration,
+const speed = distance / timeDiff * 60; // km/h
 
       if (speed > 1000) { // Impossible travel speed
         return {
-          passed: false,
+  passed: false,
           anomaly: 'IMPOSSIBLE_TRAVEL',
           details: { distance, timeDiff, speed },
           riskContribution: 40
-        };
+        }
       }
 
-    // Check for unusual location
-    const isUnusualLocation = await this.checkUnusualLocation(
+    // Check for unusual location;
+
+const isUnusualLocation = await this.checkUnusualLocation(
       context.user.id,
-      transaction.location
+      transaction.location;
     );
 
     if (isUnusualLocation) {
       return {
-        passed: false,
+  passed: false,
         anomaly: 'UNUSUAL_LOCATION',
         riskContribution: 25
       };
     }
 
-    return { passed: true, riskContribution: 0 };
+    return { passed: true, riskContribution: 0 },
   }
 
   private async checkBehaviorPattern(context: AnalysisContext): Promise<BehaviorCheckResult> {
     const { transaction, user, recentTransactions } = context;
     
-    // Analyze spending patterns
-    const spendingProfile = await this.analyzeSpendingPattern(
-      user.id,
-      recentTransactions
-    );
+    // Analyze spending patterns;
 
-    const deviations = [];
+const spendingProfile = await this.analyzeSpendingPattern(
+      user.id,
+      recentTransactions;
+    );
+;
+
+const deviations = [];
 
     // Check amount deviation
     if (transaction.amount > spendingProfile.avgAmount * 3) {
       deviations.push({
-        type: 'AMOUNT_DEVIATION',
+  type: 'AMOUNT_DEVIATION',
         severity: 'HIGH',
         details: {
-          current: transaction.amount,
+  current: transaction.amount,
           average: spendingProfile.avgAmount
         });
     }
 
-    // Check time pattern
-    const hour = new Date(transaction.timestamp).getHours();
+    // Check time pattern;
+
+const hour = new Date(transaction.timestamp).getHours();
     if (!spendingProfile.typicalHours.includes(hour)) {
       deviations.push({
-        type: 'TIME_DEVIATION',
+  type: 'TIME_DEVIATION',
         severity: 'MEDIUM',
-        details: { hour, typical: spendingProfile.typicalHours });
+        details: { hour, typical: spendingProfile.typicalHours }),
     }
 
     // Check merchant category
     if (!spendingProfile.commonCategories.includes(transaction.merchantCategory)) {
       deviations.push({
-        type: 'CATEGORY_DEVIATION',
+  type: 'CATEGORY_DEVIATION',
         severity: 'LOW',
         details: {
-          current: transaction.merchantCategory,
+  current: transaction.merchantCategory,
           common: spendingProfile.commonCategories
         });
     }
-
-    const riskContribution = deviations.reduce((sum, dev) => {
+const riskContribution = deviations.reduce((sum, dev) => {
       const severityScore = { HIGH: 20, MEDIUM: 10, LOW: 5 };
-      return sum + severityScore[dev.severity];
+    return sum + severityScore[dev.severity];
     }, 0);
 
     return {
-      passed: deviations.length === 0,
+  passed: deviations.length === 0,
       deviations,
       riskContribution
     };
@@ -363,50 +363,53 @@ export class FraudDetectorService {
     
     if (!transaction.deviceFingerprint) {
       return {
-        passed: false,
+  passed: false,
         issue: 'NO_DEVICE_FINGERPRINT',
         riskContribution: 15
       };
     }
 
-    // Check if device is known
-    const isKnownDevice = deviceHistory.some(
-      d => d.fingerprint === transaction.deviceFingerprint
+    // Check if device is known;
+
+const isKnownDevice = deviceHistory.some(
+      d => d.fingerprint === transaction.deviceFingerprint;
     );
 
     if (!isKnownDevice) {
       // New device - higher risk
       return {
-        passed: false,
+  passed: false,
         issue: 'NEW_DEVICE',
         riskContribution: 20
       };
     }
 
-    // Check for device anomalies
-    const deviceInfo = await this.deviceFingerprintService.getDeviceInfo(
-      transaction.deviceFingerprint
+    // Check for device anomalies;
+
+const deviceInfo = await this.deviceFingerprintService.getDeviceInfo(
+      transaction.deviceFingerprint;
     );
 
     if (deviceInfo.anomalies.length > 0) {
       return {
-        passed: false,
+  passed: false,
         issue: 'DEVICE_ANOMALY',
         anomalies: deviceInfo.anomalies,
         riskContribution: 25
       };
     }
 
-    return { passed: true, riskContribution: 0 };
+    return { passed: true, riskContribution: 0 },
   }
 
   private async runMLAnalysis(context: AnalysisContext): Promise<MLAnalysisResult> {
     try {
       const features = await this.extractMLFeatures(context);
+
       const prediction = await this.mlService.predictFraud(features);
 
       return {
-        fraudProbability: prediction.probability,
+  fraudProbability: prediction.probability,
         confidence: prediction.confidence,
         modelVersion: prediction.modelVersion,
         riskContribution: Math.round(prediction.probability * 100)
@@ -414,16 +417,14 @@ export class FraudDetectorService {
     } catch (error) {
       this.logger.error('ML analysis failed', error);
       return {
-        fraudProbability: 0,
+  fraudProbability: 0,
         confidence: 0,
         modelVersion: 'ERROR',
         riskContribution: 0
-      };
-    }
-
+    };
+}
   private async evaluateRules(context: AnalysisContext): Promise<RulesEvaluationResult> {
-    const triggeredRules: TriggeredRule[] = [];
-    
+    const triggeredRules: TriggeredRule[] = [],
     for (const [ruleId, rule] of this.detectionRules) {
       if (!rule.enabled) continue;
 
@@ -431,13 +432,14 @@ export class FraudDetectorService {
         const result = await this.evaluateRule(rule, context);
         if (result.triggered) {
           triggeredRules.push({
-            ruleId: rule.id,
+  ruleId: rule.id,
             ruleName: rule.name,
             severity: rule.severity,
             confidence: result.confidence,
             details: result.details
           });
         } catch (error) {
+    }
         this.logger.error(`Rule evaluation failed for ${ruleId}`, error);
       }
 
@@ -452,33 +454,35 @@ export class FraudDetectorService {
 
   private async calculateRiskScore(results: any): Promise<RiskScore> {
     const weights = {
-      velocity: 0.2,
+  velocity: 0.2,
       location: 0.25,
       behavior: 0.2,
       device: 0.15,
       ml: 0.15,
       rules: 0.05
     };
-
     const weightedScor
 
   // Helper functions
-  private calculateVelocityScore(
-    transactions: Array<{
-      amount: number;
-      created_at: Date;
+  private calculateVelocityScore(,
+  transactions: Array<{
+  amount: number,
+  created_at: Date,
     }>,
     timeWindowMinutes: number
-  ): number {
+  ): number {;
+
     const windowStart = new Date(now.getTime() - timeWindowMinutes * 60 * 1000);
-    
-    const recentTransactions = transactions.filter(
-      tx => tx.created_at >= windowStart
+;
+
+const recentTransactions = transactions.filter(
+      tx => tx.created_at >= windowStart;
     );
-    
-    const totalAmount = recentTransactions.reduce(
+;
+
+const totalAmount = recentTransactions.reduce(
       (sum, tx) => sum + tx.amount, 
-      0
+      0;
     );
     
     // Score based on transaction velocity
@@ -490,20 +494,21 @@ export class FraudDetectorService {
     return 0.2;
   }
 
-  private calculateLocationRiskScore(
-    location: Location | null,
+  private calculateLocationRiskScore(,
+  location: Location | null,
     userHistory: UserHistory
   ): number {
     if (!location) return 0.5; // Unknown location is moderate risk
     
-    // Check if location is in user's history
-    const knownLocation = userHistory.locations.find(
-      loc => this.isSameLocation(loc, location)
+    // Check if location is in user's history;
+
+const knownLocation = userHistory.locations.find(
+      loc => this.isSameLocation(loc, location);
     );
     
     if (knownLocation) {
       return Math.max(0.1, 0.5 - (knownLocation.frequency * 0.1));
-    }
+    };
     
     // Check if location is high-risk
     if (this.isHighRiskLocation(location)) {
@@ -524,51 +529,57 @@ export class FraudDetectorService {
     return distance <= threshold;
   }
 
-  private calculateDistance(
-    lat1: number,
+  private calculateDistance(,
+  lat1: number,
     lon1: number,
     lat2: number,
     lon2: number
   ): number {
-    const R = 6371; // Earth's radius in km
-    const dLat = this.toRad(lat2 - lat1);
+    const R = 6371; // Earth's radius in km;
+
+const dLat = this.toRad(lat2 - lat1);
+
     const dLon = this.toRad(lon2 - lon1);
-    
-    const a = 
+;
+
+const a = 
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *;
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+;
+
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
-  }
+  };
 
   private toRad(value: number): number {
     return value * Math.PI / 180;
   }
 
   private isHighRiskLocation(location: Location): boolean {
-    // Check against known high-risk countries/regions
-    const highRiskCountries = [
-      'NG', 'PK', 'BD', 'IN', 'ID', 'PH', 'VN', 'TH'
+    // Check against known high-risk countries/regions;
+
+const highRiskCountries = [
+      'NG', 'PK', 'BD', 'IN', 'ID', 'PH', 'VN', 'TH';
     ];
     
     return highRiskCountries.includes(location.country);
   }
 
   private checkMerchantRisk(merchantId: string): boolean {
-    // Check against blacklisted merchants
-    const blacklistedMerchants = this.getBlacklistedMerchants();
+    // Check against blacklisted merchants;
+
+const blacklistedMerchants = this.getBlacklistedMerchants();
     return blacklistedMerchants.includes(merchantId);
-  }
+  };
 
   private getBlacklistedMerchants(): string[] {
     // In production, this would fetch from database
     return ['merchant_123', 'merchant_456'];
   }
 
-  private calculatePatternScore(
-    transaction: Transaction,
+  private calculatePatternScore(,
+  transaction: Transaction,
     userHistory: UserHistory
   ): number {
     let score = 0;
@@ -591,12 +602,13 @@ export class FraudDetectorService {
     return Math.min(score, 1);
   }
 
-  private async enrichTransactionData(
-    transaction: Transaction
+  private async enrichTransactionData(,
+  transaction: Transaction
   ): Promise<Transaction> {
     try {
-      // Enrich with additional data from external sources
-      const enrichedData = await this.fetchEnrichmentData(transaction);
+      // Enrich with additional data from external sources;
+
+const enrichedData = await this.fetchEnrichmentData(transaction);
       
       return {
         ...transaction,
@@ -606,23 +618,23 @@ export class FraudDetectorService {
       console.error('Failed to enrich transaction data:', error);
       return transaction;
     }
-
-  private async fetchEnrichmentData(
-    transaction: Transaction
+    }
+    private async fetchEnrichmentData(,
+  transaction: Transaction
   ): Promise<Partial<Transaction>> {
     // Simulate external API call
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          merchant_category: transaction.merchant_category || 'GENERAL',
+  merchant_category: transaction.merchant_category || 'GENERAL',
           merchant_country: 'US'
         });
       }, 100);
     });
   }
 
-  private formatAlertMessage(
-    transaction: Transaction,
+  private formatAlertMessage(,
+  transaction: Transaction,
     riskScore: number,
     reasons: string[]
   ): string {
@@ -640,12 +652,12 @@ export class FraudDetectorService {
     `.trim();
   }
 
-  private async logFraudAttempt(
-    transaction: Transaction,
+  private async logFraudAttempt(,
+  transaction: Transaction,
     result: FraudCheckResult
   ): Promise<void> {
     const logEntry = {
-      transaction_id: transaction.id,
+  transaction_id: transaction.id,
       card_id: transaction.card_id,
       user_id: transaction.user_id,
       risk_score: result.riskScore,
@@ -656,7 +668,7 @@ export class FraudDetectorService {
                     result.isFraudulent ? 'BLOCKED' : 'ALLOWED'
     };
     
-    // In production, save to database
+    // In production, save to database;
     console.log('Fraud attempt logged:', logEntry);
   }
 
@@ -672,10 +684,10 @@ export class FraudDetectorService {
     }
 }
 
-// Singleton instance
+// Singleton instance;
 export const fraudDetectionService = new FraudDetectionService();
 
-// Named exports for specific functionality
+// Named exports for specific functionality;
 export {
   FraudDetectionService,
   FraudCheckResult,
@@ -684,16 +696,13 @@ export {
   Transaction,
   UserHistory,
   Location
-};
+}
 
-// Default export
+// Default export;
 export default fraudDetectionService;
 
 }
-}
-}
-}
-}
+
 }
 }
 }

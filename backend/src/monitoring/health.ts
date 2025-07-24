@@ -1,79 +1,81 @@
+import { Request, Response, Router, NextFunction } from 'express';
+import config from '../config'; // For application version, name, environment;
+import logger from '../utils/logger'; // For logging health check activities
+
 // backend/src/monitoring/health.ts
 
 // 1. All import statements
-import { Request, Response, Router, NextFunction } from 'express';
+
 // Assuming these are available in the project's structure
-import config from '../config'; // For application version, name, environment
-import logger from '../utils/logger'; // For logging health check activities
 
 // 2. All TypeScript interfaces and types
 
 /**
  * Enum for defining the health status of a service or the application.
- */
+ */;
 export enum HealthStatus {
   UP = 'UP',
   DOWN = 'DOWN',
   DEGRADED = 'DEGRADED',
-  UNKNOWN = 'UNKNOWN',
+  UNKNOWN = 'UNKNOWN'
 }
 
 /**
  * Interface representing the status of an individual component or dependency.
- */
+ */;
 export interface ServiceHealth {
   name: string;
-  status: HealthStatus;
-  message?: string;
+  status: HealthStatus,
+  message?: string
   details?: { [key: string]: any }; // Optional additional details specific to the service
 }
 
 /**
  * Interface representing the detailed health check response for readiness probes.
  * This includes overall status and status of individual dependencies.
- */
+ */;
 export interface ReadinessResponse {
-  status: HealthStatus; // Overall status of the application
+  status: HealthStatus; // Overall status of the application,
   timestamp: string;
   application: {
-    name: string;
-    version: string;
-    environment: string;
-  };
-  dependencies: ServiceHealth[];
+  name: string,
+  version: string,
+  environment: string,
+  },
+    dependencies: ServiceHealth[],
   message?: string; // Overall message for the readiness state
 }
 
 /**
  * Interface for the Liveness health check response.
  * This is a simpler check, typically just indicating if the application process is running.
- */
+ */;
 export interface LivenessResponse {
   status: HealthStatus;
-  timestamp: string;
-  message: string;
+  timestamp: string,
+  message: string,
 }
 
 /**
  * Interface for the Version endpoint response.
  * Provides basic application metadata.
- */
+ */;
 export interface VersionResponse {
   name: string;
-  version: string;
-  environment: string;
-  timestamp: string;
+  version: string,
+  environment: string,
+  timestamp: string,
 }
 
 // 3. All constants and configuration
 
-// API Endpoint Paths for health checks
+// API Endpoint Paths for health checks;
 export const HEALTH_ROOT_PATH = '/health';
 export const LIVENESS_PATH = `${HEALTH_ROOT_PATH}/liveness`;
 export const READINESS_PATH = `${HEALTH_ROOT_PATH}/readiness`;
 export const VERSION_PATH = `${HEALTH_ROOT_PATH}/version`;
 
-// Default messages for various health states and scenarios
+// Default messages for various health states and scenarios;
 export const HEALTH_MESSAGES = {
   LIVENESS_OK: 'Application is alive and running.',
   READINESS_OK: 'Application is ready to serve requests.',
@@ -83,10 +85,10 @@ export const HEALTH_MESSAGES = {
   GENERAL_ERROR: 'An unexpected error occurred during health check.',
   UP_MESSAGE: 'All systems operational.',
   DEGRADED_MESSAGE: 'Some services are degraded, but application is partially functional.',
-  DOWN_MESSAGE: 'Application is down or critically impaired.',
-};
+  DOWN_MESSAGE: 'Application is down or critically impaired.'
+}
 
-// Application metadata (retrieved from a central configuration file)
+// Application metadata (retrieved from a central configuration file);
 export const APP_NAME = config.appName || 'BOOM Card Backend';
 export const APP_VERSION = config.appVersion || 'UNKNOWN';
 export const APP_ENVIRONMENT = config.nodeEnv || 'development';
@@ -98,11 +100,10 @@ export const APP_ENVIRONMENT = config.nodeEnv || 'development';
 /**
  * `HealthService` encapsulates the logic for performing various health checks
  * on the application's critical dependencies, such as the database and Redis.
- */
+ */;
 class HealthService {
-    private db: Knex;
-    private redisClient: RedisClientType;
-
+    private db: Knex,
+    private redisClient: RedisClientType,
     /**
      * Constructs a new `HealthService` instance.
      * @param db - The Knex database connection instance.
@@ -121,17 +122,17 @@ class HealthService {
         try {
             await this.db.raw('SELECT 1'); // Execute a trivial query to test connection
             return {
-                name: 'Database',
+  name: 'Database',
                 status: 'UP',
-                details: 'Connection successful',
-            };
+                details: 'Connection successful'
+}
         } catch (error: any) {
-            logger.error(`Health check: Database connection failed: ${error.message}`, { service: 'Database', error: error.message });
+            logger.error(`Health check: Database connection failed: ${error.message}`, { service: 'Database', error: error.message }),
             return {
-                name: 'Database',
+  name: 'Database',
                 status: 'DOWN',
-                details: `Connection failed: ${error.message}`,
-            };
+                details: `Connection failed: ${error.message}`
+}
         }
 
     /**
@@ -142,17 +143,17 @@ class HealthService {
         try {
             await this.redisClient.ping(); // Send PING command to test connection
             return {
-                name: 'Redis',
+  name: 'Redis',
                 status: 'UP',
-                details: 'Connection successful',
-            };
+                details: 'Connection successful'
+}
         } catch (error: any) {
-            logger.error(`Health check: Redis connection failed: ${error.message}`, { service: 'Redis', error: error.message });
+            logger.error(`Health check: Redis connection failed: ${error.message}`, { service: 'Redis', error: error.message }),
             return {
-                name: 'Redis',
+  name: 'Redis',
                 status: 'DOWN',
-                details: `Connection failed: ${error.message}`,
-            };
+                details: `Connection failed: ${error.message}`
+}
         }
 
     /**
@@ -163,17 +164,17 @@ class HealthService {
         const checks = await Promise.all([
             this.checkDatabase(),
             this.checkRedis(),
-            // Add other critical service checks here as the application grows
+            // Add other critical service checks here as the application grows;
         ]);
 
-        // Determine overall status: 'UP' if all services are 'UP', otherwise 'DOWN'
-        const overallStatus: HealthStatus = checks.every(check => check.status === 'UP') ? 'UP' : 'DOWN';
+        // Determine overall status: 'UP' if all services are 'UP', otherwise 'DOWN';
 
+const overallStatus: HealthStatus = checks.every(check => check.status === 'UP') ? 'UP': 'DOWN',
         return {
-            status: overallStatus,
+  status: overallStatus,
             timestamp: new Date().toISOString(),
-            services: checks,
-        };
+            services: checks
+};
     }
 
 // Core business logic is encapsulated within the HealthService class.
@@ -187,8 +188,9 @@ class HealthService {
  * @param redisClient - The Redis client instance.
  * @returns An Express Router instance with health check routes configured.
  */
-const createHealthRouter = (db: Knex, redisClient: RedisClientType): Router => {
-    const router = Router();
+    // TODO: Fix incomplete function declaration,
+const router = Router();
+
     const healthService = new HealthService(db, redisClient); // Instantiate the health service
 
     /**
@@ -225,14 +227,14 @@ const createHealthRouter = (db: Knex, redisClient: RedisClientType): Router => {
                 // If any critical service is DOWN, return 503 Service Unavailable
                 return res.status(503).json(healthStatus);
             } catch (error: any) {
-            logger.error(`Health check endpoint error: ${error.message}`, { error: error.message, stack: error.stack });
+            logger.error(`Health check endpoint error: ${error.message}`, { error: error.message, stack: error.stack }),
             // Fallback for unexpected errors during the health check execution itself
             return res.status(500).json({
-                status: 'DOWN',
+      status: 'DOWN',
                 timestamp: new Date().toISOString(),
-                services: [], // Services array might be empty if error prevents checks
-                error: 'Internal server error during health check process',
-            });
+                services: [], // Services array might be empty if error prevents checks,
+  error: 'Internal server error during health check process'
+});
         });
 
     /**
@@ -265,10 +267,10 @@ const createHealthRouter = (db: Knex, redisClient: RedisClientType): Router => {
         // A simple liveness check just indicates the server process is running and responsive.
         // It's designed to restart the pod if it fails.
         res.status(200).json({
-            status: 'UP',
+      status: 'UP',
             timestamp: new Date().toISOString(),
-            message: 'Application is alive',
-        });
+            message: 'Application is alive'
+});
     });
 
     /**
@@ -305,24 +307,23 @@ const createHealthRouter = (db: Knex, redisClient: RedisClientType): Router => {
                 // If any critical service is DOWN, the application is not ready to serve traffic.
                 return res.status(503).json(healthStatus);
             } catch (error: any) {
-            logger.error(`Readiness check endpoint error: ${error.message}`, { error: error.message, stack: error.stack });
+            logger.error(`Readiness check endpoint error: ${error.message}`, { error: error.message, stack: error.stack }),
             return res.status(500).json({
-                status: 'DOWN',
+      status: 'DOWN',
                 timestamp: new Date().toISOString(),
                 services: [],
-                error: 'Internal server error during readiness check process',
-            });
+                error: 'Internal server error during readiness check process'
+});
         });
 
     return router;
-};
+}
 
-// Export the function to create the health router
-export { createHealthRouter };
+// Export the function to create the health router;
+export { createHealthRouter }
 
 }
-}
-}
+
 }
 }
 }

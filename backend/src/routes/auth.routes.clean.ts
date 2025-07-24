@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import {
-  register,
+import { authenticateToken } from '../middleware/auth.middleware.clean';
+
+register,
   login,
   refreshToken,
   logout,
@@ -15,36 +16,39 @@ import {
   disable2FA,
   verify2FA
 } from '../controllers/auth.controller.clean';
-import { authenticateToken } from '../middleware/auth.middleware.clean';
+;
 
 const router = Router();
 
-// Rate limiting middleware
+// Rate limiting middleware;
+
 const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // Increased to 50 requests per window for testing
+  windowMs: 15 * 60 * 1000, // 15 minutes,
+  max: 50, // Increased to 50 requests per window for testing,
   message: {
-    success: false,
+  success: false,
     message: 'Too many authentication attempts, please try again later',
     error: 'RATE_LIMIT_EXCEEDED'
   },
   standardHeaders: true,
-  legacyHeaders: false,
+  legacyHeaders: false;
 });
+;
 
 const generalRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
+  windowMs: 15 * 60 * 1000, // 15 minutes,
+  max: 100, // 100 requests per window,
   message: {
-    success: false,
+  success: false,
     message: 'Too many requests, please try again later',
     error: 'RATE_LIMIT_EXCEEDED'
   },
   standardHeaders: true,
-  legacyHeaders: false,
+  legacyHeaders: false;
 });
 
-// Validation middleware
+// Validation middleware;
+
 const validateRegistration = [
   body('email')
     .isEmail()
@@ -64,6 +68,7 @@ const validateRegistration = [
     .isLength({ min: 1, max: 50 })
     .withMessage('Last name is required and must be less than 50 characters'),
 ];
+;
 
 const validateLogin = [
   body('email')
@@ -74,12 +79,14 @@ const validateLogin = [
     .notEmpty()
     .withMessage('Password is required'),
 ];
+;
 
 const validateRefreshToken = [
   body('refreshToken')
     .notEmpty()
     .withMessage('Refresh token is required'),
 ];
+;
 
 const validateChangePassword = [
   body('currentPassword')
@@ -91,6 +98,7 @@ const validateChangePassword = [
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
     .withMessage('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
 ];
+;
 
 const validateVerifyEmail = [
   body('token')
@@ -99,6 +107,7 @@ const validateVerifyEmail = [
     .isString()
     .withMessage('Token must be a string'),
 ];
+;
 
 const validateResendVerification = [
   body('email')
@@ -108,8 +117,8 @@ const validateResendVerification = [
 ];
 
 // Validation error handler
-const handleValidationErrors = (req: any, res: any, next: any) => {
-  const errors = validationResult(req);
+    // TODO: Fix incomplete function declaration,
+const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
@@ -117,9 +126,9 @@ const handleValidationErrors = (req: any, res: any, next: any) => {
       error: 'VALIDATION_ERROR',
       details: errors.array()
     });
-  }
+  },
   next();
-};
+}
 
 // Public routes
 router.post('/register', 
@@ -208,11 +217,11 @@ router.post('/2fa/verify',
 // Health check for auth service
 router.get('/health', (req, res) => {
   res.status(200).json({
-    success: true,
+      success: true,
     message: 'Authentication service is healthy',
     timestamp: new Date().toISOString(),
     service: 'auth'
   });
 });
-
+;
 export default router;

@@ -5,69 +5,66 @@ import { createIndex, dropIndex } from '../utils/indexHelpers';
 import { addColumn, dropColumn, changeColumn } from '../utils/columnHelpers';
 import { createTable, dropTable } from '../utils/tableHelpers';
 import { addConstraint, removeConstraint } from '../utils/constraintHelpers';
-
+;
 interface CardRewardTier {
-  id: string;
-  tier_name: string;
-  min_points: number;
-  max_points: number;
-  multiplier: number;
-  benefits: string[];
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  tier_name: string,
+  min_points: number,
+  max_points: number,
+  multiplier: number,
+  benefits: string[];,
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface TransactionCategory {
-  id: string;
-  category_name: string;
-  category_code: string;
-  parent_category_id?: string;
-  icon_url?: string;
-  description?: string;
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  category_name: string,
+  category_code: string,
+  parent_category_id?: string
+  icon_url?: string
+  description?: string,
+  is_active: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface MerchantPartnership {
-  id: string;
-  merchant_id: string;
-  partnership_type: 'STANDARD' | 'PREMIUM' | 'EXCLUSIVE';
-  discount_percentage: number;
-  cashback_percentage: number;
-  start_date: Date;
-  end_date?: Date;
-  terms_and_conditions: string;
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  merchant_id: string,
+  partnership_type: 'STANDARD' | 'PREMIUM' | 'EXCLUSIVE',
+  discount_percentage: number,
+  cashback_percentage: number,
+  start_date: Date,
+  end_date?: Date,
+  terms_and_conditions: string,
+  is_active: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface UserNotificationPreference {
-  id: string;
-  user_id: string;
-  notification_type: string;
-  channel: 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP';
-  is_enabled: boolean;
-  frequency?: 'IMMEDIATE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  user_id: string,
+  notification_type: string,
+  channel: 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP',
+  is_enabled: boolean,
+  frequency?: 'IMMEDIATE' | 'DAILY' | 'WEEKLY' | 'MONTHLY',
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface FraudRule {
-  id: string;
-  rule_name: string;
-  rule_type: 'VELOCITY' | 'AMOUNT' | 'LOCATION' | 'MERCHANT' | 'PATTERN';
-  conditions: Record<string, any>;
-  action: 'BLOCK' | 'FLAG' | 'REVIEW' | 'NOTIFY';
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  rule_name: string,
+  rule_type: 'VELOCITY' | 'AMOUNT' | 'LOCATION' | 'MERCHANT' | 'PATTERN',
+  conditions: Record<string, any>;,
+  action: 'BLOCK' | 'FLAG' | 'REVIEW' | 'NOTIFY',
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+  is_active: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
-
 const MIGRATION_NAME = '013_add_reward_tiers_and_fraud_rules';
+
 const SCHEMA_NAME = 'boom_card';
+;
 
 const TABLE_NAMES = {
   CARD_REWARD_TIERS: 'card_reward_tiers',
@@ -77,8 +74,9 @@ const TABLE_NAMES = {
   FRAUD_RULES: 'fraud_rules',
   TRANSACTION_CATEGORY_MAPPINGS: 'transaction_category_mappings',
   REWARD_TIER_BENEFITS: 'reward_tier_benefits',
-  FRAUD_RULE_ACTIONS: 'fraud_rule_actions'
+  FRAUD_RULE_ACTIONS: 'fraud_rule_actions';
 } as const;
+;
 
 const INDEX_NAMES = {
   IDX_REWARD_TIERS_POINTS: 'idx_reward_tiers_points_range',
@@ -88,8 +86,9 @@ const INDEX_NAMES = {
   IDX_PARTNERSHIPS_DATES: 'idx_merchant_partnerships_active_dates',
   IDX_NOTIFICATIONS_USER: 'idx_notification_preferences_user',
   IDX_FRAUD_RULES_TYPE: 'idx_fraud_rules_type_active',
-  IDX_CATEGORY_MAPPINGS: 'idx_transaction_category_mappings'
+  IDX_CATEGORY_MAPPINGS: 'idx_transaction_category_mappings';
 } as const;
+;
 
 const CONSTRAINT_NAMES = {
   FK_CATEGORIES_PARENT: 'fk_categories_parent_category',
@@ -101,8 +100,9 @@ const CONSTRAINT_NAMES = {
   FK_FRAUD_ACTIONS_RULE: 'fk_fraud_actions_rule',
   CHK_REWARD_TIERS_POINTS: 'chk_reward_tiers_points_valid',
   CHK_PARTNERSHIPS_PERCENTAGES: 'chk_partnerships_percentages_valid',
-  CHK_NOTIFICATIONS_CHANNEL: 'chk_notifications_channel_valid'
+  CHK_NOTIFICATIONS_CHANNEL: 'chk_notifications_channel_valid';
 } as const;
+;
 
 const DEFAULT_VALUES = {
   STANDARD_MULTIPLIER: 1.0,
@@ -111,11 +111,10 @@ const DEFAULT_VALUES = {
   MIN_DISCOUNT_PERCENTAGE: 0,
   MAX_DISCOUNT_PERCENTAGE: 100,
   MIN_CASHBACK_PERCENTAGE: 0,
-  MAX_CASHBACK_PERCENTAGE: 50
+  MAX_CASHBACK_PERCENTAGE: 50;
 } as const;
 
-Since migration 013 doesn't exist yet and I need to generate Part 2 without Part 1, I'll create Part 2 based on the patterns from previous migrations. Looking at migration 012 which handles advanced notification features, migration 013 would likely continue with additional card-related features. Here's Part 2:
-
+Since migration 013 doesn't exist yet and I need to generate Part 2 without Part 1, I'll create Part 2 based on the patterns from previous migrations. Looking at migration 012 which handles advanced notification features, migration 013 would likely continue with additional card-related features. Here's Part 2:;
 export async function up(knex: Knex): Promise<void> {
   // Create card_templates table
   await knex.schema.createTable(TABLE_NAMES.CARD_TEMPLATES, (table) => {
@@ -205,7 +204,7 @@ export async function up(knex: Knex): Promise<void> {
   // Add new columns to cards table
   await knex.schema.alterTable(TABLE_NAMES.CARDS, (table) => {
     table.uuid('template_id').references('id').inTable(TABLE_NAMES.CARD_TEMPLATES).onDelete('SET NULL');
-    table.jsonb('collaboration_settings').defaultTo('{"allow_comments": true, "allow_sharing": true}');
+    table.jsonb('collaboration_settings').defaultTo('{"allow_comments": true, "allow_sharing": true}'),
     table.integer('view_count').defaultTo(0);
     table.integer('share_count').defaultTo(0);
     table.timestamp('last_viewed_at');
@@ -249,22 +248,20 @@ export async function up(knex: Knex): Promise<void> {
       IF OLD IS NULL OR OLD.data IS DISTINCT FROM NEW.data OR OLD.design IS DISTINCT FROM NEW.design THEN
         SELECT COALESCE(MAX(revision_number), 0) + 1 INTO v_revision_number
         FROM ${TABLE_NAMES.CARD_REVISIONS}
-        WHERE card_id = NEW.id;
-        
-        v_changes := '{}'::jsonb;
-        
-        IF OLD IS NULL THEN
-          v_change_type := 'content';
-          v_changes := jsonb_build_object('action', 'created');
+        WHERE card_id = NEW.id;,
+  v_changes:= '{}': :jsonb,
+        IF OLD IS NULL THEN,
+  v_change_type: = 'content',
+  v_changes:= jsonb_build_object('action', 'created');
         ELSE
-          IF OLD.data IS DISTINCT FROM NEW.data THEN
-            v_change_type := 'content';
-            v_changes := v_changes || jsonb_build_object('data', NEW.data);
+          IF OLD.data IS DISTINCT FROM NEW.data THEN,
+  v_change_type: = 'content',
+  v_changes:= v_changes || jsonb_build_object('data', NEW.data);
           END IF;
           
-          IF OLD.design IS DISTINCT FROM NEW.design THEN
-            v_change_type := 'design';
-            v_changes := v_changes || jsonb_build_object('design', NEW.design);
+          IF OLD.design IS DISTINCT FROM NEW.design THEN,
+  v_change_type: = 'design',
+  v_changes:= v_changes || jsonb_build_object('design', NEW.design);
           END IF;
         END IF;
         
@@ -329,10 +326,11 @@ export async function up(knex: Knex): Promise<void> {
     EXECUTE FUNCTION update_card_analytics_counts();
   `);
 
-  // Insert default notification templates
-  const defaultTemplates = [
+  // Insert default notification templates;
+
+const defaultTemplates = [
     {
-      id: uuidv4(),
+  id: uuidv4(),
       name: DEFAULT_TEMPLATES.INVITATION.name,
       type: DEFAULT_TEMPLATES.INVITATION.type,
       subject: DEFAULT_TEMPLATES.INVITATION.subject,
@@ -346,7 +344,7 @@ export async function up(knex: Knex): Promise<void> {
       is_active: true
     },
     {
-      id: uuidv4(),
+  id: uuidv4(),
       name: DEFAULT_TEMPLATES.REVISION_NOTIFICATION.name,
       type: DEFAULT_TEMPLATES.REVISION_NOTIFICATION.type,
       subject: DEFAULT_TEMPLATES.REVISION_NOTIFICATION.subject,

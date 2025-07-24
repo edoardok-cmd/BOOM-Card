@@ -1,71 +1,69 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
-
+;
 interface CardTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  design_config: Record<string, any>;
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  name: string,
+  description: string,
+  category: string,
+  design_config: Record<string, any>;,
+  is_active: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface CardAnalytics {
-  id: string;
-  card_id: string;
-  user_id: string;
-  event_type: 'view' | 'share' | 'download' | 'edit' | 'delete';
-  event_data: Record<string, any>;
-  ip_address: string;
-  user_agent: string;
-  referrer: string;
-  session_id: string;
-  created_at: Date;
+  id: string,
+  card_id: string,
+  user_id: string,
+  event_type: 'view' | 'share' | 'download' | 'edit' | 'delete',
+  event_data: Record<string, any>;,
+  ip_address: string,
+  user_agent: string,
+  referrer: string,
+  session_id: string,
+  created_at: Date,
 }
-
 interface CardCollaboration {
-  id: string;
-  card_id: string;
-  user_id: string;
-  permission_level: 'view' | 'comment' | 'edit' | 'admin';
-  invited_by: string;
-  invitation_status: 'pending' | 'accepted' | 'declined' | 'revoked';
-  invited_at: Date;
-  responded_at: Date | null;
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  card_id: string,
+  user_id: string,
+  permission_level: 'view' | 'comment' | 'edit' | 'admin',
+  invited_by: string,
+  invitation_status: 'pending' | 'accepted' | 'declined' | 'revoked',
+  invited_at: Date,
+  responded_at: Date | null,
+  created_at: Date,
+  updated_at: Date,
 }
-
 interface CardRevision {
-  id: string;
-  card_id: string;
-  user_id: string;
-  revision_number: number;
-  change_type: 'content' | 'design' | 'settings' | 'metadata';
-  changes: Record<string, any>;
-  previous_data: Record<string, any>;
-  created_at: Date;
+  id: string,
+  card_id: string,
+  user_id: string,
+  revision_number: number,
+  change_type: 'content' | 'design' | 'settings' | 'metadata',
+  changes: Record<string, any>;,
+  previous_data: Record<string, any>;,
+  created_at: Date,
 }
-
 interface NotificationTemplate {
-  id: string;
-  name: string;
-  type: 'email' | 'sms' | 'push' | 'in_app';
-  subject: string;
-  body_template: string;
-  variables: string[];
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  id: string,
+  name: string,
+  type: 'email' | 'sms' | 'push' | 'in_app',
+  subject: string,
+  body_template: string,
+  variables: string[];,
+  is_active: boolean,
+  created_at: Date,
+  updated_at: Date,
 }
-
 type MigrationDirection = 'up' | 'down';
 type TableOperation = 'create' | 'alter' | 'drop';
+;
 
 const MIGRATION_NAME = '012_add_analytics_and_collaboration';
+
 const SCHEMA_NAME = 'public';
+;
 
 const TABLE_NAMES = {
   CARD_TEMPLATES: 'card_templates',
@@ -74,8 +72,9 @@ const TABLE_NAMES = {
   CARD_REVISIONS: 'card_revisions',
   NOTIFICATION_TEMPLATES: 'notification_templates',
   CARDS: 'cards',
-  USERS: 'users'
+  USERS: 'users';
 } as const;
+;
 
 const INDEX_NAMES = {
   IDX_ANALYTICS_CARD_ID: 'idx_card_analytics_card_id',
@@ -90,35 +89,36 @@ const INDEX_NAMES = {
   IDX_REVISION_USER_ID: 'idx_card_revisions_user_id',
   IDX_REVISION_NUMBER: 'idx_card_revisions_number',
   IDX_TEMPLATE_TYPE: 'idx_notification_templates_type',
-  IDX_TEMPLATE_ACTIVE: 'idx_notification_templates_active'
+  IDX_TEMPLATE_ACTIVE: 'idx_notification_templates_active';
 } as const;
+;
 
 const TRIGGER_NAMES = {
   UPDATE_CARD_TEMPLATES_TIMESTAMP: 'update_card_templates_timestamp',
   UPDATE_CARD_COLLABORATIONS_TIMESTAMP: 'update_card_collaborations_timestamp',
   UPDATE_NOTIFICATION_TEMPLATES_TIMESTAMP: 'update_notification_templates_timestamp',
-  LOG_CARD_REVISION: 'log_card_revision_on_update'
+  LOG_CARD_REVISION: 'log_card_revision_on_update';
 } as const;
+;
 
 const DEFAULT_TEMPLATES = {
   INVITATION: {
-    name: 'Card Collaboration Invitation',
+  name: 'Card Collaboration Invitation',
     type: 'email' as const,
     subject: 'You have been invited to collaborate on a BOOM Card',
     variables: ['inviter_name', 'card_title', 'permission_level', 'invitation_link']
   },
   REVISION_NOTIFICATION: {
-    name: 'Card Updated Notification',
+  name: 'Card Updated Notification',
     type: 'in_app' as const,
     subject: 'A card you are collaborating on has been updated',
     variables: ['editor_name', 'card_title', 'change_summary']
-  };
+  }
+    const MIGRATION_BATCH_SIZE = 1000;
 
-const MIGRATION_BATCH_SIZE = 1000;
 const MIGRATION_TIMEOUT = 60000;
 
-Since Part 1 doesn't exist yet, I'll generate Part 2 of migration 012 based on the pattern from previous migrations. Based on migration 011 which handles notifications, migration 012 would likely continue with related functionality. Here's Part 2:
-
+Since Part 1 doesn't exist yet, I'll generate Part 2 of migration 012 based on the pattern from previous migrations. Based on migration 011 which handles notifications, migration 012 would likely continue with related functionality. Here's Part 2:;
 export async function up(knex: Knex): Promise<void> {
   // Create email_queue table
   await knex.schema.createTable('email_queue', (table) => {
@@ -290,8 +290,8 @@ export async function up(knex: Knex): Promise<void> {
     BEGIN
       IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND OLD.read != NEW.read) THEN
         IF NEW.user_id IS NOT NULL THEN
-          UPDATE users 
-          SET unread_notifications_count = (
+          UPDATE users,
+  SET: (
             SELECT COUNT(*) 
             FROM notifications 
             WHERE user_id = NEW.user_id 
@@ -301,8 +301,8 @@ export async function up(knex: Knex): Promise<void> {
           )
           WHERE id = NEW.user_id;
         ELSIF NEW.partner_id IS NOT NULL THEN
-          UPDATE partners 
-          SET unread_notifications_count = (
+          UPDATE partners,
+  SET: (
             SELECT COUNT(*) 
             FROM notifications 
             WHERE partner_id = NEW.partner_id 
@@ -354,9 +354,9 @@ export async function up(knex: Knex): Promise<void> {
     WHERE read = false AND archived = false;
   `);
 }
-
 export async function down(knex: Knex): Promise<void> {
   // Drop triggers and functions
   await knex.raw('DROP TRIGGER IF EXISTS update_notification_count_trigger ON 
 }
+
 }

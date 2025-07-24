@@ -5,8 +5,6 @@ import { validateRequest } from '../middleware/validation';
 import { errorHandler } from '../middleware/errorHandler';
 import { corsMiddleware } from '../middleware/cors';
 import { loggerMiddleware } from '../middleware/logger';
-
-// Route imports
 import authRoutes from './auth';
 import userRoutes from './users';
 import cardRoutes from './cards';
@@ -22,96 +20,105 @@ import webhookRoutes from './webhooks';
 import healthRoutes from './health';
 import configRoutes from './config';
 import reportRoutes from './reports';
-
-// Types
 import { Request, Response, NextFunction } from 'express';
 import { RouteConfig, RouteMetadata, APIVersion } from '../types/routes';
 import { RateLimitConfig } from '../types/middleware';
+import { RoutesManager } from '../core/RoutesManager';
+import { RouteMetadata } from '../types/routes';
+import { Logger } from '../utils/logger';
+import { ValidationError, NotFoundError } from '../utils/errors';
+import { asyncHandler } from '../middleware/asyncHandler';
+import { authenticate } from '../middleware/auth';
+import { corsHandler } from '../middleware/cors';
+import { compression } from 'compression';
+import helmet from 'helmet';
 
-// Interfaces
+// Route imports
+
+// Types
+
+// Interfaces;
 interface RouteRegistration {
-  path: string;
-  router: Router;
-  middleware?: Array<(req: Request, res: Response, next: NextFunction) => void>;
-  version?: APIVersion;
-  deprecated?: boolean;
-  rateLimit?: RateLimitConfig;
-}
-
+  path: string,
+  router: Router,
+  middleware?: Array<(req: Request, res: Response, next: NextFunction) => void>,
+  version?: APIVersion
+  deprecated?: boolean
+  rateLimit?: RateLimitConfig}
 interface RouteGroup {
-  prefix: string;
-  routes: RouteRegistration[];
-  middleware?: Array<(req: Request, res: Response, next: NextFunction) => void>;
+  prefix: string,
+  routes: RouteRegistration[],
+  middleware?: Array<(req: Request, res: Response, next: NextFunction) => void>,
 }
-
 interface RouterConfig {
-  apiPrefix: string;
-  defaultVersion: APIVersion;
-  enableVersioning: boolean;
-  enableMetrics: boolean;
-  enableDocs: boolean;
-  strictMode: boolean;
+  apiPrefix: string,
+  defaultVersion: APIVersion,
+  enableVersioning: boolean,
+  enableMetrics: boolean,
+  enableDocs: boolean,
+  strictMode: boolean,
 }
 
-// Constants
+// Constants;
+
 const API_PREFIX = '/api';
-const DEFAULT_API_VERSION: APIVersion = 'v1';
+
+const DEFAULT_API_VERSION: APIVersion = 'v1',
 const SUPPORTED_VERSIONS: APIVersion[] = ['v1', 'v2'];
+;
 
 const ROUTE_GROUPS: Record<string, RouteGroup> = {
   public: {
-    prefix: '/public',
+  prefix: '/public',
     routes: [],
     middleware: [corsMiddleware, loggerMiddleware]
   },
   authenticated: {
-    prefix: '/auth',
+  prefix: '/auth',
     routes: [],
     middleware: [corsMiddleware, loggerMiddleware, authenticateToken]
   },
   admin: {
-    prefix: '/admin',
+  prefix: '/admin',
     routes: [],
     middleware: [corsMiddleware, loggerMiddleware, authenticateToken]
   },
   webhook: {
-    prefix: '/webhooks',
+  prefix: '/webhooks',
     routes: [],
     middleware: [loggerMiddleware]
-  };
-
-const ROUTER_CONFIG: RouterConfig = {
+  }
+    const ROUTER_CONFIG: RouterConfig = {
   apiPrefix: API_PREFIX,
   defaultVersion: DEFAULT_API_VERSION,
   enableVersioning: true,
   enableMetrics: true,
   enableDocs: true,
   strictMode: true
-};
+}
 
-// Route metadata decorators
+// Route metadata decorators;
+
 const routeMetadata = new Map<string, RouteMetadata>();
-
+;
 export function Route(metadata: RouteMetadata) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const routeKey = `${target.constructor.name}.${propertyKey}`;
     routeMetadata.set(routeKey, metadata);
     return descriptor;
-  };
+  }
 }
-
 export function Deprecated(message?: string) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const existing = routeMetadata.get(routeKey) || {};
+    const existing = routeMetadata.get(routeKey) || {}
     routeMetadata.set(routeKey, {
       ...existing,
       deprecated: true,
-      deprecationMessage: message
+      deprecationMessage: message;
     });
     return descriptor;
-  };
+  }
 }
-
 export function RateLimit(config: RateLimitConfig) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     routeMetadata.set(routeKey, {
@@ -119,27 +126,13 @@ export function RateLimit(config: RateLimitConfig) {
       rateLimit: config
     });
     return descriptor;
-  };
+  }
 }
-
-import { Router } from 'express';
-import { RoutesManager } from '../core/RoutesManager';
-import { RouteMetadata } from '../types/routes';
-import { Logger } from '../utils/logger';
-import { ValidationError, NotFoundError } from '../utils/errors';
-import { asyncHandler } from '../middleware/asyncHandler';
-import { validateRequest } from '../middleware/validation';
-import { authenticate } from '../middleware/auth';
-import { rateLimiter } from '../middleware/rateLimiter';
-import { corsHandler } from '../middleware/cors';
-import { compression } from 'compression';
-import helmet from 'helmet';
-
 const logger = new Logger('RoutesIndex');
-
+;
 export class RouteAggregator {
-  private router: Router;
-  private routesManager: RoutesManager;
+  private router: Router,
+  private routesManager: RoutesManager,
   private registeredRoutes: Map<string, RouteMetadata>;
 
   constructor() {
@@ -153,8 +146,8 @@ export class RouteAggregator {
     this.router.use(helmet());
     this.router.use(compression());
     this.router.use(corsHandler);
-    this.router.use(express.json({ limit: '10mb' }));
-    this.router.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    this.router.use(express.json({ limit: '10mb' })),
+    this.router.use(express.urlencoded({ extended: true, limit: '10mb' })),
   }
 
   public async initialize(): Promise<void> {
@@ -167,8 +160,8 @@ export class RouteAggregator {
       logger.error('Failed to initialize route aggregator', error);
       throw error;
     }
-
-  private async loadRoutes(): Promise<void> {
+    }
+    private async loadRoutes(): Promise<void> {
     const routeModules = await this.routesManager.discoverRoutes();
     
     for (const module of routeModules) {
@@ -176,6 +169,7 @@ export class RouteAggregator {
         const routes = await this.routesManager.loadRouteModule(module);
         this.registerRoutes(routes);
       } catch (error) {
+    }
         logger.error(`Failed to load route module: ${module}`, error);
       }
   }
@@ -185,7 +179,7 @@ export class RouteAggregator {
       const key = `${route.method}:${route.path}`;
       
       if (this.registeredRoutes.has(key)) {
-        logger.warn(`Route already registered: ${key}`);
+        logger.warn(`Route already registered: ${key}`),
         continue;
       }
 
@@ -195,6 +189,7 @@ export class RouteAggregator {
 
   private createRoute(route: RouteMetadata): void {
     const middlewares = this.buildMiddlewareStack(route);
+
     const handler = asyncHandler(route.handler);
 
     switch (route.method.toLowerCase()) {
@@ -212,29 +207,24 @@ export class RouteAggregator {
         break;
       case 'delete':
         this.router.delete(route.path, ...middlewares, handler);
-        break;
-      default:
-        logger.warn(`Unsupported HTTP method: ${route.method}`);
+        break;,
+  default: logger.warn(`Unsupported HTTP method: ${route.method}`),
     }
 
-    logger.debug(`Registered route: ${route.method} ${route.path}`);
+    logger.debug(`Registered route: ${route.method} ${route.path}`),
   }
 
   private buildMiddlewareStack(route: RouteMetadata): RequestHandler[] {
-    const middlewares: RequestHandler[] = [];
-
+    const middlewares: RequestHandler[] = [],
     if (route.rateLimit) {
       middlewares.push(rateLimiter(route.rateLimit));
     }
-
     if (route.auth) {
       middlewares.push(authenticate(route.auth));
     }
-
     if (route.validation) {
       middlewares.push(validateRequest(route.validation));
     }
-
     if (route.middlewares) {
       middlewares.push(...route.middlewares);
     }
@@ -246,7 +236,7 @@ export class RouteAggregator {
     // Health check endpoint
     this.router.get('/health', (req, res) => {
       res.json({
-        status: 'ok',
+  status: 'ok',
         timestamp: new Date().toISOString(),
         routes: this.registeredRoutes.size
       });
@@ -254,7 +244,7 @@ export class RouteAggregator {
 
     // Route documentation endpoint
     this.router.get('/routes', authenticate({ required: true }), (req, res) => {
-        method: route.method,
+  method: route.method,
         path: route.path,
         description: route.description,
         auth: route.auth ? 'required' : 'none',
@@ -268,13 +258,13 @@ export class RouteAggregator {
   private setupErrorHandlers(): void {
     // 404 handler
     this.router.use((req, res, next) => {
-      next(new NotFoundError(`Route not found: ${req.method} ${req.path}`));
+      next(new NotFoundError(`Route not found: ${req.method} ${req.path}`)),
     });
 
     // Global error handler
     this.router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
       logger.error('Unhandled error', {
-        error: error.message,
+  error: error.message,
         stack: error.stack,
         path: req.path,
         method: req.method
@@ -282,21 +272,20 @@ export class RouteAggregator {
 
       if (error instanceof ValidationError) {
         return res.status(400).json({
-          error: 'Validation Error',
+      error: 'Validation Error',
           message: error.message,
           details: error.details
         });
       }
-
       if (error instanceof NotFoundError) {
         return res.status(404).json({
-          error: 'Not Found',
+      error: 'Not Found',
           message: error.message
         });
       }
 
       res.status(500).json({
-        error: 'Internal Server Error',
+      error: 'Internal Server Error',
         message: process.env.NODE_ENV === 'production' 
           ? 'An unexpected error occurred' 
           : error.message
@@ -317,34 +306,30 @@ export class RouteAggregator {
     return this.loadRoutes();
   }
 
-// Create and export singleton instance
+// Create and export singleton instance;
 export const routeAggregator = new RouteAggregator();
 
-// Export initialization function
+// Export initialization function;
 export async function initializeRoutes(app: Express): Promise<void> {
   await routeAggregator.initialize();
   app.use('/api', routeAggregator.getRouter());
   logger.info('Routes mounted on /api');
 }
 
-// Export utility functions
+// Export utility functions;
 export function registerDynamicRoute(route: RouteMetadata): void {
   routeAggregator['registerRoutes']([route]);
 }
-
 export function getRouteMetrics(): Record<string, any> {
   return {
-    total: routes.length,
+  total: routes.length,
     byMethod: routes.reduce((acc, route) => {
       acc[route.method] = (acc[route.method] || 0) + 1;
       return acc;
     }, {} as Record<string, number>),
     authenticated: routes.filter(r => r.auth).length,
     rateLimited: routes.filter(r => r.rateLimit).length
-  };
-}
-
-}
+  }
 }
 }
 }

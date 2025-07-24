@@ -2,9 +2,10 @@ import { Router } from 'express';
 import { Pool } from 'pg';
 import { createReviewController } from '../controllers/review.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
-
-export const createReviewRoutes = (pool: Pool): Router => {
+;
+export const asyncHandler: (pool: Pool): Router => {
   const router = Router();
+
   const reviewController = createReviewController(pool);
 
   // Public routes
@@ -22,4 +23,4 @@ export const createReviewRoutes = (pool: Pool): Router => {
   router.delete('/:id', reviewController.deleteReview);
 
   return router;
-};
+}

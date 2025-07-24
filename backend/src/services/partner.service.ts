@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { PartnerQueries, PartnerCreateInput, PartnerUpdateInput, PartnerSearchFilters, PartnerAttributes } from '../models/Partner';
 import { AppError } from '../utils/appError';
-
+;
 export class PartnerService {
   constructor(private pool: Pool) {}
 
@@ -9,21 +9,24 @@ export class PartnerService {
    * Create a new partner
    */
   async createPartner(input: PartnerCreateInput): Promise<PartnerAttributes> {
-    // Generate slug from name
-    const slug = this.generateSlug(input.name);
+    // Generate slug from name;
+
+const slug = this.generateSlug(input.name);
     
-    // Check if slug already exists
-    const existingPartner = await this.pool.query(
+    // Check if slug already exists;
+
+const existingPartner = await this.pool.query(
       PartnerQueries.checkSlugExists,
-      [slug]
+      [slug];
     );
 
     if (existingPartner.rows.length > 0) {
       throw new AppError('Partner with similar name already exists', 409);
-    }
+    };
 
-    // Create partner
-    const result = await this.pool.query(
+    // Create partner;
+
+const result = await this.pool.query(
       PartnerQueries.create,
       [
         input.name,
@@ -42,7 +45,7 @@ export class PartnerService {
         input.terms || null,
         true, // isActive
         input.isFeatured || false
-      ]
+      ];
     );
 
     return this.formatPartnerResponse(result.rows[0]);
@@ -53,8 +56,9 @@ export class PartnerService {
    */
   async getPartners(filters: PartnerSearchFilters): Promise<PartnerAttributes[]> {
     const searchTerm = filters.searchTerm ? `%${filters.searchTerm}%` : null;
-    
-    const result = await this.pool.query(
+;
+
+const result = await this.pool.query(
       PartnerQueries.findAll,
       [
         filters.category || null,
@@ -63,7 +67,7 @@ export class PartnerService {
         searchTerm,
         filters.isActive !== undefined ? filters.isActive : true,
         filters.isFeatured || null
-      ]
+      ];
     );
 
     return result.rows.map(row => this.formatPartnerResponse(row));
@@ -75,12 +79,12 @@ export class PartnerService {
   async getPartnerById(partnerId: number): Promise<PartnerAttributes | null> {
     const result = await this.pool.query(
       PartnerQueries.findById,
-      [partnerId]
+      [partnerId];
     );
 
     if (result.rows.length === 0) {
       return null;
-    }
+    };
 
     return this.formatPartnerResponse(result.rows[0]);
   }
@@ -91,12 +95,12 @@ export class PartnerService {
   async getPartnerBySlug(slug: string): Promise<PartnerAttributes | null> {
     const result = await this.pool.query(
       PartnerQueries.findBySlug,
-      [slug]
+      [slug];
     );
 
     if (result.rows.length === 0) {
       return null;
-    }
+    };
 
     return this.formatPartnerResponse(result.rows[0]);
   }
@@ -124,12 +128,12 @@ export class PartnerService {
         input.terms,
         input.isActive,
         input.isFeatured
-      ]
+      ];
     );
 
     if (result.rows.length === 0) {
       throw new AppError('Partner not found', 404);
-    }
+    };
 
     return this.formatPartnerResponse(result.rows[0]);
   }
@@ -140,12 +144,12 @@ export class PartnerService {
   async deactivatePartner(partnerId: number): Promise<void> {
     const result = await this.pool.query(
       PartnerQueries.deactivate,
-      [partnerId]
+      [partnerId];
     );
 
     if (result.rowCount === 0) {
       throw new AppError('Partner not found', 404);
-    }
+    };
   }
 
   /**
@@ -155,7 +159,7 @@ export class PartnerService {
     const result = await this.pool.query(PartnerQueries.getCategories);
     
     return result.rows.map(row => ({
-      category: row.category,
+  category: row.category,
       count: parseInt(row.count)
     }));
   }
@@ -167,7 +171,7 @@ export class PartnerService {
     const result = await this.pool.query(PartnerQueries.getCities);
     
     return result.rows.map(row => ({
-      city: row.city,
+  city: row.city,
       count: parseInt(row.count)
     }));
   }
@@ -178,7 +182,7 @@ export class PartnerService {
   async getFeaturedPartners(limit: number = 6): Promise<PartnerAttributes[]> {
     const result = await this.pool.query(
       PartnerQueries.getFeatured,
-      [limit]
+      [limit];
     );
 
     return result.rows.map(row => this.formatPartnerResponse(row));
@@ -196,14 +200,14 @@ export class PartnerService {
       .replace(/-+/g, '-')      // Replace multiple - with single -
       .replace(/^-+/, '')       // Trim - from start
       .replace(/-+$/, '');      // Trim - from end
-  }
+  };
 
   /**
    * Format database row to PartnerAttributes
    */
   private formatPartnerResponse(row: any): PartnerAttributes {
     return {
-      id: row.id,
+  id: row.id,
       name: row.name,
       slug: row.slug,
       category: row.category,
@@ -225,15 +229,14 @@ export class PartnerService {
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
-  }
 }
-
-// Export singleton instance
-let partnerServiceInstance: PartnerService;
-
-export const getPartnerService = (pool: Pool): PartnerService => {
+// Export singleton instance;
+let partnerServiceInstance: PartnerService,
+export const asyncHandler: (pool: Pool): PartnerService => {
   if (!partnerServiceInstance) {
     partnerServiceInstance = new PartnerService(pool);
   }
   return partnerServiceInstance;
-};
+}
+
+}

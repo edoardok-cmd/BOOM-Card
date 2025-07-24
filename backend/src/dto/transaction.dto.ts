@@ -1,6 +1,8 @@
+import { Type } from 'class-transformer';
+import { TransactionType, TransactionStatus } from './types'; 
+
 // backend/src/dto/transaction.dto.ts
 
-import {
   IsString,
   IsNumber,
   IsEnum,
@@ -10,22 +12,20 @@ import {
   Min,
   Max,
   IsDefined,
-  IsIn,
+  IsIn
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 /**
  * Enums for transaction-related properties
- */
+ */;
 export enum TransactionStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED',
   CANCELED = 'CANCELED',
-  PROCESSING = 'PROCESSING',
+  PROCESSING = 'PROCESSING'
 }
-
 export enum TransactionType {
   PURCHASE = 'PURCHASE',
   TOP_UP = 'TOP_UP',
@@ -34,53 +34,41 @@ export enum TransactionType {
   TRANSFER_IN = 'TRANSFER_IN',
   TRANSFER_OUT = 'TRANSFER_OUT',
   FEE = 'FEE',
-  ADJUSTMENT = 'ADJUSTMENT',
+  ADJUSTMENT = 'ADJUSTMENT'
 }
-
 export enum Currency {
   USD = 'USD',
   // Add other currencies as needed for future expansion
 }
-
 export enum SortOrder {
   ASC = 'ASC',
-  DESC = 'DESC',
+  DESC = 'DESC'
 }
 
 /**
  * Interfaces and DTO classes
- */
-
+ */;
 export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: SortOrder;
-}
-
+  page?: number
+  limit?: number
+  sortBy?: string
+  sortOrder?: SortOrder}
 export class TransactionResponseDto {
-  @IsUUID()
-  id: string;
-
-  @IsUUID()
-  userId: string;
-
-  @IsUUID()
-  cardId: string;
-
+  @IsUUID(),
+  id: string,
+  @IsUUID(),
+  userId: string,
+  @IsUUID(),
+  cardId: string,
   @IsNumber()
-  @Min(0.01)
-  amount: number;
-
-  @IsEnum(Currency)
-  currency: Currency;
-
-  @IsEnum(TransactionType)
-  type: TransactionType;
-
-  @IsEnum(TransactionStatus)
-  status: TransactionStatus;
-
+  @Min(0.01),
+  amount: number,
+  @IsEnum(Currency),
+  currency: Currency,
+  @IsEnum(TransactionType),
+  type: TransactionType,
+  @IsEnum(TransactionStatus),
+  status: TransactionStatus,
   @IsOptional()
   @IsString()
   description?: string;
@@ -101,32 +89,25 @@ export class TransactionResponseDto {
   @IsUUID()
   relatedTransactionId?: string;
 
-  @IsDateString()
-  createdAt: Date;
-
-  @IsDateString()
-  updatedAt: Date;
+  @IsDateString(),
+  createdAt: Date,
+  @IsDateString(),
+  updatedAt: Date,
 }
-
 export class CreateTransactionDto {
   @IsDefined()
-  @IsUUID()
-  userId: string;
-
+  @IsUUID(),
+  userId: string,
   @IsDefined()
-  @IsUUID()
-  cardId: string;
-
+  @IsUUID(),
+  cardId: string,
   @IsNumber()
-  @Min(0.01)
-  amount: number;
-
-  @IsEnum(Currency)
-  currency: Currency;
-
-  @IsEnum(TransactionType)
-  type: TransactionType;
-
+  @Min(0.01),
+  amount: number,
+  @IsEnum(Currency),
+  currency: Currency,
+  @IsEnum(TransactionType),
+  type: TransactionType,
   @IsOptional()
   @IsString()
   description?: string;
@@ -147,7 +128,6 @@ export class CreateTransactionDto {
   @IsUUID()
   relatedTransactionId?: string;
 }
-
 export class UpdateTransactionDto {
   @IsOptional()
   @IsEnum(TransactionStatus)
@@ -161,7 +141,6 @@ export class UpdateTransactionDto {
   @IsString()
   referenceId?: string; // For updating external references
 }
-
 export class GetTransactionsFilterDto {
   @IsOptional()
   @IsUUID()
@@ -228,13 +207,12 @@ export class GetTransactionsFilterDto {
 
 /**
  * Constants and configuration
- */
+ */;
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 100;
 export const DEFAULT_SORT_BY = 'createdAt';
 export const DEFAULT_SORT_ORDER = SortOrder.DESC;
 
-import {
   IsString,
   IsNumber,
   IsOptional,
@@ -243,42 +221,35 @@ import {
   Min,
   IsPositive,
   IsDateString,
-  IsDefined,
+  IsDefined
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 // Assuming TransactionType and TransactionStatus enums are defined in Part 1
 // or imported from a common types file (e.g., './types').
 // If defined directly in Part 1 of this file, the import below can be removed.
-import { TransactionType, TransactionStatus } from './types'; 
 
 /**
  * DTO for creating a new transaction.
  * Represents the input data required to initiate a financial transaction.
- */
+ */;
 export class CreateTransactionDto {
   @IsUUID('4', { message: 'Source account ID must be a valid UUID' })
-  @IsDefined({ message: 'Source account ID is required' })
-  sourceAccountId: string;
-
+  @IsDefined({ message: 'Source account ID is required' }),
+  sourceAccountId: string,
   @IsUUID('4', { message: 'Destination account ID must be a valid UUID' })
-  @IsDefined({ message: 'Destination account ID is required' })
-  destinationAccountId: string;
-
+  @IsDefined({ message: 'Destination account ID is required' }),
+  destinationAccountId: string,
   @IsPositive({ message: 'Amount must be a positive number' })
   @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Amount must be a number with up to 2 decimal places' })
-  @IsDefined({ message: 'Amount is required' })
-  amount: number;
-
+  @IsDefined({ message: 'Amount is required' }),
+  amount: number,
   @IsString({ message: 'Currency must be a string' })
   @IsDefined({ message: 'Currency is required' })
-  // Consider adding @IsISO4217CurrencyCode if a custom validator for currency codes is available
-  currency: string;
-
+  // Consider adding @IsISO4217CurrencyCode if a custom validator for currency codes is available,
+  currency: string,
   @IsEnum(TransactionType, { message: 'Invalid transaction type' })
-  @IsDefined({ message: 'Transaction type is required' })
-  type: TransactionType;
-
+  @IsDefined({ message: 'Transaction type is required' }),
+  type: TransactionType,
   @IsOptional()
   @IsString({ message: 'Description must be a string' })
   description?: string;
@@ -291,7 +262,7 @@ export class CreateTransactionDto {
 /**
  * DTO for filtering and paginating transaction lists.
  * Used when retrieving multiple transactions with specific criteria.
- */
+ */;
 export class GetTransactionsFilterDto {
   @IsOptional()
   @IsUUID('4', { message: 'Account ID must be a valid UUID' })
@@ -348,12 +319,11 @@ export class GetTransactionsFilterDto {
 
 /**
  * DTO for updating the status of an existing transaction.
- */
+ */;
 export class UpdateTransactionStatusDto {
   @IsEnum(TransactionStatus, { message: 'Invalid transaction status' })
-  @IsDefined({ message: 'Transaction status is required' })
-  status: TransactionStatus;
-
+  @IsDefined({ message: 'Transaction status is required' }),
+  status: TransactionStatus,
   @IsOptional()
   @IsString({ message: 'Notes must be a string' })
   notes?: string; // Optional notes regarding the status change (e.g., reason for failure)
@@ -363,33 +333,26 @@ export class UpdateTransactionStatusDto {
  * DTO for a transaction response.
  * This class defines the structure of transaction data returned by the API.
  * It's often a simplified or transformed version of the internal database model.
- */
+ */;
 export class TransactionResponseDto {
-  @IsUUID('4')
-  id: string;
-
-  @IsUUID('4')
-  sourceAccountId: string;
-
-  @IsUUID('4')
-  destinationAccountId: string;
-
-  @IsNumber()
-  amount: number;
-
-  @IsString()
-  currency: string;
-
-  @IsEnum(TransactionType)
-  type: TransactionType;
-
-  @IsEnum(TransactionStatus)
-  status: TransactionStatus;
-
-  @IsDateString()
+  @IsUUID('4'),
+  id: string,
+  @IsUUID('4'),
+  sourceAccountId: string,
+  @IsUUID('4'),
+  destinationAccountId: string,
+  @IsNumber(),
+  amount: number,
+  @IsString(),
+  currency: string,
+  @IsEnum(TransactionType),
+  type: TransactionType,
+  @IsEnum(TransactionStatus),
+  status: TransactionStatus,
+  @IsDateString(),
   createdAt: string; // ISO 8601 string for creation timestamp
 
-  @IsDateString()
+  @IsDateString(),
   updatedAt: string; // ISO 8601 string for last update timestamp
 
   @IsOptional()
