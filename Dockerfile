@@ -4,14 +4,15 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy backend package files
-COPY backend/package*.json ./
+# Copy production package file
+COPY backend/package.production.json ./package.json
 
-# Install dependencies
-RUN npm install --omit=dev
+# Install only production dependencies
+RUN npm install --production
 
 # Copy backend source code
-COPY backend/ ./
+COPY backend/server-simple.js ./
+COPY backend/.env* ./
 
 # Expose port
 EXPOSE 3001
