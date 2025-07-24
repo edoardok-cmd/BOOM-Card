@@ -10,9 +10,11 @@ COPY backend/package.production.json ./package.json
 # Install only production dependencies
 RUN npm install --production
 
-# Copy backend source code
+# Copy backend source code and start script
 COPY backend/server-simple.js ./
 COPY backend/.env* ./
+COPY start.sh ./
+RUN chmod +x start.sh
 
 # Expose port
 EXPOSE 3001

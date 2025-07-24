@@ -1,0 +1,7 @@
+# Ignore everything except what's needed for backend deployment
+*
+!Dockerfile
+!railway.json
+!backend/package.production.json
+!backend/server-simple.js
+!backend/.env*
