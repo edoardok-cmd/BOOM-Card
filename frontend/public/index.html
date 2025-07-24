@@ -25,6 +25,7 @@
     
     <!-- Apple Web App Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="BOOM Card" />
     <link rel="apple-touch-icon" href="/logo192.png" />
@@ -138,40 +139,9 @@
         </div>
     </div>
     
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => console.log('SW registered:', registration))
-                    .catch(error => console.log('SW registration failed:', error));
-            });
-        }
-    </script>
+    <!-- Service Worker Registration - Disabled for now -->
     
-    <!-- Performance Monitoring -->
-    <script>
-        // Web Vitals tracking
-        if ('PerformanceObserver' in window) {
-            try {
-                const observer = new PerformanceObserver((list) => {
-                    for (const entry of list.getEntries()) {
-                        // Send metrics to analytics
-                        if (window.gtag) {
-                            gtag('event', 'web_vitals', {
-                                event_category: 'Web Vitals',
-                                event_label: entry.name,
-                                value: Math.round(entry.value)
-                            });
-                        }
-                    }
-                });
-                observer.observe({ entryTypes: ['web-vital'] });
-            } catch (e) {
-                console.error('Web Vitals error:', e);
-            }
-        }
-    </script>
+    <!-- Performance Monitoring - Disabled for now -->
     
     <!-- Error Boundary Fallback -->
     <script>
