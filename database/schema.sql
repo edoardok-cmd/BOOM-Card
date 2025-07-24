@@ -249,4 +249,80 @@ CREATE TABLE verification_tokens (
     type verification_type NOT NULL,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     used_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_phone ON users(phone);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX idx_subscriptions_status ON subscriptions(status);
+CREATE INDEX idx_partners_status ON partners(status);
+CREATE INDEX idx_partners_category ON partners(category);
+CREATE INDEX idx_partner_locations_partner_id ON partner_locations(partner_id);
+CREATE INDEX idx_partner_locations_location ON partner_locations USING GIST(location);
+CREATE INDEX idx_discount_offers_partner_id ON discount_offers(partner_id);
+CREATE INDEX idx_discount_offers_valid_dates ON discount_offers(valid_from, valid_until);
+CREATE INDEX idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX idx_transactions_partner_id ON transactions(partner_id);
+CREATE INDEX idx_transactions_status ON transactions(status);
+CREATE INDEX idx_transactions_created_at ON transactions(created_at);
+CREATE INDEX idx_payment_transactions_user_id ON payment_transactions(user_id);
+CREATE INDEX idx_payment_transactions_status ON payment_transactions(status);
+CREATE INDEX idx_reviews_partner_id ON reviews(partner_id);
+CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+CREATE INDEX idx_verification_tokens_user_id ON verification_tokens(user_id);
+CREATE INDEX idx_verification_tokens_token ON verification_tokens(token);
+CREATE INDEX idx_verification_tokens_type ON verification_tokens(type);
+
+-- Update triggers for updated_at timestamps
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Apply update triggers to relevant tables
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON user_profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON subscriptions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_partners_updated_at BEFORE UPDATE ON partners
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_partner_locations_updated_at BEFORE UPDATE ON partner_locations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_partner_users_updated_at BEFORE UPDATE ON partner_users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_discount_offers_updated_at BEFORE UPDATE ON discount_offers
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON transactions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_payment_transactions_updated_at BEFORE UPDATE ON payment_transactions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Insert sample data for testing (optional)
+INSERT INTO users (email, password_hash, role, first_name, last_name, language, is_verified, is_active) VALUES
+('admin@boomcard.bg', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewEKZTKn1SHKNv1.', 'admin', 'Admin', 'User', 'bg', true, true),
+('test@boomcard.bg', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewEKZTKn1SHKNv1.', 'consumer', 'Test', 'User', 'bg', true, true);
+
+-- Grant necessary permissions
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
