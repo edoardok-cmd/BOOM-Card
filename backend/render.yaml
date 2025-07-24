@@ -1,0 +1,13 @@
+# Render.com deployment configuration for BOOM Card Enterprise Backend
+services:
+  - type: web
+    name: boom-card-enterprise
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements_enterprise.txt
+    startCommand: python boom_card_enterprise.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"  
+      - key: DEBUG
+        value: "false"

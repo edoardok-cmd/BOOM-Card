@@ -1,0 +1,35 @@
+# BOOM Card Enterprise Backend Dockerfile
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first (for better caching)
+COPY requirements_enterprise.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements_enterprise.txt
+
+# Copy application code
+COPY boom_card_enterprise.py .
+COPY .env.production .env
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash app
+USER app
+
+# Expose port
+EXPOSE 5002
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5002/health || exit 1
+
+# Start the application
+CMD ["python", "boom_card_enterprise.py"]

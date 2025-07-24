@@ -1,13 +1,13 @@
 {
-  "name": "boom-card-enterprise-backend",
-  "version": "2.0.0",
-  "description": "BOOM Card Enterprise Backend - Built with AI-Automation Platform Architecture",
-  "main": "boom_card_enterprise.py",
+  "name": "boom-card-backend",
+  "version": "1.0.0",
+  "description": "BOOM Card Discount Platform Backend API",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build": "tsc -p tsconfig.build.json && tsc-alias",
     "build:full": "tsc && tsc-alias",
-    "start": "python boom_card_enterprise.py",
+    "start": "node -r tsconfig-paths/register dist/server.js",
     "start:prod": "pm2 start ecosystem.config.js",
     "test": "jest --coverage --detectOpenHandles",
     "test:watch": "jest --watch",
@@ -21,12 +21,7 @@
     "db:reset": "prisma migrate reset --force",
     "redis:flush": "redis-cli FLUSHALL",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky install",
-    "start:simple": "node server-simple.js",
-    "start:enterprise": "python start_enterprise.py",
-    "start:dev": "python start_enterprise.py --debug",
-    "install:enterprise": "pip install -r requirements_enterprise.txt",
-    "migrate": "python migrate_to_enterprise.py"
+    "prepare": "husky install"
   },
   "keywords": [
     "boom-card",
@@ -125,7 +120,7 @@
   },
   "engines": {
     "node": ">=18.0.0",
-    "python": ">=3.8.0"
+    "npm": ">=9.0.0"
   },
   "prisma": {
     "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts"
