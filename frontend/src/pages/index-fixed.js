@@ -4,9 +4,8 @@ import { useRouter } from 'next/router';
 import VideoBackground from '../components/VideoBackground';
 import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import UserProfileDropdown from '../components/UserProfileDropdown';
-import Logo from '../components/Logo';
 import { useLanguage } from '../contexts/LanguageContext';
+import { navigationHandlers, buttonHandlers } from '../utils/navigation';
 
 export default function Home() {
   const { t } = useLanguage();
@@ -21,6 +20,7 @@ export default function Home() {
 
   const categories = [
     { 
+      id,
       icon, 
       name), 
       partners), 
@@ -29,6 +29,7 @@ export default function Home() {
       bgColor
     },
     { 
+      id,
       icon, 
       name), 
       partners), 
@@ -37,6 +38,7 @@ export default function Home() {
       bgColor
     },
     { 
+      id,
       icon, 
       name), 
       partners), 
@@ -45,6 +47,7 @@ export default function Home() {
       bgColor
     },
     { 
+      id,
       icon, 
       name), 
       partners), 
@@ -77,28 +80,26 @@ export default function Home() {
     }
   ];
 
-  const getTestimonials = (t) => [
+  const testimonials = [
     {
-      name),
-      role),
-      content),
+      name,
+      role,
+      content,
       avatar
     },
     {
-      name),
-      role),
-      content),
+      name,
+      role,
+      content,
       avatar
     },
     {
-      name),
-      role),
-      content),
+      name,
+      role,
+      content,
       avatar
     }
   ];
-  
-  const testimonials = getTestimonials(t);
 
   return (
 
@@ -106,7 +107,15 @@ export default function Home() {
 
       {/* Navigation */}
 
+                    B
+                  
+                  BOOM Card
+
                 {t('nav.home')}
+
+                   navigationHandlers.startMembership(router)}
+                    className="bg-gradient-to-r from-gold-500 to-gold-600 hover
+                    {t('nav.getStarted')}
 
       {/* Hero Section */}
       
@@ -122,12 +131,12 @@ export default function Home() {
 
                 {t('hero.title2')}
 
-             router.push('/subscriptions')}
+             navigationHandlers.startMembership(router)}
                 className="group bg-gradient-to-r from-gold-500 to-gold-600 hover
                 
                   {t('hero.cta.start')}
 
-               router.push('/demo')}
+               navigationHandlers.showDemo()}
                 className="group border-2 border-white/30 hover
 
                   {t('hero.cta.demo')}
@@ -167,12 +176,7 @@ export default function Home() {
 
                         {category.discount}
                       
-                       {
-                          if (category.name === t('categories.fineDining')) router.push('/partners?category=restaurants');
-                          else if (category.name === t('categories.luxuryHotels')) router.push('/partners?category=hotels');
-                          else if (category.name === t('categories.wellness')) router.push('/partners?category=spas');
-                          else if (category.name === t('categories.entertainment')) router.push('/partners?category=entertainment');
-                        }}
+                       navigationHandlers.goToPartnerCategory(router, category.id)}
                         className="bg-white/80 hover
                         {t('categories.explore')} →
 
@@ -193,7 +197,7 @@ export default function Home() {
                   {feature.icon}
 
                     {feature.description}
-                     router.push('/how-it-works')}
+                     navigationHandlers.showComingSoon()}
                       className="mt-4 flex items-center text-blue-600 font-semibold text-sm group-hover
                       {t('features.learnMore')} 
 
@@ -220,12 +224,6 @@ export default function Home() {
 
             ))}
 
-          {/* Leave Review Button */}
-          
-             router.push('/profile#reviews')}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover
-              {t('testimonials.leaveReview')}
-
       {/* CTA Section */}
       
         {/* Background */}
@@ -238,12 +236,12 @@ export default function Home() {
 
               {t('cta.title2')}
 
-           router.push('/subscriptions')}
+           navigationHandlers.startMembership(router)}
               className="group bg-gradient-to-r from-gold-500 to-gold-600 hover
               
                 {t('cta.choosePlan')}
 
-             window.open('https, '_blank')}
+             navigationHandlers.showComingSoon()}
               className="group border-2 border-white/30 hover
 
                 {t('cta.downloadApp')}
@@ -264,24 +262,54 @@ export default function Home() {
 
       {/* Footer */}
 
+                  B
+                
+                BOOM Card
+
                 {t('footer.description')}
+
+                 navigationHandlers.openSocialMedia('facebook')}
+                  className="w-10 h-10 bg-gray-800 hover
+                  📘
+                
+                 navigationHandlers.openSocialMedia('instagram')}
+                  className="w-10 h-10 bg-gray-800 hover
+                  📷
+                
+                 navigationHandlers.openSocialMedia('twitter')}
+                  className="w-10 h-10 bg-gray-800 hover
+                  🐦
 
               {t('footer.premiumCategories')}
 
               {t('footer.company')}
+              
+                 { e.preventDefault(); navigationHandlers.showComingSoon(); }} className="text-gray-400 hover)}
+
+                 { e.preventDefault(); navigationHandlers.showComingSoon(); }} className="text-gray-400 hover)}
+                 { e.preventDefault(); navigationHandlers.showComingSoon(); }} className="text-gray-400 hover)}
 
               {t('footer.getTheApp')}
-
+              
+                 navigationHandlers.downloadApp('ios')}
+                  className="bg-gradient-to-r from-gray-800 to-gray-700 hover
+                  
                     📱
 
                       {t('footer.appStore')}
 
+                 navigationHandlers.downloadApp('android')}
+                  className="bg-gradient-to-r from-gray-800 to-gray-700 hover
+                  
                     🤖
 
                       {t('footer.googlePlay')}
 
                 🔒 {t('footer.securePrivate')}
                 ⚡ {t('footer.instantAccess')}
+
+             { e.preventDefault(); navigationHandlers.showComingSoon(); }} className="hover)} | 
+                 { e.preventDefault(); navigationHandlers.showComingSoon(); }} className="hover)}
 
                   {t('footer.allSystemsOperational')}
                 
