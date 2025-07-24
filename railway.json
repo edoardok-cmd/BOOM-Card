@@ -6,7 +6,7 @@
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "cd backend && node server-simple.js",
+    "startCommand": "node server-simple.js",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
