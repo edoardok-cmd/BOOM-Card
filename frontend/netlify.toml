@@ -1,8 +1,8 @@
 # Netlify Configuration for BOOM Card Frontend
 
 [build]
-  # Build command without TypeScript (temporary fix)
-  command = "npm install --legacy-peer-deps && npm run build"
+  # Build command with forced TypeScript dependencies since Next.js keeps detecting TS
+  command = "npm install --legacy-peer-deps && npm install --save-dev typescript @types/react @types/node --legacy-peer-deps && npm run build"
   
   # Next.js build output directory
   publish = ".next"
