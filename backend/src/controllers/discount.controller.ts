@@ -122,7 +122,7 @@ export const DEFAULT_ORDER = 'desc';
 // in the way frameworks like NestJS or Angular do. This section is
 // intentionally left empty as per common Express conventions.
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import discountService from '../services/discount.service'; // Assuming discount.service.ts exists and exports a default instance
 import {
@@ -151,7 +151,8 @@ export class DiscountController {
       next();
     } else {
       res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authentication required.' });
-    };
+    }
+  };
 
   /**
    * Middleware to check if the user has 'admin' role.
@@ -164,7 +165,8 @@ export class DiscountController {
       next();
     } else {
       res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied: Admin role required.' });
-    };
+    }
+  };
 
   /**
    * Middleware to check if the user has 'merchant' role.
@@ -177,7 +179,8 @@ export class DiscountController {
       next();
     } else {
       res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied: Merchant role required.' });
-    };
+    }
+  };
 
   /**
    * Middleware to check if the user has 'admin' OR 'merchant' role.
@@ -190,7 +193,8 @@ export class DiscountController {
       next();
     } else {
       res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied: Admin or Merchant role required.' });
-    };
+    }
+  };
 
   /**
    * @route POST /api/v1/discounts
@@ -405,10 +409,9 @@ export class DiscountController {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
       }
       next(error); // Pass other unexpected errors to the global error handler
-    });
+    }
+  });
 }
-
-import { Request, Response } from 'express';
 
 /**
  * Helper function to send consistent error responses.
@@ -456,9 +459,3 @@ export {
     updateDiscount,
     deleteDiscount,
 };
-
-}
-}
-}
-}
-}

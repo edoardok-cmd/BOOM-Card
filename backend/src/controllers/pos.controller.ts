@@ -153,7 +153,7 @@ export const HttpStatus = {
 // This file continues the implementation of the POS controller.
 // It assumes that Part 1 has set up necessary imports and type definitions.
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import * as posService from '../services/pos.service'; // Assumed service layer
 import {
     PosTransactionRequest,
@@ -277,7 +277,8 @@ export class PosController {
 
         } catch (error) {
             next(error);
-        };
+        }
+    }
 
     /**
      * @route POST /api/pos/transactions/void
@@ -309,7 +310,8 @@ export class PosController {
 
         } catch (error) {
             next(error);
-        };
+        }
+    }
 
     /**
      * @route GET /api/pos/transactions/:id
@@ -341,7 +343,8 @@ export class PosController {
 
         } catch (error) {
             next(error);
-        };
+        }
+    }
 
     /**
      * @route GET /api/pos/transactions
@@ -399,7 +402,8 @@ export class PosController {
             });
         } catch (error) {
             next(error);
-        };
+        }
+    }
 
     /**
      * @route GET /api/pos/summary
@@ -436,7 +440,7 @@ export class PosController {
         };
 }
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
 
 // --- Assume these interfaces/types are defined in '../interfaces/pos.interface.ts' or similar ---
@@ -777,22 +781,4 @@ module.exports = {
 };
 */
 
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
 }

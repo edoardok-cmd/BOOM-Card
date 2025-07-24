@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Elements Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #3b82f6;
+        }
+        .test-button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .lang-switcher {
+            display: inline-flex;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .lang-button {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .lang-button.active {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .search-button {
+            padding: 8px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .search-button:hover {
+            background: #eff6ff;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Interactive Elements Test</h1>
+        
+        <h2>1. Video Background Test</h2>
+        <video controls autoplay muted loop>
+            <source src="/videos/dvoretsa.mp4" type="video/mp4">
+            Your browser does not support video.
+        </video>
+        <div class="status success">
+            ✅ Video is loading from: /videos/dvoretsa.mp4
+        </div>
+        
+        <h2>2. Language Switcher Test</h2>
+        <div class="lang-switcher">
+            <button class="lang-button active" onclick="switchLang('en')">🇬🇧 EN</button>
+            <button class="lang-button" onclick="switchLang('bg')">🇧🇬 БГ</button>
+        </div>
+        <div id="lang-status" class="status info">Current language: EN</div>
+        
+        <h2>3. Search Button Test</h2>
+        <button class="search-button" onclick="toggleSearch()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </button>
+        <div id="search-status" class="status info">Search is: Closed</div>
+        
+        <h2>4. Console Output</h2>
+        <p>Open your browser console (F12) to see click events being logged.</p>
+        
+        <h2>5. Quick Fixes to Try</h2>
+        <ul>
+            <li><strong>Hard Refresh:</strong> Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)</li>
+            <li><strong>Clear Cache:</strong> Settings → Privacy → Clear browsing data → Cached images and files</li>
+            <li><strong>Check Console:</strong> F12 → Console tab for any JavaScript errors</li>
+            <li><strong>Inspect Element:</strong> Right-click on non-working button → Inspect to see if something is overlapping</li>
+        </ul>
+    </div>
+    
+    <script>
+        console.log('Interactive test page loaded');
+        
+        let currentLang = 'en';
+        let searchOpen = false;
+        
+        function switchLang(lang) {
+            console.log('Language switched to:', lang);
+            currentLang = lang;
+            document.getElementById('lang-status').textContent = `Current language: ${lang.toUpperCase()}`;
+            
+            // Update active button
+            document.querySelectorAll('.lang-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function toggleSearch() {
+            console.log('Search toggled');
+            searchOpen = !searchOpen;
+            document.getElementById('search-status').textContent = `Search is: ${searchOpen ? 'Open' : 'Closed'}`;
+        }
+        
+        // Test video loading
+        const video = document.querySelector('video');
+        if (video) {
+            video.addEventListener('loadeddata', () => {
+                console.log('✅ Video loaded successfully');
+            });
+            video.addEventListener('error', (e) => {
+                console.error('❌ Video loading error:', e);
+            });
+        }
+    </script>
+</body>
+</html>

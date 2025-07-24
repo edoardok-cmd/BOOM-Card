@@ -1,0 +1,51 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin and partner areas
+Disallow: /admin/
+Disallow: /partner/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow search engines to access public pages
+Allow: /
+Allow: /food-drink
+Allow: /entertainment
+Allow: /accommodation
+Allow: /experiences
+Allow: /about
+Allow: /contact
+Allow: /faq
+Allow: /terms
+Allow: /privacy
+Allow: /partners
+Allow: /pricing
+Allow: /blog
+Allow: /careers
+Allow: /press
+
+# Disallow user-specific pages
+Disallow: /profile/
+Disallow: /account/
+Disallow: /settings/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /subscription/
+
+# Disallow temporary and development pages
+Disallow: /tmp/
+Disallow: /temp/
+Disallow: /test/
+Disallow: /dev/
+Disallow: /staging/
+
+# Crawl-delay for responsible crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://www.boomcard.bg/sitemap.xml
+Sitemap: https://www.boomcard.bg/sitemap-en.xml
+Sitemap: https://www.boomcard.bg/sitemap-bg.xml

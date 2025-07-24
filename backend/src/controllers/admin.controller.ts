@@ -85,13 +85,7 @@ const DEFAULT_PAGE_NUMBER = 1;
 // The `asyncHandler` utility serves a similar purpose by wrapping async functions
 // to handle promises and catch errors centrally.
 
-import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
-import { User, IUser } from '../models/user.model';
-import { Product, IProduct } from '../models/product.model';
-import { Order, IOrder } from '../models/order.model';
-import { CustomError } from '../utils/CustomError';
-import mongoose from 'mongoose';
+// Remove duplicate imports - these are already imported above
 
 // Extending Request type to include user, as set by authentication middleware
 interface AuthenticatedRequest extends Request {
@@ -162,6 +156,7 @@ class AdminController {
       return next(new CustomError('Please provide a valid role (user or admin).', 400));
     }
 
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new CustomError('User not found.', 404));
@@ -193,6 +188,7 @@ class AdminController {
    * @access Private/Admin
    */
   public static deleteUser = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return next(new CustomError('Invalid User ID format.', 400));
@@ -288,11 +284,13 @@ class AdminController {
    * @access Private/Admin
    */
   public static deleteProduct = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const productId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return next(new CustomError('Invalid Product ID format.', 400));
     }
 
+    const product = await Product.findById(productId);
 
     if (!product) {
       return next(new CustomError('Product not found.', 404));
@@ -381,11 +379,13 @@ class AdminController {
    */
   public static updateOrderStatus = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { status } = req.body; // Expected status: 'Processing', 'Shipped', 'Delivered'
+    const orderId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return next(new CustomError('Invalid Order ID format.', 400));
     }
 
+    const order = await Order.findById(orderId);
 
     if (!order) {
       return next(new CustomError('Order not found.', 404));
@@ -397,6 +397,7 @@ class AdminController {
 
     // Helper function to update product stock
     const updateProductStock = async (productId: mongoose.Types.ObjectId, quantity: number) => {
+      const product = await Product.findById(productId);
       if (product) {
         if (product.stock - quantity < 0) {
           // This check should ideally happen during order creation or payment
@@ -406,13 +407,15 @@ class AdminController {
         await product.save({ validateBeforeSave: false }); // Bypass validation if stock field has min/max rules
       } else {
         throw new CustomError(`Product with ID ${productId} not found during stock update.`, 404);
-      };
+      }
+    };
 
     if (status === 'Shipped' && order.orderStatus === 'Processing') {
       // If transitioning from Processing to Shipped, decrement stock for each item
       for (const item of order.orderItems) {
         await updateProductStock(item.product as mongoose.Types.ObjectId, item.quantity);
-      } else if (status === 'Delivered' && order.orderStatus !== 'Delivered') {
+      }
+    } else if (status === 'Delivered' && order.orderStatus !== 'Delivered') {
       // If transitioning to Delivered, set deliveredAt timestamp
       order.deliveredAt = new Date(Date.now());
     } else if (status !== 'Processing' && status !== 'Shipped' && status !== 'Delivered') {
@@ -437,11 +440,13 @@ class AdminController {
    * @access Private/Admin
    */
   public static deleteOrder = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const orderId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return next(new CustomError('Invalid Order ID format.', 400));
     }
 
+    const order = await Order.findById(orderId);
 
     if (!order) {
       return next(new CustomError('Order not found.', 404));
@@ -473,11 +478,13 @@ class AdminController {
       {
         $match: {
           orderStatus: 'Delivered'
-        },
+        }
+      },
       {
         $group: {
           _id: null,
           totalRevenue: { $sum: '$totalPrice' }
+        }
       }
     ]);
     const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
@@ -491,6 +498,7 @@ class AdminController {
         $group: {
           _id: '$orderStatus',
           count: { $sum: 1 }
+        }
       },
       {
         $project: {
@@ -498,6 +506,7 @@ class AdminController {
           status: '$_id',
           count: 1
         }
+      }
     ]);
 
     // Example of recent orders (last 5)
@@ -523,10 +532,7 @@ class AdminController {
 
 export { AdminController };
 
-import { Request, Response, NextFunction } from 'express';
-
 /**
- * asyncHandler
  * A utility function to wrap asynchronous Express route handlers.
  * It catches any errors that occur during the execution of the async function
  * and passes them to the `next` middleware function, which is typically
@@ -572,40 +578,5 @@ declare const getStockReport: AsyncControllerFunction; // Added a common admin r
 // --- Export Statements ---
 // All controller functions are exported as named exports.
 // This allows them to be imported and used in the Express router setup (e.g., in `backend/src/routes/admin.routes.ts`).
-export {
-    // User Management
-    getAllUsers,
-    getUserProfile,
-    updateUserProfile,
-    deleteUser,
-
-    // Product Management
-    getAllProducts,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-
-    // Order Management
-    getAllOrders,
-    updateOrderStatus,
-
-    // Analytics & Reporting
-    getDashboardStats,
-    getRevenueReport,
-    getStockReport,
-
-    // Other Admin Actions
-    sendNewsletter,
-};
-
-// --- Module Exports (CommonJS Style) ---
-// In modern TypeScript projects using ES Modules, `export { ... }` is preferred.
-// `module.exports = { ... }` is typically used in CommonJS.
-// As this is a TypeScript file, we stick to named exports for consistency.
-
-}
-}
-}
-}
-}
-}
+// Note: The remaining functions and exports would typically be defined above,
+// but they appear to be placeholders or from a different part of the file.

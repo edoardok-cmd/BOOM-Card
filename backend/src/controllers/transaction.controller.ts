@@ -119,7 +119,7 @@ const TRANSACTION_FEES = {
     [TransactionType.FEE]: 0 // Fees are usually the amount itself
 };
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import { TransactionService } from '../services/transaction.service'; // Assuming this exists from Part 1 dependencies
 import { ApiError } from '../utils/ApiError'; // Assuming this utility exists
 import { ApiResponse } from '../utils/ApiResponse'; // Assuming this utility exists
@@ -320,7 +320,7 @@ export const transactionController = new TransactionController();
 
 // backend/src/controllers/transaction.controller.ts
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import { TransactionService } from '../services/transaction.service'; // Assuming this service exists
 import { CreateTransactionDto } from '../dtos/transaction.dto'; // Assuming this DTO exists
 import { AppError } from '../utils/appError'; // Assuming this custom error class exists for specific error handling

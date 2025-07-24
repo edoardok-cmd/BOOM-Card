@@ -54,7 +54,8 @@ export class HealthController {
           total: this.pgPool.totalCount,
           idle: this.pgPool.idleCount,
           waiting: this.pgPool.waitingCount
-        };
+        }
+      };
     } catch (error) {
       health.status = 'degraded';
       health.services.postgres = 'error';

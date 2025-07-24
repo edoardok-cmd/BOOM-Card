@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Component Test - BOOM Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #3b82f6;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .status {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .code {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .button-test {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .button-blue {
+            background: #3b82f6;
+            color: white;
+        }
+        .button-gold {
+            background: #f59e0b;
+            color: white;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 BOOM Card Component Test Page</h1>
+        
+        <div class="test-section">
+            <h2>🎬 Video Test</h2>
+            <div class="info">
+                <strong>Video Path:</strong> /videos/dvoretsa.mp4
+            </div>
+            <video controls autoplay muted loop>
+                <source src="/videos/dvoretsa.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="status success">
+                ✅ Video file is in the correct location and should be playing above
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 Language Switcher Test</h2>
+            <p>To test the language switcher:</p>
+            <ol>
+                <li>Open the browser console (F12 → Console tab)</li>
+                <li>Click the language buttons in the navigation</li>
+                <li>You should see console logs when clicking</li>
+                <li>The active language should have a white background</li>
+            </ol>
+            <div class="info">
+                If buttons aren't clickable, check for:
+                <ul>
+                    <li>JavaScript errors in console</li>
+                    <li>Z-index issues (elements overlapping)</li>
+                    <li>Event propagation being stopped</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Search Function Test</h2>
+            <p>To test the search:</p>
+            <ol>
+                <li>Click the magnifying glass icon in navigation</li>
+                <li>A dropdown should appear with a search input</li>
+                <li>Type something and press Enter</li>
+                <li>Check console for "Search button clicked" message</li>
+            </ol>
+            <div class="code">
+                // Expected console output:<br>
+                Search button clicked, current state: false<br>
+                // (then dropdown should open)
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎨 Partner Page Gradient</h2>
+            <div class="status success">
+                ✅ Fixed! The partner page now has the indigo-purple-pink gradient overlay
+            </div>
+            <div class="code">
+                // Added to partners.tsx hero section:<br>
+                &lt;div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 opacity-70"&gt;&lt;/div&gt;
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Debug Page</h2>
+            <div class="info">
+                Visit <a href="/debug" target="_blank">/debug</a> to test components in isolation
+            </div>
+            <p>The debug page shows:</p>
+            <ul>
+                <li>Current language state</li>
+                <li>Direct language switching buttons</li>
+                <li>Search state testing</li>
+                <li>Video path information</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>⚠️ Common Issues & Solutions</h2>
+            <div class="error">
+                <strong>Problem:</strong> Buttons not clickable
+            </div>
+            <div class="info">
+                <strong>Solutions:</strong>
+                <ul>
+                    <li>Check if another element is overlapping (use browser inspector)</li>
+                    <li>Look for JavaScript errors in console</li>
+                    <li>Verify the build completed successfully</li>
+                    <li>Clear browser cache and hard refresh (Ctrl+Shift+R)</li>
+                </ul>
+            </div>
+            
+            <div class="error">
+                <strong>Problem:</strong> Video not showing
+            </div>
+            <div class="info">
+                <strong>Solutions:</strong>
+                <ul>
+                    <li>Verify file is in: <code>frontend/public/videos/dvoretsa.mp4</code></li>
+                    <li>Check browser console for 404 errors</li>
+                    <li>Try the video test above - if it works there, the path is correct</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 Browser Console Tests</h2>
+            <p>Run these in your browser console to test functionality:</p>
+            <div class="code">
+                // Test if React is loaded<br>
+                console.log('React version:', React.version);<br><br>
+                
+                // Test language context (on any page)<br>
+                // Note: This needs to be run in React DevTools<br>
+                // Install React DevTools browser extension first
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple test to verify JavaScript is working
+        console.log('Test page loaded successfully');
+        
+        // Check if video element exists
+        const video = document.querySelector('video');
+        if (video) {
+            video.addEventListener('loadeddata', () => {
+                console.log('Video loaded successfully');
+            });
+            video.addEventListener('error', (e) => {
+                console.error('Video loading error:', e);
+            });
+        }
+    </script>
+</body>
+</html>

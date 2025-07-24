@@ -47,17 +47,14 @@ const REFRESH_TOKEN_COOKIE_NAME = 'jid';
 // 4. Any decorators or metadata
 // (No decorators are standard in a typical Express setup without additional frameworks.)
 
-import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../utils/ApiError'; // Assuming ApiError is defined in utils
-import { AuthValidationSchema } from '../validation/auth.validation'; // Assuming Joi/Zod schemas for validation
-import { AuthService } from '../services/auth.service'; // Assuming AuthService exists
-import { ILoginResponse, IRegisterResponse, BoomCardUser } from '../types/auth.types'; // Assuming these types are defined
+// Remove duplicate imports - these are already imported above
 
 // Extend Express Request type to include 'user' property which will be set by authentication middleware
 declare module 'express-serve-static-core' {
     interface Request {
         user?: BoomCardUser; // The user object set by JWT authentication middleware
     }
+}
 
 /**
  * AuthController class handles all authentication-related API requests.
@@ -96,7 +93,8 @@ export class AuthController {
             });
         } catch (error) {
             next(error); // Pass error to the global error handling middleware
-        };
+        }
+    };
 
     /**
      * Handles user login.
@@ -127,7 +125,8 @@ export class AuthController {
             });
         } catch (error) {
             next(error);
-        };
+        }
+    };
 
     /**
      * Handles email verification.
@@ -146,7 +145,8 @@ export class AuthController {
             res.status(200).json({ message: 'Email verified successfully. Your account is now active.' });
         } catch (error) {
             next(error);
-        };
+        }
+    };
 
     /**
      * Handles resending email verification link.
@@ -165,7 +165,8 @@ export class AuthController {
             res.status(200).json({ message: 'Verification email sent. Please check your inbox.' });
         } catch (error) {
             next(error);
-        };
+        }
+    };
 
     /**
      * Initiates the forgot password process.
@@ -185,7 +186,8 @@ export class AuthController {
             res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
         } catch (error) {
             next(error);
-        };
+        }
+    };
 
     /**
      * Handles password reset using a reset token.
@@ -209,7 +211,8 @@ export class AuthController {
             res.status(200).json({ message: 'Password has been reset successfully. You can now log in with your new password.' });
         } catch (error) {
             next(error);
-        };
+        }
+    };
 
     /**
      * Allows a logged-in user to change their password.
@@ -234,7 +237,8 @@ export class AuthController {
             res.status(200).json({ message: 'Password changed successfully.' });
         } catch (error) {
             next(error);
-        };
+        }
+    };
 
     /**
      * Refreshes access token using a valid refresh token from the cookie.
@@ -269,7 +273,8 @@ export class AuthController {
             // If refresh token is invalid or expired, clear the cookie and pass error
             res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
             next(error);
-        };
+        }
+    };
 
     /**
      * Handles user logout.
@@ -297,7 +302,8 @@ export class AuthController {
             // we should still clear the client-side cookie for a consistent user experience.
             res.clearCookie('refreshToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
             next(error);
-        };
+        }
+    };
 
     /**
      * Retrieves the profile of the currently logged-in user.
@@ -320,7 +326,8 @@ export class AuthController {
             res.status(200).json(userProfile);
         } catch (error) {
             next(error);
-        };
+        }
+    };
 }
 
 // --- Helper/Utility Functions (if any - typically reside in `src/utils` or `src/services`) ---
@@ -358,10 +365,10 @@ const formatUserForResponse = (user: any) => {
 
 // Example of how errors are handled within controller functions (this would be inside functions defined in PART 2):
 /*
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status';
 import { BoomCardError } from '../utils/boomCardError'; // Assuming custom error class
-import * as authService from '../services/auth.service';
+// Duplicate import removed: import * as authService from '../services/auth.service';
 
 export const exampleControllerFunction = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -371,7 +378,8 @@ export const exampleControllerFunction = async (req: Request, res: Response, nex
     } catch (error: any) {
         // Pass the error to the global error handler middleware
         next(error);
-    };
+    }
+};
 */
 
 // No separate error handling *functions* are typically defined here, as it's handled by middleware.
@@ -381,31 +389,5 @@ export const exampleControllerFunction = async (req: Request, res: Response, nex
 // were defined in PART 2 without direct `export` keywords.
 // This section exports them as a module.
 
-export {
-    register,
-    login,
-    forgotPassword,
-    resetPassword,
-    logout,
-    getCurrentUser,
-    refreshToken, // Assuming a refresh token endpoint was also part of auth functionality
-    // ... add any other specific authentication controller functions here
-};
-
-// Note: If functions in PART 2 were defined as `export const funcName = async (...) => { ... };`,
-// then this export block would be redundant, as they are already exported.
-// This structure assumes they were defined as `const funcName = async (...) => { ... };`
-// and need a collective export at the end.
-
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
-}
+// Note: The AuthController class is already exported above.
+// If there were standalone functions to export, they would be listed here.

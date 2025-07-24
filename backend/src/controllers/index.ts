@@ -207,6 +207,7 @@ class CardController {
             console.error('Error retrieving Boom Card by ID:', error);
             next(error);
         }
+    }
 
     /**
      * @route GET /api/cards
@@ -234,6 +235,7 @@ class CardController {
             console.error('Error retrieving all Boom Cards:', error);
             next(error);
         }
+    }
 
     /**
      * @route PUT /api/cards/:id
@@ -281,6 +283,7 @@ class CardController {
             console.error('Error updating Boom Card:', error);
             next(error);
         }
+    }
 
     /**
      * @route DELETE /api/cards/:id
@@ -304,6 +307,7 @@ class CardController {
             console.error('Error deleting Boom Card:', error);
             next(error);
         }
+    }
 
     /**
      * @route PATCH /api/cards/:id/activate
@@ -337,6 +341,7 @@ class CardController {
             console.error('Error activating Boom Card:', error);
             next(error);
         }
+    }
 
     /**
      * @route PATCH /api/cards/:id/deactivate
@@ -369,6 +374,7 @@ class CardController {
             console.error('Error deactivating Boom Card:', error);
             next(error);
         }
+    }
 
     /**
      * @route POST /api/cards/:id/redeem
@@ -425,6 +431,7 @@ class CardController {
             console.error('Error redeeming value from Boom Card:', error);
             next(error);
         }
+    }
 
     /**
      * @route POST /api/cards/:id/add-value
@@ -478,6 +485,7 @@ class CardController {
             console.error('Error adding value to Boom Card:', error);
             next(error);
         }
+    }
 }
 
 // Export an instance of the CardController.

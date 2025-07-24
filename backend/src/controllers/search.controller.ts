@@ -68,7 +68,7 @@ const SUPPORTED_SEARCH_TYPES: SearchContentType[] = ['cards', 'users', 'decks', 
 // decorators were used, they would be defined or imported here. For this project,
 // we assume such decorators are either not used or are handled by middleware functions.)
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -168,7 +168,7 @@ const search = asyncHandler(async (req: Request, res: Response) => {
 // Export the search controller function for use in routes.
 export { search };
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import Card from '../models/card.model'; // Assuming a Mongoose model for cards
 import { BoomError } from '../utils/boomError'; // Assuming a custom error class for consistent error handling
 

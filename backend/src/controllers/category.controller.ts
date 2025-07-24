@@ -63,7 +63,7 @@ export const CATEGORY_ALREADY_EXISTS = 'Category with this name already exists';
 
 // No decorators or metadata typically used in a standard Node.js/Express setup.
 
-import { Request, Response, NextFunction } from 'express';
+// Duplicate import removed: import { Request, Response, NextFunction } from 'express';
 import CategoryService from '../services/category.service';
 import { ICategory } from '../models/category.model'; // Assuming ICategory is defined in your model or types
 import { HttpStatus } from '../utils/httpStatus';
@@ -196,6 +196,7 @@ export class CategoryController {
         } catch (error) {
             next(error); // Pass error to global error handler
         }
+    }
 
     /**
      * Retrieves all categories.
@@ -215,6 +216,7 @@ export class CategoryController {
         } catch (error) {
             next(error);
         }
+    }
 
     /**
      * Retrieves a single category by its ID.
@@ -239,6 +241,7 @@ export class CategoryController {
         } catch (error) {
             next(error);
         }
+    }
 
     /**
      * Updates an existing category by its ID.
@@ -265,6 +268,7 @@ export class CategoryController {
         } catch (error) {
             next(error);
         }
+    }
 
     /**
      * Deletes a category by its ID.
@@ -287,6 +291,7 @@ export class CategoryController {
         } catch (error) {
             next(error);
         }
+    }
 }
 
 // --- Route Handlers (Often defined in a separate router file, but included here as per prompt) ---
@@ -335,8 +340,6 @@ router.delete(
 
 export default router;
 */
-
-import { Request, Response, NextFunction } from 'express';
 import HttpStatus from 'http-status';
 import { CategoryService } from '../services/category.service';
 import { ApiError } from '../utils/ApiError';
@@ -367,7 +370,8 @@ export const createCategory = async (req: Request, res: Response, next: NextFunc
         });
     } catch (error) {
         next(error); // Pass any errors to the Express error handling middleware
-    };
+    }
+};
 
 /**
  * Controller function to retrieve all categories.
@@ -385,10 +389,11 @@ export const getAllCategories = async (req: Request, res: Response, next: NextFu
             data: categories,
         });
     } catch (error) {
-        next(error);
-    };
+            next(error);
+        }
+    }
 
-/**
+    /**
  * Controller function to retrieve a single category by its ID.
  * @route GET /api/categories/:id
  * @param req Request object containing category ID in parameters.
@@ -409,10 +414,11 @@ export const getCategoryById = async (req: Request, res: Response, next: NextFun
             data: category,
         });
     } catch (error) {
-        next(error);
-    };
+            next(error);
+        }
+    }
 
-/**
+    /**
  * Controller function to update an existing category.
  * @route PUT /api/categories/:id
  * @param req Request object containing category ID in parameters and update data in body.
@@ -440,10 +446,11 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
             data: updatedCategory,
         });
     } catch (error) {
-        next(error);
-    };
+            next(error);
+        }
+    }
 
-/**
+    /**
  * Controller function to delete a category by its ID.
  * @route DELETE /api/categories/:id
  * @param req Request object containing category ID in parameters.
@@ -462,18 +469,10 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
         res.status(HttpStatus.NO_CONTENT).send(); // 204 No Content for successful deletion without a body
     } catch (error) {
         next(error);
-    };
+    }
+};
 
 // All controller functions are exported individually using named exports.
 // No specific module.exports block is needed when using ES6 'export const'.
-
-}
-}
-}
-}
-}
-}
-}
-}
 }
 }

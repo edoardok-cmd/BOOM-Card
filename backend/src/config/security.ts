@@ -66,7 +66,8 @@ export const securityConfig: ISecurityConfig = {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
-      },
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -74,5 +75,3 @@ export const securityConfig: ISecurityConfig = {
     exposedHeaders: ['Set-Cookie'] // Expose Set-Cookie header for clients
   },
 };
-
-}
