@@ -189,25 +189,30 @@ export default function Subscriptions() {
   
   // Map backend plans to frontend format
   const mappedBackendPlans = backendPlans.map(plan => {
-    // Match by ID instead of name to ensure correct icon mapping
-    const frontendPlan = frontendPlans.find(fp => fp.id.toLowerCase() === plan.type.toLowerCase());
+    // Match by ID instead of name to ensure correct icon mapping - add null checks
+    const frontendPlan = frontendPlans.find(fp => 
+      fp.id && plan.type && fp.id.toLowerCase() === plan.type.toLowerCase()
+    );
     return {
-      id,
-      backendId,
-      name,
-      type,
-      icon,
-      price,
-      period,
-      color,
-      bgColor,
-      borderColor,
-      popular=== 'Premium',
-      description,
-      features=> ({ text, included)),
-      yearlyDiscount,
-      savings,
-      discountPercentage
+      id: plan.id || plan.backendId || 'unknown',
+      backendId: plan.id,
+      name: plan.name || frontendPlan?.name || 'Unknown Plan',
+      type: plan.type || 'basic',
+      icon: frontendPlan?.icon || '💳',
+      price: plan.price || 0,
+      period: plan.period || 'month',
+      color: frontendPlan?.color || 'text-blue-600',
+      bgColor: frontendPlan?.bgColor || 'bg-blue-50',
+      borderColor: frontendPlan?.borderColor || 'border-blue-200',
+      popular: plan.type === 'premium',
+      description: plan.description || frontendPlan?.description || '',
+      features: (plan.features || []).map(feature => ({ 
+        text: feature.text || feature, 
+        included: feature.included !== false 
+      })),
+      yearlyDiscount: plan.yearlyDiscount || frontendPlan?.yearlyDiscount || 0,
+      savings: plan.savings || frontendPlan?.savings || '',
+      discountPercentage: plan.discountPercentage || frontendPlan?.discountPercentage || 0
     };
   });
 
