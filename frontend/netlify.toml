@@ -1,7 +1,7 @@
 # Netlify Configuration for BOOM Card Frontend
 
 [build]
-  # Build command using npm install for reliable dependency resolution
+  # Build command without TypeScript (temporary fix)
   command = "npm install --legacy-peer-deps && npm run build"
   
   # Next.js build output directory
