@@ -146,7 +146,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public (Commenting out to allow frontend/public assets)
 
 # vuepress build output
 .vuepress/dist
