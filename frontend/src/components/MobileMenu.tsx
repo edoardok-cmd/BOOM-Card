@@ -42,12 +42,12 @@ export default function MobileMenu() {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-[9999] lg:hidden">
           {/* Background overlay */}
-          <div className="fixed inset-0 bg-black/50" onClick={toggleMenu} />
+          <div className="fixed inset-0 bg-black/50 z-[9998]" onClick={toggleMenu} />
           
           {/* Menu panel - slides in from right */}
-          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl flex flex-col">
+          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl flex flex-col z-[9999]">
             {/* Header - Fixed at top */}
             <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 flex-shrink-0">
               <h2 className="text-lg font-semibold text-white">Menu</h2>
