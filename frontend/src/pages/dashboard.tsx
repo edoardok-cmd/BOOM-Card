@@ -295,7 +295,7 @@ export default function Dashboard() {
                 <Logo size="md" showText={true} />
               </div>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <div className="ml-10 flex items-center space-x-1">
                 <a href="/" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('dashboard.nav.home')}</a>
                 <a href="/partners" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('dashboard.nav.partners')}</a>
@@ -308,7 +308,8 @@ export default function Dashboard() {
               </div>
             </div>
             {/* Mobile Navigation */}
-            <div className="flex md:hidden items-center space-x-2">
+            <div className="flex lg:hidden items-center space-x-2">
+              <LanguageSwitcher />
               <MobileMenu />
             </div>
           </div>

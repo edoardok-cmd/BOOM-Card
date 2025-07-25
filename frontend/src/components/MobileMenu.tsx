@@ -23,10 +23,10 @@ export default function MobileMenu() {
 
   return (
     <>
-      {/* Hamburger Button */}
+      {/* Hamburger Button - Enhanced visibility */}
       <button
         onClick={toggleMenu}
-        className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="lg:hidden p-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm"
         aria-label="Toggle menu"
       >
         {!isOpen ? (
@@ -42,19 +42,19 @@ export default function MobileMenu() {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
           {/* Background overlay */}
           <div className="fixed inset-0 bg-black/50" onClick={toggleMenu} />
           
-          {/* Menu panel */}
-          <div className="fixed right-0 top-0 h-full w-64 bg-white shadow-xl">
+          {/* Menu panel - slides in from right */}
+          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b">
-                <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
+              <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600">
+                <h2 className="text-lg font-semibold text-white">Menu</h2>
                 <button
                   onClick={toggleMenu}
-                  className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+                  className="p-2 rounded-lg text-white hover:bg-white/20 transition-colors"
                   aria-label="Close menu"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,6 +69,7 @@ export default function MobileMenu() {
                   <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                   }`}>
+                    <span className="mr-3">🏠</span>
                     {t('nav.home')}
                   </a>
                 </Link>
@@ -77,6 +78,7 @@ export default function MobileMenu() {
                   <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/partners') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                   }`}>
+                    <span className="mr-3">🏪</span>
                     {t('nav.partners')}
                   </a>
                 </Link>
@@ -85,6 +87,7 @@ export default function MobileMenu() {
                   <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/subscriptions') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                   }`}>
+                    <span className="mr-3">💳</span>
                     {t('nav.plans')}
                   </a>
                 </Link>
@@ -97,6 +100,7 @@ export default function MobileMenu() {
                       <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                         isActive('/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                       }`}>
+                        <span className="mr-3">📊</span>
                         {t('nav.dashboard')}
                       </a>
                     </Link>
@@ -105,15 +109,8 @@ export default function MobileMenu() {
                       <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                         isActive('/profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                       }`}>
+                        <span className="mr-3">👤</span>
                         {t('nav.profile')}
-                      </a>
-                    </Link>
-                    
-                    <Link href="/account-settings" onClick={toggleMenu}>
-                      <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        isActive('/account-settings') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
-                        {t('nav.accountSettings')}
                       </a>
                     </Link>
                     
@@ -121,6 +118,7 @@ export default function MobileMenu() {
                       <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                         isActive('/help') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                       }`}>
+                        <span className="mr-3">❓</span>
                         {t('nav.help')}
                       </a>
                     </Link>
@@ -128,32 +126,40 @@ export default function MobileMenu() {
                 )}
               </nav>
 
-              {/* Footer */}
-              <div className="p-4 border-t space-y-4">
-                {/* Language Switcher */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">{t('common.language')}</span>
+              {/* Language Switcher */}
+              <div className="px-4 py-3 border-t">
+                <div className="mb-3">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                    {t('nav.language')}
+                  </p>
                   <LanguageSwitcher />
                 </div>
+              </div>
 
-                {/* Auth Buttons */}
+              {/* Auth Buttons */}
+              <div className="p-4 border-t bg-gray-50">
                 {user ? (
-                  <button
-                    onClick={handleLogout}
-                    className="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    {t('nav.logout')}
-                  </button>
+                  <div className="space-y-3">
+                    <div className="text-sm text-gray-600">
+                      {t('nav.loggedInAs')} <strong>{user.firstName}</strong>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                      {t('nav.logout')}
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     <Link href="/login" onClick={toggleMenu}>
-                      <a className="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium text-center transition-colors">
+                      <a className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors">
                         {t('nav.login')}
                       </a>
                     </Link>
                     <Link href="/register" onClick={toggleMenu}>
-                      <a className="block w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm font-medium text-center transition-colors">
-                        {t('nav.getStarted')}
+                      <a className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg text-center transition-colors">
+                        {t('nav.signup')}
                       </a>
                     </Link>
                   </div>
