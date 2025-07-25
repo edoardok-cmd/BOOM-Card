@@ -64,80 +64,80 @@ export default function MobileMenu() {
               </div>
 
               {/* Navigation Links */}
-              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+              <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto bg-white">
                 <Link href="/" legacyBehavior>
                   <a 
                     onClick={toggleMenu}
-                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                       isActive('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <span className="mr-3">🏠</span>
-                    {t('nav.home')}
+                    <span className="mr-3 text-xl">🏠</span>
+                    <span>{t('nav.home') || 'Home'}</span>
                   </a>
                 </Link>
                 
                 <Link href="/partners" legacyBehavior>
                   <a 
                     onClick={toggleMenu}
-                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                       isActive('/partners') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <span className="mr-3">🏪</span>
-                    {t('nav.partners')}
+                    <span className="mr-3 text-xl">🏪</span>
+                    <span>{t('nav.partners') || 'Partners'}</span>
                   </a>
                 </Link>
                 
                 <Link href="/subscriptions" legacyBehavior>
                   <a 
                     onClick={toggleMenu}
-                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                       isActive('/subscriptions') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <span className="mr-3">💳</span>
-                    {t('nav.plans')}
+                    <span className="mr-3 text-xl">💳</span>
+                    <span>{t('nav.plans') || 'Plans'}</span>
                   </a>
                 </Link>
 
                 {user && (
                   <>
-                    <div className="my-4 border-t" />
+                    <div className="my-4 border-t border-gray-200" />
                     
                     <Link href="/dashboard" legacyBehavior>
                       <a 
                         onClick={toggleMenu}
-                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                           isActive('/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <span className="mr-3">📊</span>
-                        {t('nav.dashboard')}
+                        <span className="mr-3 text-xl">📊</span>
+                        <span>{t('nav.dashboard') || 'Dashboard'}</span>
                       </a>
                     </Link>
                     
                     <Link href="/profile" legacyBehavior>
                       <a 
                         onClick={toggleMenu}
-                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                           isActive('/profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <span className="mr-3">👤</span>
-                        {t('nav.profile')}
+                        <span className="mr-3 text-xl">👤</span>
+                        <span>{t('nav.profile') || 'Profile'}</span>
                       </a>
                     </Link>
                     
                     <Link href="/help" legacyBehavior>
                       <a 
                         onClick={toggleMenu}
-                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                           isActive('/help') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        <span className="mr-3">❓</span>
-                        {t('nav.help')}
+                        <span className="mr-3 text-xl">❓</span>
+                        <span>{t('nav.help') || 'Help'}</span>
                       </a>
                     </Link>
                   </>
@@ -145,27 +145,25 @@ export default function MobileMenu() {
               </nav>
 
               {/* Language Switcher */}
-              <div className="px-4 py-3 border-t">
-                <div className="mb-3">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                    {t('nav.language')}
-                  </p>
-                  <LanguageSwitcher />
-                </div>
+              <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                  {t('nav.language') || 'Language'}
+                </p>
+                <LanguageSwitcher />
               </div>
 
-              {/* Auth Buttons */}
-              <div className="p-4 border-t bg-gray-50">
+              {/* Auth Section */}
+              <div className="p-4 border-t border-gray-200 bg-white">
                 {user ? (
                   <div className="space-y-3">
                     <div className="text-sm text-gray-600">
-                      {t('nav.loggedInAs')} <strong>{user.firstName}</strong>
+                      {t('nav.loggedInAs') || 'Logged in as'} <strong className="text-gray-900">{user.firstName}</strong>
                     </div>
                     <button
                       onClick={handleLogout}
                       className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                     >
-                      {t('nav.logout')}
+                      {t('nav.logout') || 'Logout'}
                     </button>
                   </div>
                 ) : (
@@ -175,7 +173,7 @@ export default function MobileMenu() {
                         onClick={toggleMenu}
                         className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors"
                       >
-                        {t('nav.login')}
+                        {t('nav.login') || 'Login'}
                       </a>
                     </Link>
                     <Link href="/register" legacyBehavior>
@@ -183,7 +181,7 @@ export default function MobileMenu() {
                         onClick={toggleMenu}
                         className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg text-center transition-colors"
                       >
-                        {t('nav.signup')}
+                        {t('nav.signup') || 'Sign Up'}
                       </a>
                     </Link>
                   </div>
