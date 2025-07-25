@@ -3,11 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   poweredByHeader: false,
+  output: 'export',
   
   // Basic image configuration
   images: {
-    domains: ['localhost', 'api.boomcard.com'],
-    formats: ['image/avif', 'image/webp'],
+    unoptimized: true,
   },
 
   // API rewrites for backend proxy
