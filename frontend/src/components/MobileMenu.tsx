@@ -63,7 +63,7 @@ export default function MobileMenu() {
             </div>
 
             {/* Scrollable content area - flex-grow to take remaining height */}
-            <div className="flex-grow overflow-y-auto">
+            <div className="flex-grow overflow-y-auto" style={{ minHeight: 0 }}>
               {/* Navigation Links */}
               <nav className="p-4 space-y-2">
                 <Link href="/" legacyBehavior>
