@@ -5,6 +5,7 @@ import VideoBackground from '../components/VideoBackground';
 import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserProfileDropdown from '../components/UserProfileDropdown';
+import MobileMenu from '../components/MobileMenu';
 import Logo from '../components/Logo';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -117,19 +118,23 @@ export default function Home() {
                 <Logo size="md" showText={true} />
               </div>
             </div>
+            {/* Desktop Navigation */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-center space-x-1">
                 <a href="/" className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-semibold">{t('nav.home')}</a>
                 <a href="/partners" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('nav.partners')}</a>
                 <a href="/subscriptions" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('nav.plans')}</a>
-                <a href="/dashboard" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('nav.dashboard')}</a>
-                <a href="/profile" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('nav.profile')}</a>
                 <div className="pl-4 ml-4 border-l border-gray-200 flex items-center space-x-3">
                   <SearchBar />
                   <LanguageSwitcher />
                   <UserProfileDropdown />
                 </div>
               </div>
+            </div>
+            
+            {/* Mobile Navigation */}
+            <div className="flex md:hidden items-center space-x-2">
+              <MobileMenu />
             </div>
           </div>
         </div>

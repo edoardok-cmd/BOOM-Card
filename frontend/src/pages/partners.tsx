@@ -4,7 +4,9 @@ import { useRouter } from 'next/router';
 import VideoBackground from '../components/VideoBackground';
 import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import UserProfileDropdown from '../components/UserProfileDropdown';
 import Logo from '../components/Logo';
+import MobileMenu from '../components/MobileMenu';
 import { useLanguage } from '../contexts/LanguageContext';
 import { navigationHandlers } from '../utils/navigation';
 
@@ -273,18 +275,16 @@ export default function Partners() {
                 <a href="/" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('partners.nav.home')}</a>
                 <a href="/partners" className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-semibold">{t('partners.nav.partners')}</a>
                 <a href="/subscriptions" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('partners.nav.plans')}</a>
-                <a href="/dashboard" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('partners.nav.dashboard')}</a>
-                <a href="/profile" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('nav.profile')}</a>
                 <div className="pl-4 ml-4 border-l border-gray-200 flex items-center space-x-3">
                   <SearchBar />
                   <LanguageSwitcher />
-                  <button 
-                    onClick={() => navigationHandlers.startMembership(router)}
-                    className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all">
-                    {t('partners.nav.getStarted')}
-                  </button>
+                  <UserProfileDropdown />
                 </div>
               </div>
+            </div>
+            {/* Mobile Navigation */}
+            <div className="flex md:hidden items-center space-x-2">
+              <MobileMenu />
             </div>
           </div>
         </div>

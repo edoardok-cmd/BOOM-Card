@@ -5,6 +5,7 @@ import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import Logo from '../components/Logo';
+import MobileMenu from '../components/MobileMenu';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -342,14 +343,16 @@ export default function Profile() {
                 <a href="/" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('profile.nav.home')}</a>
                 <a href="/partners" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('profile.nav.partners')}</a>
                 <a href="/subscriptions" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('profile.nav.plans')}</a>
-                <a href="/dashboard" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('profile.nav.dashboard')}</a>
-                <a href="/profile" className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-semibold">{t('profile.nav.profile')}</a>
                 <div className="pl-4 ml-4 border-l border-gray-200 flex items-center space-x-3">
                   <SearchBar />
                   <LanguageSwitcher />
                   <UserProfileDropdown />
                 </div>
               </div>
+            </div>
+            {/* Mobile Navigation */}
+            <div className="flex md:hidden items-center space-x-2">
+              <MobileMenu />
             </div>
           </div>
         </div>

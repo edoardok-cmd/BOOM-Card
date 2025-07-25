@@ -24,6 +24,9 @@ const translations: Translations = {
   'nav.profile': { en: 'Profile', bg: 'Профил' },
   'nav.getStarted': { en: 'Get Started', bg: 'Започнете' },
   'nav.accountSettings': { en: 'Account Settings', bg: 'Настройки на акаунта' },
+  'nav.help': { en: 'Help', bg: 'Помощ' },
+  'nav.login': { en: 'Login', bg: 'Вход' },
+  'nav.logout': { en: 'Logout', bg: 'Изход' },
   
   // Hero Section - Homepage
   'hero.badge': { en: 'Premium Discount Platform • Live in Bulgaria', bg: 'Премиум платформа за отстъпки • Активна в България' },
@@ -129,6 +132,7 @@ const translations: Translations = {
   'footer.madeInBulgaria': { en: 'Made in Bulgaria', bg: 'Произведено в България' },
   
   // Common
+  'common.language': { en: 'Language', bg: 'Език' },
   'common.learnMore': { en: 'Learn More', bg: 'Научете повече' },
   'common.viewDetails': { en: 'View Details', bg: 'Вижте детайли' },
   'common.save': { en: 'Save', bg: 'Запази' },
@@ -890,7 +894,7 @@ const translations: Translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('bg');
   
   // Load language from localStorage on mount
   React.useEffect(() => {
