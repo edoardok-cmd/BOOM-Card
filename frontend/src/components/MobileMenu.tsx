@@ -47,24 +47,25 @@ export default function MobileMenu() {
           <div className="fixed inset-0 bg-black/50" onClick={toggleMenu} />
           
           {/* Menu panel - slides in from right */}
-          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
-            <div className="flex flex-col h-full">
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600">
-                <h2 className="text-lg font-semibold text-white">Menu</h2>
-                <button
-                  onClick={toggleMenu}
-                  className="p-2 rounded-lg text-white hover:bg-white/20 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl flex flex-col">
+            {/* Header - Fixed at top */}
+            <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 flex-shrink-0">
+              <h2 className="text-lg font-semibold text-white">Menu</h2>
+              <button
+                onClick={toggleMenu}
+                className="p-2 rounded-lg text-white hover:bg-white/20 transition-colors"
+                aria-label="Close menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
+            {/* Scrollable content area - flex-grow to take remaining height */}
+            <div className="flex-grow overflow-y-auto">
               {/* Navigation Links */}
-              <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto bg-white">
+              <nav className="p-4 space-y-2">
                 <Link href="/" legacyBehavior>
                   <a 
                     onClick={toggleMenu}
@@ -73,7 +74,7 @@ export default function MobileMenu() {
                     }`}
                   >
                     <span className="mr-3 text-xl">🏠</span>
-                    <span>{t('nav.home') || 'Home'}</span>
+                    <span>{t('nav.home') || 'Начало'}</span>
                   </a>
                 </Link>
                 
@@ -85,7 +86,7 @@ export default function MobileMenu() {
                     }`}
                   >
                     <span className="mr-3 text-xl">🏪</span>
-                    <span>{t('nav.partners') || 'Partners'}</span>
+                    <span>{t('nav.partners') || 'Партньори'}</span>
                   </a>
                 </Link>
                 
@@ -97,7 +98,7 @@ export default function MobileMenu() {
                     }`}
                   >
                     <span className="mr-3 text-xl">💳</span>
-                    <span>{t('nav.plans') || 'Plans'}</span>
+                    <span>{t('nav.plans') || 'Планове'}</span>
                   </a>
                 </Link>
 
@@ -113,7 +114,7 @@ export default function MobileMenu() {
                         }`}
                       >
                         <span className="mr-3 text-xl">📊</span>
-                        <span>{t('nav.dashboard') || 'Dashboard'}</span>
+                        <span>{t('nav.dashboard') || 'Табло'}</span>
                       </a>
                     </Link>
                     
@@ -125,7 +126,7 @@ export default function MobileMenu() {
                         }`}
                       >
                         <span className="mr-3 text-xl">👤</span>
-                        <span>{t('nav.profile') || 'Profile'}</span>
+                        <span>{t('nav.profile') || 'Профил'}</span>
                       </a>
                     </Link>
                     
@@ -137,7 +138,7 @@ export default function MobileMenu() {
                         }`}
                       >
                         <span className="mr-3 text-xl">❓</span>
-                        <span>{t('nav.help') || 'Help'}</span>
+                        <span>{t('nav.help') || 'Помощ'}</span>
                       </a>
                     </Link>
                   </>
@@ -145,25 +146,25 @@ export default function MobileMenu() {
               </nav>
 
               {/* Language Switcher */}
-              <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+              <div className="p-4 border-t border-gray-200 bg-gray-50">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                  {t('nav.language') || 'Language'}
+                  {t('nav.language') || 'Език'}
                 </p>
                 <LanguageSwitcher />
               </div>
 
               {/* Auth Section */}
-              <div className="p-4 border-t border-gray-200 bg-white">
+              <div className="p-4 border-t border-gray-200">
                 {user ? (
                   <div className="space-y-3">
                     <div className="text-sm text-gray-600">
-                      {t('nav.loggedInAs') || 'Logged in as'} <strong className="text-gray-900">{user.firstName}</strong>
+                      {t('nav.loggedInAs') || 'Влезли сте като'} <strong className="text-gray-900">{user.firstName}</strong>
                     </div>
                     <button
                       onClick={handleLogout}
                       className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                     >
-                      {t('nav.logout') || 'Logout'}
+                      {t('nav.logout') || 'Изход'}
                     </button>
                   </div>
                 ) : (
@@ -173,7 +174,7 @@ export default function MobileMenu() {
                         onClick={toggleMenu}
                         className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors"
                       >
-                        {t('nav.login') || 'Login'}
+                        {t('nav.login') || 'Вход'}
                       </a>
                     </Link>
                     <Link href="/register" legacyBehavior>
@@ -181,7 +182,7 @@ export default function MobileMenu() {
                         onClick={toggleMenu}
                         className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg text-center transition-colors"
                       >
-                        {t('nav.signup') || 'Sign Up'}
+                        {t('nav.signup') || 'Регистрация'}
                       </a>
                     </Link>
                   </div>
