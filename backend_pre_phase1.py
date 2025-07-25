@@ -184,7 +184,7 @@ def get_partners(category: Optional[str] = None, location: Optional[str] = None)
             "category": "restaurants",
             "discount": "25%",
             "location": "Sofia",
-            "image": "/images/restaurant1.jpg",
+            "image": "/images/restaurant1.svg",
             "rating": 4.8,
             "description": "Fine dining experience"
         },
@@ -194,7 +194,7 @@ def get_partners(category: Optional[str] = None, location: Optional[str] = None)
             "category": "hotels",
             "discount": "30%",
             "location": "Plovdiv",
-            "image": "/images/hotel1.jpg",
+            "image": "/images/hotel1.svg",
             "rating": 4.9,
             "description": "Luxury accommodation"
         },
@@ -204,7 +204,7 @@ def get_partners(category: Optional[str] = None, location: Optional[str] = None)
             "category": "spa",
             "discount": "35%",
             "location": "Varna",
-            "image": "/images/spa1.jpg",
+            "image": "/images/spa1.svg",
             "rating": 4.7,
             "description": "Wellness and relaxation"
         }
@@ -253,7 +253,7 @@ def get_featured_partners():
             "category": "restaurants",
             "discount": "30%",
             "location": "Sofia",
-            "image": "/images/restaurant1.jpg",
+            "image": "/images/restaurant1.svg",
             "rating": 4.9,
             "featured": True,
             "description": "Award-winning fine dining experience"
@@ -264,7 +264,7 @@ def get_featured_partners():
             "category": "hotels",
             "discount": "35%",
             "location": "Plovdiv",
-            "image": "/images/hotel1.jpg",
+            "image": "/images/hotel1.svg",
             "rating": 4.8,
             "featured": True,
             "description": "5-star luxury accommodation"
@@ -275,7 +275,7 @@ def get_featured_partners():
             "category": "spa",
             "discount": "40%",
             "location": "Varna",
-            "image": "/images/spa1.jpg",
+            "image": "/images/spa1.svg",
             "rating": 4.9,
             "featured": True,
             "description": "Premium wellness retreat"
