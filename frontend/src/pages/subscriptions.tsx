@@ -191,12 +191,12 @@ export default function Subscriptions() {
   // Map backend plans to frontend format
   const mappedBackendPlans = backendPlans.map(plan => {
     // Match by ID instead of name to ensure correct icon mapping
-    const frontendPlan = frontendPlans.find(fp => fp.id.toLowerCase() === plan.type.toLowerCase());
+    const frontendPlan = frontendPlans.find(fp => fp.id.toLowerCase() === plan.id.toLowerCase());
     return {
       id: plan.id,
       backendId: plan.id,
       name: frontendPlan?.name || plan.name,
-      type: plan.type,
+      type: plan.id,
       icon: frontendPlan?.icon || '🎯',
       price: plan.price,
       period: 'month',

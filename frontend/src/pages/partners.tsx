@@ -461,9 +461,19 @@ export default function Partners() {
                   <div className="p-8">
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center">
-                        <div className={`w-16 h-16 bg-gradient-to-r ${mappedPartner.color} rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                          <span className="text-3xl">{mappedPartner.image}</span>
-                        </div>
+                        {mappedPartner.image.startsWith('/') || mappedPartner.image.startsWith('http') ? (
+                          <div className="w-16 h-16 mr-4 group-hover:scale-110 transition-transform">
+                            <img 
+                              src={mappedPartner.image} 
+                              alt={mappedPartner.name}
+                              className="w-full h-full object-cover rounded-2xl shadow-lg"
+                            />
+                          </div>
+                        ) : (
+                          <div className={`w-16 h-16 bg-gradient-to-r ${mappedPartner.color} rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                            <span className="text-3xl">{mappedPartner.image}</span>
+                          </div>
+                        )}
                         <div>
                           <h3 className="text-xl font-bold text-gray-900 mb-1">{mappedPartner.name}</h3>
                           <p className="text-sm text-gray-500 mb-1">{mappedPartner.category}</p>
