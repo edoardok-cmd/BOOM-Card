@@ -3,7 +3,7 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import { LanguageProvider } from '../contexts/LanguageContext';
-import { AuthProvider } from '../contexts/AuthContext';
+import { AuthProvider } from '../contexts/AuthContextWithMock';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
