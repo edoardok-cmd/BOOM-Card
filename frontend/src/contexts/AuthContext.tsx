@@ -13,41 +13,35 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUser: (user: User) => void;
+  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Check for existing token on mount
   useEffect(() => {
+    // Check for existing session
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setToken(storedToken);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
 
     setIsLoading(false);
@@ -66,130 +60,95 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Handle backend response
+        if (data.data?.note) {
+          // Backend is returning placeholder response
+          throw new Error('Use mock auth');
+        }
 
-    if (!response.ok) {
-      console.error('Login failed:', data);
-      const errorMessage = data.message || data.error || 'Login failed';
-      if (data.details && Array.isArray(data.details)) {
-        const validationErrors = data.details.map((detail: any) => detail.msg).join(', ');
-        throw new Error(`${errorMessage}: ${validationErrors}`);
+        // Store token and user (for when backend returns real data)
+        const tokenData = data.data?.tokens || data.data;
+        const token = tokenData?.accessToken || tokenData?.token;
+        const userData = data.data?.user || data.data;
+        
+        if (!userData?.id || !token) {
+          throw new Error('Invalid response from server');
+        }
+        
+        const user = {
+          id: userData.id.toString(),
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          membershipType: userData.membershipType || 'Premium',
+        };
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        setToken(token);
+        setUser(user);
+        return;
       }
-      throw new Error(errorMessage);
+    } catch (error) {
+      console.log('API unavailable or returned error, using mock authentication');
     }
 
-    // Handle backend response - currently returns placeholder data
-    if (data.data?.note) {
-      // Backend is returning placeholder response, create mock user for testing
-      const user = {
-        id: '1',
-        email: email,
-        firstName: 'Test',
-        lastName: 'User',
-        membershipType: 'Premium',
-      };
-      const token = 'mock-token-for-testing';
+    // Use mock authentication
+    try {
+      const mockData = await mockLogin(email, password);
+      const { user, token } = mockData.data;
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       
       setToken(token);
       setUser(user);
-      return; // Exit early with mock data
+    } catch (mockError) {
+      throw new Error('Invalid credentials');
     }
-
-    // Store token and user (for when backend returns real data)
-    const tokenData = data.data?.tokens || data.data;
-    const token = tokenData?.accessToken || tokenData?.token;
-    const userData = data.data?.user || data.data;
-    
-    if (!userData?.id || !token) {
-      throw new Error('Invalid response from server - missing user data or token');
-    }
-    
-    const user = {
-      id: userData.id.toString(),
-      email: userData.email,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      membershipType: userData.membershipType || 'Premium',
-    };
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    setToken(token);
-    setUser(user);
   };
 
   const register = async (firstName: string, lastName: string, email: string, password: string) => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ firstName, lastName, email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Registration failed:', data);
-      const errorMessage = data.message || data.error || 'Registration failed';
-      if (data.details && Array.isArray(data.details)) {
-        const validationErrors = data.details.map((detail: any) => detail.msg).join(', ');
-        throw new Error(`${errorMessage}: ${validationErrors}`);
-      }
-      throw new Error(errorMessage);
-    }
-
-    // Store token and user
-    const tokenData = data.data?.tokens || data.data;
-    const token = tokenData.accessToken || tokenData.token;
-    const userData = data.data?.user || data.data;
-    const user = {
-      id: userData.id.toString(),
-      email: userData.email,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      membershipType: userData.membershipType || 'Premium',
+    // For static deployment, create a mock user
+    const newUser = {
+      id: `user_${Date.now()}`,
+      email,
+      firstName,
+      lastName,
+      membershipType: 'standard',
     };
+    const token = btoa(`${newUser.id}:${Date.now()}`);
     
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(newUser));
     
     setToken(token);
-    setUser(user);
+    setUser(newUser);
   };
 
   const logout = () => {
-    // Clear local storage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
-    // Clear state
     setToken(null);
     setUser(null);
-    
-    // Redirect to home
     router.push('/');
   };
 
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-  };
+  return (
+    <AuthContext.Provider value={{ user, token, login, logout, register, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  const value = {
-    user,
-    token,
-    isLoading,
-    login,
-    register,
-    logout,
-    updateUser,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

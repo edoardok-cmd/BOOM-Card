@@ -10,21 +10,6 @@ const nextConfig = {
     unoptimized: true,
   },
 
-  // API rewrites for backend proxy
-  async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
-    console.log('API URL configured as:', apiUrl);
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiUrl}/:path*`,
-      },
-      {
-        source: '/health',
-        destination: `${apiUrl.replace('/api', '')}/health`,
-      },
-    ]
-  },
 
   // Environment variables
   env: {
