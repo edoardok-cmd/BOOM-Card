@@ -4,8 +4,8 @@
   # Build command for Next.js with install step including devDependencies
   command = "npm ci --legacy-peer-deps --include=dev && npm run build"
   
-  # Next.js build output directory
-  publish = ".next"
+  # Next.js static export output directory
+  publish = "out"
 
 # Environment variables needed for build
 [build.environment]
@@ -17,6 +17,8 @@
   NPM_FLAGS = "--legacy-peer-deps"
   # Force production mode after install
   NODE_ENV = "development"
+  # API URL for production
+  NEXT_PUBLIC_API_URL = "http://localhost:8002/api"
 
 # Headers for security and performance
 [[headers]]
@@ -55,16 +57,14 @@
   # Include files needed for functions
   included_files = ["public/**", ".next/**"]
 
-# Plugin to handle Next.js deployment
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# No plugin needed for static export
 
 # Development settings
 [dev]
   command = "npm run dev"
   port = 3000
   targetPort = 3000
-  publish = ".next"
+  publish = "out"
   autoLaunch = true
 
 # Context-specific settings
