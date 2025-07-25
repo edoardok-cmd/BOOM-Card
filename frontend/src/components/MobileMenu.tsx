@@ -65,28 +65,37 @@ export default function MobileMenu() {
 
               {/* Navigation Links */}
               <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                <Link href="/" onClick={toggleMenu}>
-                  <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                  }`}>
+                <Link href="/" legacyBehavior>
+                  <a 
+                    onClick={toggleMenu}
+                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
                     <span className="mr-3">🏠</span>
                     {t('nav.home')}
                   </a>
                 </Link>
                 
-                <Link href="/partners" onClick={toggleMenu}>
-                  <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive('/partners') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                  }`}>
+                <Link href="/partners" legacyBehavior>
+                  <a 
+                    onClick={toggleMenu}
+                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive('/partners') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
                     <span className="mr-3">🏪</span>
                     {t('nav.partners')}
                   </a>
                 </Link>
                 
-                <Link href="/subscriptions" onClick={toggleMenu}>
-                  <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive('/subscriptions') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                  }`}>
+                <Link href="/subscriptions" legacyBehavior>
+                  <a 
+                    onClick={toggleMenu}
+                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive('/subscriptions') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
                     <span className="mr-3">💳</span>
                     {t('nav.plans')}
                   </a>
@@ -96,28 +105,37 @@ export default function MobileMenu() {
                   <>
                     <div className="my-4 border-t" />
                     
-                    <Link href="/dashboard" onClick={toggleMenu}>
-                      <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        isActive('/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
+                    <Link href="/dashboard" legacyBehavior>
+                      <a 
+                        onClick={toggleMenu}
+                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                          isActive('/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
                         <span className="mr-3">📊</span>
                         {t('nav.dashboard')}
                       </a>
                     </Link>
                     
-                    <Link href="/profile" onClick={toggleMenu}>
-                      <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        isActive('/profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
+                    <Link href="/profile" legacyBehavior>
+                      <a 
+                        onClick={toggleMenu}
+                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                          isActive('/profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
                         <span className="mr-3">👤</span>
                         {t('nav.profile')}
                       </a>
                     </Link>
                     
-                    <Link href="/help" onClick={toggleMenu}>
-                      <a className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        isActive('/help') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
+                    <Link href="/help" legacyBehavior>
+                      <a 
+                        onClick={toggleMenu}
+                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                          isActive('/help') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
                         <span className="mr-3">❓</span>
                         {t('nav.help')}
                       </a>
@@ -152,13 +170,19 @@ export default function MobileMenu() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Link href="/login" onClick={toggleMenu}>
-                      <a className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors">
+                    <Link href="/login" legacyBehavior>
+                      <a 
+                        onClick={toggleMenu}
+                        className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors"
+                      >
                         {t('nav.login')}
                       </a>
                     </Link>
-                    <Link href="/register" onClick={toggleMenu}>
-                      <a className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg text-center transition-colors">
+                    <Link href="/register" legacyBehavior>
+                      <a 
+                        onClick={toggleMenu}
+                        className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg text-center transition-colors"
+                      >
                         {t('nav.signup')}
                       </a>
                     </Link>

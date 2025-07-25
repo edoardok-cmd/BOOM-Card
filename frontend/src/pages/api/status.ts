@@ -19,7 +19,7 @@ export default function handler(
     timestamp: new Date().toISOString(),
     services: {
       frontend: 'running',
-      backend: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api',
+      backend: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api',
       database: 'connected'
     }
   });

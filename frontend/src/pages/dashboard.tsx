@@ -140,7 +140,7 @@ export default function Dashboard() {
   const [loadingStats, setLoadingStats] = useState(false);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
 
   // Fetch QR code, activity, favorites, and achievements on mount
   useEffect(() => {

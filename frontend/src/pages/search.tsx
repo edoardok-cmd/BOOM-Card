@@ -18,7 +18,7 @@ export default function Search() {
   const [error, setError] = useState<string | null>(null);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
 
   // Category emoji mapping
   const categoryEmoji: { [key: string]: string } = {

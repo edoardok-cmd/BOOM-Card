@@ -215,7 +215,7 @@ def get_partners(category: Optional[str] = None, location: Optional[str] = None)
     if location:
         partners = [p for p in partners if p["location"] == location]
     
-    return partners
+    return {"success": True, "data": partners}
 
 @app.get("/api/categories")
 def get_categories():
@@ -228,25 +228,25 @@ def get_categories():
 
 @app.get("/api/partners/categories")
 def get_partner_categories():
-    return [
+    return {"success": True, "data": [
         {"id": "restaurants", "name": "Fine Dining", "count": 125, "icon": "🍽️"},
         {"id": "hotels", "name": "Hotels & Resorts", "count": 48, "icon": "🏨"},
         {"id": "spa", "name": "Spa & Wellness", "count": 67, "icon": "💆"},
         {"id": "entertainment", "name": "Entertainment", "count": 93, "icon": "🎬"}
-    ]
+    ]}
 
 @app.get("/api/partners/cities")
 def get_partner_cities():
-    return [
+    return {"success": True, "data": [
         {"id": "sofia", "name": "Sofia", "count": 142},
         {"id": "plovdiv", "name": "Plovdiv", "count": 87},
         {"id": "varna", "name": "Varna", "count": 76},
         {"id": "burgas", "name": "Burgas", "count": 70}
-    ]
+    ]}
 
 @app.get("/api/partners/featured")
 def get_featured_partners():
-    return [
+    return {"success": True, "data": [
         {
             "id": "1",
             "name": "Restaurant Sofia Premium",
@@ -280,7 +280,7 @@ def get_featured_partners():
             "featured": True,
             "description": "Premium wellness retreat"
         }
-    ]
+    ]}
 
 @app.get("/api/discounts/active")
 def get_active_discounts():
@@ -425,7 +425,7 @@ def get_connected_accounts():
 
 @app.get("/api/subscriptions/plans")
 def get_subscription_plans():
-    return [
+    return {"success": True, "data": [
         {
             "id": "basic",
             "name": "Basic",
@@ -467,7 +467,7 @@ def get_subscription_plans():
             ],
             "highlighted": False
         }
-    ]
+    ]}
 
 if __name__ == "__main__":
     import uvicorn
