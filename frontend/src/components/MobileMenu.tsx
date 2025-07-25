@@ -47,7 +47,7 @@ export default function MobileMenu() {
           <div className="fixed inset-0 bg-black/50 z-[9998]" onClick={toggleMenu} />
           
           {/* Menu panel - slides in from right */}
-          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-[9999]">
+          <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-[9999] overflow-hidden">
             {/* Header - Fixed at top */}
             <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600">
               <h2 className="text-lg font-semibold text-white">Menu</h2>
@@ -63,7 +63,7 @@ export default function MobileMenu() {
             </div>
 
             {/* Scrollable content area */}
-            <div className="h-[calc(100%-64px)] overflow-y-auto bg-white">
+            <div className="overflow-y-auto bg-white" style={{ height: 'calc(100vh - 64px)', minHeight: '400px' }}>
               {/* Navigation Links */}
               <nav className="p-4 space-y-2">
                 <Link href="/" legacyBehavior>
