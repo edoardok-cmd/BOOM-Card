@@ -5,9 +5,9 @@
   base = "frontend"
   
   # Build command for Next.js with legacy peer deps and devDependencies
-  command = "npm ci --legacy-peer-deps --include=dev && npm run build"
+  command = "npm ci --legacy-peer-deps && npm run build"
   
-  # Next.js build output directory - NOT using static export
+  # Next.js build output directory
   publish = ".next"
   
   # Explicitly disable static export
@@ -20,8 +20,6 @@
   NEXT_TELEMETRY_DISABLED = "1"
   # Set Node version to LTS
   NODE_VERSION = "18"
-  # Install devDependencies during build
-  NODE_ENV = "development"
   # Additional npm flags
   NPM_FLAGS = "--legacy-peer-deps"
 
