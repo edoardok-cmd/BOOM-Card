@@ -2,6 +2,8 @@
 
 This is the Next.js frontend application for the BOOM Card platform - a multi-country subscription service for deals and discounts with POS integration.
 
+Last build: 2025-01-27
+
 ## 🚀 Quick Start
 
 ```bash
