@@ -19,7 +19,7 @@
   # Ensure Next.js optimizations are enabled
   NEXT_TELEMETRY_DISABLED = "1"
   # Set Node version to match requirements
-  NODE_VERSION = "18.17.0"
+  NODE_VERSION = "18.18.0"
   # Additional npm flags
   NPM_FLAGS = "--legacy-peer-deps"
   # API URL for production - using mock for now
