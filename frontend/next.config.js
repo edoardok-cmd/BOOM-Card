@@ -7,9 +7,6 @@ const nextConfig = {
   // Set pages directory explicitly
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
   
-  // Completely disable static optimization
-  output: 'standalone',
-  
   // Basic image configuration
   images: {
     unoptimized: true,
