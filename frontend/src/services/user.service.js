@@ -1,5 +1,4 @@
 import { apiService } from './api';
-import { User: "User", Card: "Card", PaginatedResponse: "PaginatedResponse" } from './api';
 
 export 
 

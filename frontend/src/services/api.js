@@ -9,12 +9,12 @@ export
 // User & Authentication Types
 export 
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-  MODERATOR = 'MODERATOR',
-  GUEST = 'GUEST'
-}
+export const UserRole = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+  MODERATOR: 'MODERATOR',
+  GUEST: 'GUEST'
+};
 
 export 
 
@@ -27,29 +27,29 @@ export
 // Card Types
 export 
 
-export enum CardCategory {
-  PERSONAL = 'PERSONAL',
-  WORK = 'WORK',
-  EDUCATION = 'EDUCATION',
-  HEALTH = 'HEALTH',
-  FINANCE = 'FINANCE',
-  OTHER = 'OTHER'
-}
+export const CardCategory = {
+  PERSONAL: 'PERSONAL',
+  WORK: 'WORK',
+  EDUCATION: 'EDUCATION',
+  HEALTH: 'HEALTH',
+  FINANCE: 'FINANCE',
+  OTHER: 'OTHER'
+};
 
-export enum CardStatus {
-  DRAFT = 'DRAFT',
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  ARCHIVED = 'ARCHIVED',
-  DELETED = 'DELETED'
-}
+export const CardStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  ARCHIVED: 'ARCHIVED',
+  DELETED: 'DELETED'
+};
 
-export enum Priority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  URGENT = 'URGENT'
-}
+export const Priority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+};
 
 export 
 
