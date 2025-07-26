@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PWA Icons</title>
+</head>
+<body>
+    <h1>PWA Icon Generator</h1>
+    <p>This page generates proper-sized icons for the PWA manifest.</p>
+    
+    <div id="icons"></div>
+    
+    <script>
+        // Icon sizes needed
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        // Create canvas and generate icons
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#FF6B35');
+            gradient.addColorStop(1, '#F7931E');
+            
+            // Draw background circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 - 2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw white inner circle
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 - size/8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw text
+            ctx.fillStyle = '#FF6B35';
+            ctx.font = `bold ${size/3.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('BOOM', size/2, size/2 + size/8);
+            
+            // Convert to image
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `icon-${size}x${size}.png`;
+                link.href = url;
+                link.textContent = `Download ${size}x${size} icon`;
+                link.style.display = 'block';
+                link.style.margin = '10px';
+                document.getElementById('icons').appendChild(link);
+            });
+        });
+    </script>
+</body>
+</html>
