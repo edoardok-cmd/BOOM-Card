@@ -4,8 +4,8 @@
   # Build command for Next.js with install step including devDependencies
   command = "npm ci --legacy-peer-deps --include=dev && npm run build:netlify"
   
-  # Next.js build output directory (NOT static export)
-  publish = ".next"
+  # Next.js serverless functions directory
+  publish = ".netlify"
 
 # Environment variables needed for build
 [build.environment]
@@ -66,7 +66,7 @@
   command = "npm run dev"
   port = 3000
   targetPort = 3000
-  publish = ".next"
+  publish = ".netlify"
   autoLaunch = true
 
 # Context-specific settings

@@ -4,11 +4,11 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   
-  // Disable automatic static optimization
-  unstable_runtimeJS: false,
-  
-  // Configure for server-side rendering
-  target: 'server',
+  // Force dynamic rendering
+  experimental: {
+    runtime: 'nodejs',
+    serverComponents: false,
+  },
   
   // Basic image configuration
   images: {

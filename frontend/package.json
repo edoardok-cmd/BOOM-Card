@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npx next dev -p 3002",
     "build": "next build",
-    "build:netlify": "NEXT_PRIVATE_STANDALONE=true next build",
+    "build:netlify": "next build",
     "start": "next start -p 3002",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

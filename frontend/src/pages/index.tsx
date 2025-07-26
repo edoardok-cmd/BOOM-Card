@@ -599,3 +599,10 @@ export default function Home() {
     </div>
   );
 }
+
+// Force server-side rendering
+export async function getServerSideProps() {
+  return {
+    props: {}, // Will be passed to the page component as props
+  }
+}
