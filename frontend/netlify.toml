@@ -2,9 +2,9 @@
 
 [build]
   # Build command for Next.js with install step including devDependencies
-  command = "npm ci --legacy-peer-deps && npm run build:netlify"
+  command = "npm ci --legacy-peer-deps && npm run build"
   
-  # Next.js build output directory
+  # Next.js build output directory  
   publish = ".next"
 
 # Environment variables needed for build
@@ -58,6 +58,13 @@
 # Plugin to handle Next.js deployment
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  
+  # Plugin configuration
+  [plugins.inputs]
+    # Ensure we're using the right Next.js version
+    appBuildCommand = "npm run build"
+    # Use Next.js runtime
+    functionsDir = ".netlify/functions"
 
 # Development settings
 [dev]
