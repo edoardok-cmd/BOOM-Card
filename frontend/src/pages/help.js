@@ -32,36 +32,36 @@ export default function HelpCenter() {
     {
       id,
       category,
-      title: t("title") 'How to change your subscription plan',
-      content: t("content") 'Navigate to Account Settings > Billing and click "Change Plan". Select your new plan and confirm the change.',
+      title: t("title") || 'How to change your subscription plan',
+      content: t("content") || 'Navigate to Account Settings > Billing and click "Change Plan". Select your new plan and confirm the change.',
       popular
     },
     {
       id,
       category,
-      title: t("title") 'How to use your QR code',
-      content: t("content") 'Open the BOOM Card app, tap on "My Card" to display your QR code. Show it to the merchant at checkout.',
+      title: t("title") || 'How to use your QR code',
+      content: t("content") || 'Open the BOOM Card app, tap on "My Card" to display your QR code. Show it to the merchant at checkout.',
       popular
     },
     {
       id,
       category,
-      title: t("title") 'Finding partner locations near you',
-      content: t("content") 'Use the search bar or browse by category. Enable location services for personalized recommendations.',
+      title: t("title") || 'Finding partner locations near you',
+      content: t("content") || 'Use the search bar or browse by category. Enable location services for personalized recommendations.',
       popular
     },
     {
       id,
       category,
-      title: t("title") 'App not working properly',
-      content: t("content") 'Try clearing your browser cache or updating to the latest version. If issues persist, contact support.',
+      title: t("title") || 'App not working properly',
+      content: t("content") || 'Try clearing your browser cache or updating to the latest version. If issues persist, contact support.',
       popular
     },
     {
       id,
       category,
-      title: t("title") 'How to cancel your subscription',
-      content: t("content") 'Go to Account Settings > Billing and click "Cancel Subscription". Your access will continue until the end of the billing period.',
+      title: t("title") || 'How to cancel your subscription',
+      content: t("content") || 'Go to Account Settings > Billing and click "Cancel Subscription". Your access will continue until the end of the billing period.',
       popular
     }
   ];

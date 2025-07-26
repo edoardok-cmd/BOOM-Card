@@ -140,7 +140,7 @@ export default function Partners() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
 
   // Map backend categories to frontend category IDs
-  const categoryMapping: { [key] } = {
+  const categoryMapping = {
     'Fine Dining': 'restaurants',
     'Restaurants': 'restaurants',
     'Hotels & Resorts': 'hotels',
@@ -154,7 +154,7 @@ export default function Partners() {
   };
 
   // Emoji mapping for categories
-  const categoryEmoji: { [key] } = {
+  const categoryEmoji = {
     'Fine Dining': '🍽️',
     'Restaurants': '🍽️',
     'Hotels & Resorts': '🏨',
