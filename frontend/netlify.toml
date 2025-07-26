@@ -15,8 +15,10 @@
   NODE_VERSION = "18"
   # Don't skip devDependencies
   NPM_FLAGS = "--legacy-peer-deps"
-  # API URL for production
-  NEXT_PUBLIC_API_URL = "http://localhost:8002/api"
+  # API URL for production - using mock for now
+  NEXT_PUBLIC_API_URL = "/api/mock"
+  # Disable external services for now
+  NEXT_PUBLIC_DISABLE_EXTERNAL_SERVICES = "true"
 
 # Headers for security and performance
 [[headers]]
