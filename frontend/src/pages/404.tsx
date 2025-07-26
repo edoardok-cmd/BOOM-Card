@@ -1,9 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 export default function Custom404() {
-  const router = useRouter();
+  const handleGoBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back();
+    }
+  };
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -16,7 +19,7 @@ export default function Custom404() {
             Go Home
           </Link>
           <button 
-            onClick={() => router.back()} 
+            onClick={handleGoBack}
             className="inline-block bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition"
           >
             Go Back
@@ -25,11 +28,4 @@ export default function Custom404() {
       </div>
     </div>
   );
-}
-
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
 }
