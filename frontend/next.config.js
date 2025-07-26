@@ -4,9 +4,11 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   
-  // Use server-side rendering instead of static export
-  // This avoids the "NextRouter was not mounted" errors
-  output: undefined, // explicitly not 'export'
+  // Disable automatic static optimization
+  unstable_runtimeJS: false,
+  
+  // Configure for server-side rendering
+  target: 'server',
   
   // Basic image configuration
   images: {
