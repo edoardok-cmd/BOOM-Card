@@ -28,25 +28,25 @@ export default function Profile() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [userData, setUserData] = useState({
-    firstName: result.data.firstName || "",
-    lastName: result.data.lastName || "",
-    email: result.data.email || "",
-    phone,
-    birthDate,
-    address,
-    memberSince,
-    membershipType,
-    cardNumber,
-    validUntil
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    birthDate: "",
+    address: "",
+    memberSince: new Date().toLocaleDateString(),
+    membershipType: "Premium",
+    cardNumber: "XXXX-XXXX-XXXX",
+    validUntil: new Date(Date.now() + 365*24*60*60*1000).toLocaleDateString()
   });
 
   const [preferences, setPreferences] = useState({
-    emailNotifications,
-    smsNotifications,
-    newsletterSubscription,
-    partnerUpdates,
-    language,
-    currency
+    emailNotifications: true,
+    smsNotifications: false,
+    newsletterSubscription: true,
+    partnerUpdates: true,
+    language: 'en',
+    currency: 'BGN'
   });
 
   const handleSave = async () => {
@@ -102,8 +102,8 @@ export default function Profile() {
           : '2FA has been enabled successfully! Please configure your authenticator app.');
         
         // In a real implementation, you would show a QR code here
-        console.log('2FA Secret, result.data?.secret);
-        console.log('QR Code URL, result.data?.qrCodeUrl);
+        console.log('2FA Secret', result.data?.secret);
+        console.log('QR Code URL', result.data?.qrCodeUrl);
       } else {
         const error = await response.json();
         alert(error.message || (language === 'bg' ? 'Неуспешно активиране на 2FA' : 'Failed to enable 2FA'));
@@ -126,10 +126,10 @@ export default function Profile() {
     if (user) {
       setUserData(prev => ({
         ...prev,
-        firstName: result.data.firstName || "",
-        lastName: result.data.lastName || "",
-        email: result.data.email || "",
-        membershipType,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        membershipType: user.membershipType || "Premium",
       }));
     }
   }, [user]);
@@ -173,13 +173,13 @@ export default function Profile() {
             firstName: result.data.firstName || "",
             lastName: result.data.lastName || "",
             email: result.data.email || "",
-            phone,
-            birthDate)[0] : prev.birthDate,
-            address,
-            membershipType,
-            cardNumber,
-            validUntil).toLocaleDateString('en-US', { year: month.replace(/\//g, '/') : '',
-            memberSince).toLocaleDateString('en-US', { year: month : prev.memberSince,
+            phone: result.data.phone || prev.phone,
+            birthDate: result.data.birthDate || prev.birthDate,
+            address: result.data.address || prev.address,
+            membershipType: result.data.membershipType || prev.membershipType,
+            cardNumber: result.data.cardNumber || prev.cardNumber,
+            validUntil: result.data.validUntil || prev.validUntil,
+            memberSince: result.data.memberSince || prev.memberSince,
           }));
         }
         setProfileLoading(false);
@@ -243,8 +243,31 @@ export default function Profile() {
       }
 
       // Validate review content length
-      if (reviewData.content.length  detail.msg).join(', ');
-          alert(`Validation error);
+      if (reviewData.content.length < 10) {
+        alert('Review must be at least 10 characters long');
+        setSubmittingReview(false);
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(reviewData)
+      });
+
+      if (response.ok) {
+        alert('Review submitted successfully!');
+        setReviewData({ rating: 5, partner: '', content: '' });
+        setShowReviewForm(false);
+        fetchUserReviews();
+      } else {
+        const error = await response.json();
+        if (error.errors) {
+          const errorMessages = error.errors.map(detail => detail.msg).join(', ');
+          alert(`Validation error: ${errorMessages}`);
         } else {
           alert(error.message || 'Failed to submit review');
         }
@@ -298,12 +321,12 @@ export default function Profile() {
           {/* Sidebar */}
 
                 {[
-                  { id, nameKey, icon,
-                  { id, nameKey, icon,
-                  { id, nameKey, icon,
-                  { id, nameKey, icon,
-                  { id, nameKey, icon,
-                  { id, nameKey, icon
+                  { id: 'personal', nameKey: 'profile.sidebar.personal', icon: '👤' },
+                  { id: 'membership', nameKey: 'profile.sidebar.membership', icon: '💳' },
+                  { id: 'preferences', nameKey: 'profile.sidebar.preferences', icon: '⚙️' },
+                  { id: 'security', nameKey: 'profile.sidebar.security', icon: '🔒' },
+                  { id: 'billing', nameKey: 'profile.sidebar.billing', icon: '💰' },
+                  { id: 'reviews', nameKey: 'profile.sidebar.reviews', icon: '⭐'
                 ].map((section) => (
                    setActiveSection(section.id)}
                     className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
@@ -487,9 +510,9 @@ export default function Profile() {
                       {t('profile.billing.billingHistory')}
                       
                         {[
-                          { date, amount, status,
-                          { date, amount, status,
-                          { date, amount, status
+                          { date: '2024-01-01', amount: '€19.99', status: 'paid' },
+                          { date: '2023-12-01', amount: '€19.99', status: 'paid' },
+                          { date: '2023-11-01', amount: '€19.99', status: 'paid'
                         ].map((invoice, index) => (
 
                               {invoice.date}
