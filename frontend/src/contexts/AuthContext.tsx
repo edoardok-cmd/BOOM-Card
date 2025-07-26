@@ -139,7 +139,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setToken(null);
     setUser(null);
-    router.push('/');
+    // Only push to home if router is ready
+    if (router.isReady) {
+      router.push('/');
+    }
   };
 
   return (
