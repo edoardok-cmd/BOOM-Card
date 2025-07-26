@@ -1,775 +1,532 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { useLanguage } from '../contexts/LanguageContext';
-import LanguageSwitcher from '../components/LanguageSwitcher';
-import SearchBar from '../components/SearchBar';
-import UserProfileDropdown from '../components/UserProfileDropdown';
-import Logo from '../components/Logo';
-import MobileMenu from '../components/MobileMenu';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useEffect, useState } from 'react'
+import Head from 'next/head'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useAuthStore } from '../store/authStore'
+import { usePartnerStore } from '../store/partnerStore'
+import { useUserStore } from '../store/userStore'
+import { useUIStore } from '../store/uiStore'
+import { useWebSocket } from '../services/websocketService'
+import { usePushNotifications } from '../services/pushNotificationService'
+import { useOfflineSync } from '../services/offlineSyncService'
+import SimpleQRCode, { MiniSimpleQRCode } from '../components/SimpleQRCode'
+import AdvancedSearch from '../components/AdvancedSearch'
+import OptimizedImage from '../components/OptimizedImage'
+import NotificationContainer from '../components/NotificationContainer'
+import Header from '../components/Header'
+import { formatCurrency, formatDate } from '../utils/format'
 
-const recentActivity = [
-  {
-    id: 1,
-    partner: 'The Sofia Grand',
-    category: 'Fine Dining',
-    icon: '🍽️',
-    saved: 67,
-    discount: 30,
-    date: '2 days ago',
-    color: 'from-orange-400 to-red-500',
-    bgColor: 'bg-orange-50'
-  },
-  {
-    id: 2,
-    partner: 'Emerald Resort & Spa',
-    category: 'Luxury Hotels',
-    icon: '🏨',
-    saved: 180,
-    discount: 40,
-    date: '5 days ago',
-    color: 'from-blue-400 to-indigo-500',
-    bgColor: 'bg-blue-50'
-  },
-  {
-    id: 3,
-    partner: 'Serenity Wellness',
-    category: 'Spa & Wellness',
-    icon: '💆',
-    saved: 95,
-    discount: 35,
-    date: '1 week ago',
-    color: 'from-purple-400 to-pink-500',
-    bgColor: 'bg-purple-50'
-  },
-  {
-    id: 4,
-    partner: 'Marina Bay Restaurant',
-    category: 'Fine Dining',
-    icon: '🍽️',
-    saved: 45,
-    discount: 25,
-    date: '2 weeks ago',
-    color: 'from-orange-400 to-red-500',
-    bgColor: 'bg-orange-50'
-  }
-];
+const DashboardCompletePage: React.FC = () => {
+  const router = useRouter()
+  const { user, isAuthenticated } = useAuthStore()
+  const { featuredPartners, loadFeaturedPartners } = usePartnerStore()
+  const { stats, activities, loadStats, loadActivities } = useUserStore()
+  const { addNotification } = useUIStore()
+  
+  // Feature hooks
+  const { isConnected: wsConnected, on: wsOn, off: wsOff } = useWebSocket()
+  const { isSupported: pushSupported, permission, requestPermission, isSubscribed } = usePushNotifications()
+  const { isOnline, pendingCount, syncNow } = useOfflineSync()
+  
+  const [showQRModal, setShowQRModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
 
-const favoritePartners = [
-  {
-    name: 'The Sofia Grand',
-    icon: '🍽️',
-    visits: 12,
-    totalSaved: 420,
-    color: 'from-orange-400 to-red-500',
-    bgColor: 'bg-orange-50'
-  },
-  {
-    name: 'Coffee Central',
-    icon: '☕',
-    visits: 28,
-    totalSaved: 168,
-    color: 'from-amber-400 to-orange-500',
-    bgColor: 'bg-amber-50'
-  },
-  {
-    name: 'Emerald Resort',
-    icon: '🏨',
-    visits: 4,
-    totalSaved: 640,
-    color: 'from-blue-400 to-indigo-500',
-    bgColor: 'bg-blue-50'
-  },
-  {
-    name: 'Serenity Wellness',
-    icon: '💆',
-    visits: 8,
-    totalSaved: 380,
-    color: 'from-purple-400 to-pink-500',
-    bgColor: 'bg-purple-50'
-  }
-];
-
-const achievements = [
-  {
-    titleKey: 'dashboard.achievements.savingsChampion',
-    descriptionKey: 'dashboard.achievements.savedOver1000',
-    icon: '🏆',
-    earned: true,
-    progress: 100
-  },
-  {
-    titleKey: 'dashboard.achievements.explorer',
-    descriptionKey: 'dashboard.achievements.visited50Partners',
-    icon: '🌍',
-    earned: true,
-    progress: 100
-  },
-  {
-    titleKey: 'dashboard.achievements.vipMember',
-    descriptionKey: 'dashboard.achievements.reachVipStatus',
-    icon: '👑',
-    earned: false,
-    progress: 75
-  },
-  {
-    titleKey: 'dashboard.achievements.socialSaver',
-    descriptionKey: 'dashboard.achievements.refer10Friends',
-    icon: '🤝',
-    earned: false,
-    progress: 40
-  }
-];
-
-export default function Dashboard() {
-  const router = useRouter();
-  const { t } = useLanguage();
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [timeFrame, setTimeFrame] = useState('month');
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [loadingQr, setLoadingQr] = useState(false);
-  const [userActivities, setUserActivities] = useState<any[]>([]);
-  const [loadingActivity, setLoadingActivity] = useState(false);
-  const [userFavorites, setUserFavorites] = useState<any[]>([]);
-  const [loadingFavorites, setLoadingFavorites] = useState(false);
-  const [userAchievements, setUserAchievements] = useState<any[]>([]);
-  const [loadingAchievements, setLoadingAchievements] = useState(false);
-  const [userStats, setUserStats] = useState({ totalSaved: 0, visitsThisYear: 0 });
-  const [loadingStats, setLoadingStats] = useState(false);
-
-  // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
-
-  // Fetch QR code, activity, favorites, and achievements on mount
+  // Check auth on mount
   useEffect(() => {
-    fetchQrCode();
-    fetchUserActivity();
-    fetchUserFavorites();
-    fetchUserAchievements();
-    fetchUserStats();
-  }, []);
-
-  // Fetch QR code
-  const fetchQrCode = async () => {
-    if (!user) return;
-    
-    setLoadingQr(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/qr/membership`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data && result.data.qrCode) {
-          setQrCodeUrl(result.data.qrCode);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch QR code:', error);
-    } finally {
-      setLoadingQr(false);
+    const checkAuthStatus = async () => {
+      // Wait a bit for store to rehydrate
+      await new Promise(resolve => setTimeout(resolve, 100))
+      setHasCheckedAuth(true)
     }
-  };
+    checkAuthStatus()
+  }, [])
 
-  // Fetch user activity
-  const fetchUserActivity = async () => {
-    if (!user) return;
-    
-    setLoadingActivity(true);
+  // Define loadInitialData without dependencies that could cause loops
+  const loadInitialData = React.useCallback(async () => {
+    setIsLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/users/activity?limit=10`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setUserActivities(result.data);
-        }
-      }
+      await Promise.all([
+        loadStats(),
+        loadActivities(),
+        loadFeaturedPartners()
+      ])
     } catch (error) {
-      console.error('Failed to fetch user activity:', error);
+      console.error('Failed to load dashboard data:', error)
+      // Don't use addNotification here as it can cause re-renders
     } finally {
-      setLoadingActivity(false);
+      setIsLoading(false)
     }
-  };
+  }, []) // Empty deps - these functions from stores should be stable
 
-  // Fetch user favorites
-  const fetchUserFavorites = async () => {
-    if (!user) return;
-    
-    setLoadingFavorites(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/favorites?limit=8`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setUserFavorites(result.data);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch user favorites:', error);
-    } finally {
-      setLoadingFavorites(false);
-    }
-  };
+  const handleNotification = React.useCallback((data: any) => {
+    addNotification({
+      type: data.type,
+      title: data.title || 'Notification',
+      message: data.message
+    })
+  }, []) // Remove deps
 
-  // Fetch user achievements
-  const fetchUserAchievements = async () => {
-    if (!user) return;
-    
-    setLoadingAchievements(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/achievements`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setUserAchievements(result.data);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch user achievements:', error);
-    } finally {
-      setLoadingAchievements(false);
-    }
-  };
+  const handleTransactionComplete = React.useCallback(() => {
+    loadStats() // Refresh stats
+    loadActivities() // Refresh activities
+  }, []) // Remove deps
 
-  // Fetch user statistics
-  const fetchUserStats = async () => {
-    if (!user) return;
-    
-    setLoadingStats(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/stats`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setUserStats({
-            totalSaved: result.data.totalSaved || 0,
-            visitsThisYear: result.data.visitsThisYear || 0
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch user stats:', error);
-    } finally {
-      setLoadingStats(false);
+  const handleAchievement = React.useCallback((data: any) => {
+    addNotification({
+      type: 'success',
+      title: 'Achievement Unlocked!',
+      message: `${data.achievement.name}`,
+      duration: 5000
+    })
+  }, []) // Remove deps
+
+  useEffect(() => {
+    if (!hasCheckedAuth) return
+
+    if (!isAuthenticated) {
+      // Store the intended destination
+      const returnUrl = router.asPath
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`)
+      return
     }
-  };
+  }, [hasCheckedAuth, isAuthenticated, router])
+
+  // Separate effect for loading data
+  useEffect(() => {
+    if (hasCheckedAuth && isAuthenticated) {
+      loadInitialData()
+    }
+  }, [hasCheckedAuth, isAuthenticated]) // Remove loadInitialData from deps
+
+  // Separate effect for WebSocket listeners
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    // Set up WebSocket listeners
+    wsOn('user:notification', handleNotification)
+    wsOn('transaction:complete', handleTransactionComplete)
+    wsOn('user:achievement', handleAchievement)
+
+    return () => {
+      // Cleanup WebSocket listeners
+      wsOff('user:notification', handleNotification)
+      wsOff('transaction:complete', handleTransactionComplete)
+      wsOff('user:achievement', handleAchievement)
+    }
+  }, [isAuthenticated, wsOn, wsOff]) // Remove handler functions from deps
+
+  const enablePushNotifications = async () => {
+    const granted = await requestPermission()
+    if (granted) {
+      addNotification({
+        type: 'success',
+        title: 'Success',
+        message: 'Push notifications enabled!'
+      })
+    }
+  }
+
+  if (!hasCheckedAuth || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !user) {
+    return null
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <>
       <Head>
-        <title>{t('dashboard.title')}</title>
-        <meta name="description" content={t('dashboard.description')} />
+        <title>Dashboard - BOOM Card</title>
+        <meta name="description" content="Your BOOM Card dashboard" />
       </Head>
 
-      {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Logo size="md" showText={true} />
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="ml-10 flex items-center space-x-1">
-                <a href="/" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('dashboard.nav.home')}</a>
-                <a href="/partners" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('dashboard.nav.partners')}</a>
-                <a href="/subscriptions" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">{t('dashboard.nav.plans')}</a>
-                <div className="pl-4 ml-4 border-l border-gray-200 flex items-center space-x-3">
-                  <SearchBar />
-                  <LanguageSwitcher />
-                  <UserProfileDropdown />
-                </div>
-              </div>
-            </div>
-            {/* Mobile Navigation */}
-            <div className="flex lg:hidden items-center space-x-2">
-              <LanguageSwitcher />
-              <MobileMenu />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <div className="relative overflow-hidden py-16 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-        </div>
+      <div className="min-h-screen bg-gray-50">
+        {/* Navigation Header */}
+        <Header />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center justify-between">
-            <div className="text-white">
-              <div className="mb-4">
-                <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                  <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-                  {t('dashboard.hero.memberBadge')}
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-                {t('dashboard.hero.welcomeBack')}<br />
-                <span className="bg-gradient-to-r from-yellow-200 to-white bg-clip-text text-transparent">
-                  {user ? `${user.firstName} ${user.lastName}!` : 'User!'}
-                </span>
+        {/* Welcome Section */}
+        <div className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Welcome back, {user.firstName}!
               </h1>
-              <p className="text-xl text-orange-100 mb-8 max-w-lg">
-                {t('dashboard.hero.subtitle')}
-              </p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 font-bold py-3 px-6 rounded-xl transition-all">
-                  {t('dashboard.hero.findPartners')}
-                </button>
-                <button className="bg-white hover:bg-gray-100 text-orange-600 font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl">
-                  {t('dashboard.hero.openApp')}
-                </button>
-              </div>
-            </div>
-            
-            {/* Quick Stats */}
-            <div className="mt-8 lg:mt-0 grid grid-cols-2 gap-4">
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center text-white border border-white/30">
-                <div className="text-3xl font-bold mb-2">
-                  {loadingStats ? '...' : `€${userStats.totalSaved}`}
-                </div>
-                <div className="text-sm text-orange-100">{t('dashboard.hero.totalSaved')}</div>
-              </div>
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center text-white border border-white/30">
-                <div className="text-3xl font-bold mb-2">
-                  {loadingStats ? '...' : userStats.visitsThisYear}
-                </div>
-                <div className="text-sm text-orange-100">{t('dashboard.hero.visitsThisYear')}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200 sticky top-20 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {[
-              { id: 'overview', name: t('dashboard.tabs.overview'), icon: '📊' },
-              { id: 'activity', name: t('dashboard.tabs.activity'), icon: '⚡' },
-              { id: 'favorites', name: t('dashboard.tabs.favorites'), icon: '❤️' },
-              { id: 'achievements', name: t('dashboard.tabs.achievements'), icon: '🏆' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Dashboard Content */}
-      <div className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Overview Tab */}
-          {activeTab === 'overview' && (
-            <>
-              {/* Time Frame Filter */}
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.overview.title')}</h2>
-                <div className="flex space-x-2 bg-gray-100 rounded-xl p-2">
-                  {['week', 'month', 'year'].map((period) => (
+              <div className="flex items-center space-x-4">
+                {/* Connection Status */}
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-gray-600">
+                    {isOnline ? 'Online' : 'Offline'}
+                  </span>
+                  {!isOnline && pendingCount > 0 && (
                     <button
-                      key={period}
-                      onClick={() => setTimeFrame(period)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        timeFrame === period
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
+                      onClick={syncNow}
+                      className="text-indigo-600 hover:text-indigo-800 underline"
                     >
-                      {t(`dashboard.overview.${period}`)}
+                      Sync {pendingCount} changes
                     </button>
+                  )}
+                </div>
+
+                {/* WebSocket Status */}
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <span className="text-gray-600">
+                    {wsConnected ? 'Live updates' : 'Reconnecting...'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Search Bar */}
+          <div className="mb-8">
+            <AdvancedSearch className="w-full" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Savings</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {formatCurrency(stats?.totalSavings || 0)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-full">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">
+                    This month: {formatCurrency(stats?.monthlySavings || 0)}
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Discounts Used</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats?.discountsUsed || 0}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-indigo-100 rounded-full">
+                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">
+                    This month: {stats?.monthlyDiscounts || 0}
+                  </p>
+                </div>
+              </div>
+
+              {/* Featured Partners */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Featured Partners</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {featuredPartners.slice(0, 4).map((partner) => (
+                    <Link
+                      key={partner.id}
+                      href={`/partners/${partner.id}`}
+                      className="bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+                    >
+                      <div className="p-4 flex items-center space-x-4">
+                        <OptimizedImage
+                          src={partner.logoUrl || '/images/partner-placeholder.svg'}
+                          alt={partner.name}
+                          width={60}
+                          height={60}
+                          className="rounded-lg"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">{partner.name}</h3>
+                          <p className="text-sm text-gray-600">{partner.category}</p>
+                          <p className="text-sm font-semibold text-indigo-600">
+                            {partner.discount}% discount
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </div>
 
-              {/* Enhanced Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 border border-green-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center">
-                      <span className="text-3xl">💰</span>
-                    </div>
-                    <div className="text-sm text-green-600 font-semibold bg-green-100 px-3 py-1 rounded-full">
-                      {t('dashboard.overview.vsLastMonth')}
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">€1,847</div>
-                  <div className="text-gray-600 font-medium">{t('dashboard.overview.totalSavedYear')}</div>
-                  <div className="text-sm text-gray-500 mt-2">{t('dashboard.overview.averageMonth')}</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center">
-                      <span className="text-3xl">🎯</span>
-                    </div>
-                    <div className="text-sm text-blue-600 font-semibold bg-blue-100 px-3 py-1 rounded-full">
-                      {t('dashboard.overview.thisWeek')}
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">52</div>
-                  <div className="text-gray-600 font-medium">{t('dashboard.overview.partnerVisits')}</div>
-                  <div className="text-sm text-gray-500 mt-2">{t('dashboard.overview.acrossLocations')}</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 border border-purple-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center">
-                      <span className="text-3xl">🔥</span>
-                    </div>
-                    <div className="text-sm text-purple-600 font-semibold bg-purple-100 px-3 py-1 rounded-full">
-                      {t('dashboard.overview.premium')}
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">24%</div>
-                  <div className="text-gray-600 font-medium">{t('dashboard.overview.averageDiscount')}</div>
-                  <div className="text-sm text-gray-500 mt-2">{t('dashboard.overview.upToAvailable')}</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl p-8 border border-orange-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-red-500 rounded-2xl flex items-center justify-center">
-                      <span className="text-3xl">🏆</span>
-                    </div>
-                    <div className="text-sm text-orange-600 font-semibold bg-orange-100 px-3 py-1 rounded-full">
-                      {t('dashboard.overview.newAchievements')}
-                    </div>
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
-                  <div className="text-gray-600 font-medium">{t('dashboard.overview.achievements')}</div>
-                  <div className="text-sm text-gray-500 mt-2">{t('dashboard.overview.moreToUnlock')}</div>
+              {/* Recent Activity */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+                <div className="bg-white rounded-lg shadow">
+                  {activities.length > 0 ? (
+                    <ul className="divide-y divide-gray-200">
+                      {activities.slice(0, 5).map((activity) => (
+                        <li key={activity.id} className="p-4">
+                          <div className="flex items-center space-x-4">
+                            <div className={`p-2 rounded-full ${
+                              activity.type === 'transaction' ? 'bg-green-100' :
+                              activity.type === 'achievement' ? 'bg-yellow-100' :
+                              'bg-gray-100'
+                            }`}>
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                {activity.type === 'transaction' ? (
+                                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                ) : activity.type === 'achievement' ? (
+                                  <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
+                                ) : (
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                )}
+                              </svg>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                              <p className="text-sm text-gray-600">{activity.description}</p>
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {formatDate(activity.timestamp)}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="p-8 text-center text-gray-500">
+                      No recent activity
+                    </p>
+                  )}
                 </div>
               </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Membership Card */}
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm opacity-90">Membership</p>
+                    <p className="text-xl font-bold capitalize">{user.membershipType}</p>
+                  </div>
+                  <div className="bg-white/20 rounded-lg p-2">
+                    <div className="w-[60px] h-[60px] bg-white rounded flex items-center justify-center">
+                      <svg width="60" height="60" viewBox="0 0 60 60" className="w-full h-full">
+                        {/* Simple QR code pattern */}
+                        <rect width="60" height="60" fill="white"/>
+                        {/* Corner squares */}
+                        <rect x="4" y="4" width="16" height="16" fill="black"/>
+                        <rect x="7" y="7" width="10" height="10" fill="white"/>
+                        <rect x="10" y="10" width="4" height="4" fill="black"/>
+                        
+                        <rect x="40" y="4" width="16" height="16" fill="black"/>
+                        <rect x="43" y="7" width="10" height="10" fill="white"/>
+                        <rect x="46" y="10" width="4" height="4" fill="black"/>
+                        
+                        <rect x="4" y="40" width="16" height="16" fill="black"/>
+                        <rect x="7" y="43" width="10" height="10" fill="white"/>
+                        <rect x="10" y="46" width="4" height="4" fill="black"/>
+                        
+                        {/* Data pattern */}
+                        <rect x="25" y="4" width="4" height="4" fill="black"/>
+                        <rect x="31" y="4" width="4" height="4" fill="black"/>
+                        <rect x="25" y="10" width="4" height="4" fill="black"/>
+                        <rect x="31" y="16" width="4" height="4" fill="black"/>
+                        
+                        {/* Center pattern */}
+                        <rect x="25" y="25" width="10" height="10" fill="black"/>
+                        <rect x="27" y="27" width="6" height="6" fill="white"/>
+                        <rect x="29" y="29" width="2" height="2" fill="black"/>
+                        
+                        {/* Additional data dots */}
+                        <rect x="22" y="40" width="4" height="4" fill="black"/>
+                        <rect x="28" y="40" width="4" height="4" fill="black"/>
+                        <rect x="34" y="40" width="4" height="4" fill="black"/>
+                        <rect x="40" y="25" width="4" height="4" fill="black"/>
+                        <rect x="46" y="31" width="4" height="4" fill="black"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    Valid until: {formatDate(user.membershipExpiry)}
+                  </p>
+                  <p className="text-sm opacity-90">
+                    Member ID: {user.id.slice(0, 8).toUpperCase()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowQRModal(true)}
+                  className="mt-4 w-full py-2 bg-white/20 hover:bg-white/30 rounded-md transition-colors"
+                >
+                  Show Full QR Code
+                </button>
+              </div>
+
+              {/* Push Notifications */}
+              {pushSupported && (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="font-semibold text-gray-900 mb-4">Notifications</h3>
+                  {permission === 'granted' && isSubscribed ? (
+                    <p className="text-sm text-green-600">
+                      ✓ Push notifications enabled
+                    </p>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Get notified about new partners and exclusive deals
+                      </p>
+                      <button
+                        onClick={enablePushNotifications}
+                        className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                      >
+                        Enable Notifications
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Quick Actions */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Digital Card */}
-                <div className="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">{t('dashboard.card.title')}</h3>
-                    <button className="text-orange-600 hover:text-orange-700 font-semibold text-sm">
-                      {t('dashboard.card.refresh')}
-                    </button>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white mb-6">
-                    <div className="flex justify-between items-start mb-8">
-                      <div>
-                        <div className="text-sm opacity-90 mb-2">{t('dashboard.card.premiumMember')}</div>
-                        <div className="text-2xl font-bold">{user ? `${user.firstName} ${user.lastName}` : 'Loading...'}</div>
-                      </div>
-                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <span className="text-2xl font-bold">B</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <div className="text-xs opacity-75 mb-1">{t('dashboard.card.memberId')}</div>
-                        <div className="text-lg font-mono">BC-2024-5847</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs opacity-75 mb-1">{t('dashboard.card.validUntil')}</div>
-                        <div className="text-sm">12/2024</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="w-32 h-32 bg-gray-100 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                      {loadingQr ? (
-                        <div className="text-gray-400">
-                          <svg className="animate-spin h-8 w-8" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                        </div>
-                      ) : qrCodeUrl ? (
-                        <img src={qrCodeUrl} alt="Membership QR Code" className="w-full h-full rounded-lg" />
-                      ) : (
-                        <div className="w-24 h-24 bg-black rounded-lg flex items-center justify-center">
-                          <div className="text-white text-xs font-mono">QR CODE</div>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {t('dashboard.card.qrCodeText')}
-                    </p>
-                    <button 
-                      onClick={fetchQrCode}
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
-                      {t('dashboard.card.openInApp')}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">{t('dashboard.highlights.title')}</h3>
-                  
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
-                          <span className="text-2xl">👍</span>
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{t('dashboard.highlights.bestMonth')}</div>
-                          <div className="text-sm text-gray-600">{t('dashboard.highlights.highestSavings')}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-green-600">€387</div>
-                        <div className="text-xs text-gray-500">{t('dashboard.highlights.saved')}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-2xl">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
-                          <span className="text-2xl">🎆</span>
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{t('dashboard.highlights.newDiscovery')}</div>
-                          <div className="text-sm text-gray-600">{t('dashboard.highlights.newPartners')}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">5</div>
-                        <div className="text-xs text-gray-500">{t('dashboard.highlights.locations')}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-purple-50 rounded-2xl">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
-                          <span className="text-2xl">⭐</span>
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{t('dashboard.highlights.vipProgress')}</div>
-                          <div className="text-sm text-gray-600">{t('dashboard.highlights.towardsVip')}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-purple-600">75%</div>
-                        <div className="text-xs text-gray-500">{t('dashboard.highlights.complete')}</div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                <div className="space-y-2">
+                  <Link
+                    href="/partners"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-md transition-colors"
+                  >
+                    <span className="text-sm font-medium">Browse Partners</span>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  <Link
+                    href="/transactions"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-md transition-colors"
+                  >
+                    <span className="text-sm font-medium">Transaction History</span>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-md transition-colors"
+                  >
+                    <span className="text-sm font-medium">My Profile</span>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
-            </>
-          )}
-
-          {/* Activity Tab */}
-          {activeTab === 'activity' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('dashboard.activity.title')}</h2>
-              
-              {loadingActivity ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                  <p className="mt-4 text-gray-600">Loading your activity...</p>
-                </div>
-              ) : userActivities.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📊</div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No Recent Activity</h3>
-                  <p className="text-gray-600">Start using your BOOM Card to see your activity here!</p>
-                </div>
-              ) : (
-                userActivities.map((activity) => (
-                  <div key={activity.id} className={`${activity.bgColor} rounded-3xl p-6 border border-gray-100 hover:shadow-lg transition-shadow`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className={`w-16 h-16 bg-gradient-to-r ${activity.color} rounded-2xl flex items-center justify-center mr-6`}>
-                          <span className="text-3xl">{activity.icon}</span>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-1">{activity.partner}</h3>
-                          <p className="text-gray-600 mb-2">{activity.category}</p>
-                          <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-500">{activity.date}</span>
-                            <span className={`text-sm font-semibold px-3 py-1 rounded-full bg-gradient-to-r ${activity.color} text-white`}>
-                              {activity.discount}% OFF
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-3xl font-bold text-gray-900 mb-1">€{activity.saved}</div>
-                        <div className="text-sm text-gray-500">{t('dashboard.activity.saved')}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
             </div>
-          )}
-
-          {/* Favorites Tab */}
-          {activeTab === 'favorites' && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('dashboard.favorites.title')}</h2>
-              
-              {loadingFavorites ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                  <p className="mt-4 text-gray-600">Loading your favorites...</p>
-                </div>
-              ) : userFavorites.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">💝</div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No Favorites Yet</h3>
-                  <p className="text-gray-600">Visit and review partners to see your favorites here!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {userFavorites.map((partner, index) => (
-                    <div key={partner.slug || index} className={`${partner.bgColor} rounded-3xl p-8 border border-gray-100 hover:shadow-lg transition-shadow`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center">
-                          <div className={`w-16 h-16 bg-gradient-to-r ${partner.color} rounded-2xl flex items-center justify-center mr-4`}>
-                            <span className="text-3xl">{partner.icon}</span>
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900">{partner.name}</h3>
-                            <p className="text-gray-600">{partner.visits} {t('dashboard.favorites.visits')}</p>
-                          </div>
-                        </div>
-                        <button className="w-10 h-10 bg-white hover:bg-gray-100 rounded-xl flex items-center justify-center transition-colors shadow-md hover:shadow-lg">
-                          ❤️
-                        </button>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <div className="text-2xl font-bold text-gray-900">€{partner.totalSaved}</div>
-                          <div className="text-sm text-gray-600">{t('dashboard.favorites.totalSaved')}</div>
-                        </div>
-                        <button 
-                          onClick={() => router.push(`/partners/${partner.slug}`)}
-                          className={`bg-gradient-to-r ${partner.color} text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-xl transition-all transform hover:scale-105`}>
-                          {t('dashboard.favorites.visitAgain')}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Achievements Tab */}
-          {activeTab === 'achievements' && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">{t('dashboard.achievements.title')}</h2>
-              
-              {loadingAchievements ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                  <p className="mt-4 text-gray-600">Loading your achievements...</p>
-                </div>
-              ) : userAchievements.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🏆</div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No Achievements Yet</h3>
-                  <p className="text-gray-600">Start using your BOOM Card to unlock achievements!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {userAchievements.map((achievement, index) => (
-                    <div key={achievement.category || index} className={`bg-white rounded-3xl p-8 border-2 transition-all ${
-                      achievement.earned 
-                        ? 'border-green-200 bg-green-50/50' 
-                        : 'border-gray-200 hover:border-orange-200'
-                    }`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center">
-                          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mr-4 ${
-                            achievement.earned 
-                              ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
-                              : 'bg-gray-100'
-                          }`}>
-                            <span className="text-3xl">{achievement.icon}</span>
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900">{t(achievement.titleKey)}</h3>
-                            <p className="text-gray-600">{t(achievement.descriptionKey)}</p>
-                          </div>
-                        </div>
-                        {achievement.earned && (
-                          <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            {t('dashboard.achievements.earned')}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {!achievement.earned && (
-                        <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm text-gray-600">{t('dashboard.achievements.progress')}</span>
-                            <span className="text-sm font-semibold text-gray-900">{achievement.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-3">
-                            <div 
-                              className="bg-gradient-to-r from-orange-400 to-red-500 h-3 rounded-full transition-all duration-300"
-                              style={{ width: `${achievement.progress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          </div>
         </div>
+
+        {/* QR Code Modal */}
+        {showQRModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Your BOOM Card</h2>
+                <button
+                  onClick={() => setShowQRModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex justify-center">
+                <div className="w-[250px] h-[250px] bg-white rounded-lg shadow-lg p-4">
+                  <svg width="250" height="250" viewBox="0 0 250 250" className="w-full h-full">
+                    {/* Simple QR code pattern */}
+                    <rect width="250" height="250" fill="white"/>
+                    
+                    {/* Corner squares (finder patterns) */}
+                    <rect x="10" y="10" width="60" height="60" fill="black"/>
+                    <rect x="20" y="20" width="40" height="40" fill="white"/>
+                    <rect x="30" y="30" width="20" height="20" fill="black"/>
+                    
+                    <rect x="180" y="10" width="60" height="60" fill="black"/>
+                    <rect x="190" y="20" width="40" height="40" fill="white"/>
+                    <rect x="200" y="30" width="20" height="20" fill="black"/>
+                    
+                    <rect x="10" y="180" width="60" height="60" fill="black"/>
+                    <rect x="20" y="190" width="40" height="40" fill="white"/>
+                    <rect x="30" y="200" width="20" height="20" fill="black"/>
+                    
+                    {/* Timing patterns */}
+                    {[0,1,2,3,4,5,6,7,8].map(i => (
+                      <rect key={`h${i}`} x={80 + i * 20} y="40" width="10" height="10" fill={i % 2 === 0 ? "black" : "white"}/>
+                    ))}
+                    {[0,1,2,3,4,5,6,7,8].map(i => (
+                      <rect key={`v${i}`} x="40" y={80 + i * 20} width="10" height="10" fill={i % 2 === 0 ? "black" : "white"}/>
+                    ))}
+                    
+                    {/* Center logo area */}
+                    <rect x="95" y="95" width="60" height="60" fill="white" stroke="black" strokeWidth="2"/>
+                    <text x="125" y="130" textAnchor="middle" fontSize="20" fontWeight="bold" fill="black">
+                      BOOM
+                    </text>
+                    
+                    {/* Data matrix pattern */}
+                    {[0,1,2,3,4,5].map(row => 
+                      [0,1,2,3,4,5].map(col => {
+                        const shouldFill = (row + col) % 3 === 0 || (row * col) % 2 === 0;
+                        if (row < 2 && col < 2) return null; // Skip top-left
+                        if (row < 2 && col > 3) return null; // Skip top-right
+                        if (row > 3 && col < 2) return null; // Skip bottom-left
+                        if (row >= 2 && row <= 3 && col >= 2 && col <= 3) return null; // Skip center
+                        
+                        return (
+                          <rect 
+                            key={`${row}-${col}`}
+                            x={80 + col * 15} 
+                            y={80 + row * 15} 
+                            width="10" 
+                            height="10" 
+                            fill={shouldFill ? "black" : "white"}
+                          />
+                        );
+                      })
+                    )}
+                    
+                    {/* Additional alignment pattern */}
+                    <rect x="170" y="170" width="30" height="30" fill="black"/>
+                    <rect x="175" y="175" width="20" height="20" fill="white"/>
+                    <rect x="180" y="180" width="10" height="10" fill="black"/>
+                  </svg>
+                </div>
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600">Member ID: {user?.id?.slice(0, 8).toUpperCase()}</p>
+                <p className="text-xs text-gray-500 mt-1">Membership: {user?.membershipType || 'Basic'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notifications */}
+        <NotificationContainer />
       </div>
-    </div>
-  );
+    </>
+  )
 }
+
+export default DashboardCompletePage

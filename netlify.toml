@@ -4,22 +4,28 @@
   # Base directory for the frontend
   base = "frontend"
   
-  # Build command for Next.js with legacy peer deps and devDependencies
-  command = "npm ci --legacy-peer-deps --include=dev && npm run build"
+  # Build command for Next.js with legacy peer deps and cache clear
+  command = "rm -rf .next node_modules/.cache .swc && npm ci --legacy-peer-deps && NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 npm run build"
   
   # Next.js build output directory
   publish = ".next"
+  
+  # Explicitly disable static export
+  [build.processing]
+    skip = true
 
 # Environment variables needed for build
 [build.environment]
   # Ensure Next.js optimizations are enabled
   NEXT_TELEMETRY_DISABLED = "1"
-  # Set Node version to LTS
-  NODE_VERSION = "18"
-  # Install devDependencies during build
-  NODE_ENV = "development"
+  # Set Node version to match requirements
+  NODE_VERSION = "18.18.0"
   # Additional npm flags
   NPM_FLAGS = "--legacy-peer-deps"
+  # API URL for production - using mock for now
+  NEXT_PUBLIC_API_URL = "/api/mock"
+  # Disable external services for now
+  NEXT_PUBLIC_DISABLE_EXTERNAL_SERVICES = "true"
 
 # Headers for security and performance
 [[headers]]

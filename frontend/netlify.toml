@@ -1,78 +1,26 @@
-# Netlify Configuration for BOOM Card Frontend
-
 [build]
-  # Build command for Next.js with install step including devDependencies
-  command = "npm ci --legacy-peer-deps --include=dev && npm run build"
-  
-  # Next.js static export output directory
-  publish = "out"
+  command = "npm run build"
+  publish = ".next"
 
-# Environment variables needed for build
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [build.environment]
-  # Ensure Next.js optimizations are enabled
-  NEXT_TELEMETRY_DISABLED = "1"
-  # Set Node version
-  NODE_VERSION = "18"
-  # Don't skip devDependencies
-  NPM_FLAGS = "--legacy-peer-deps"
-  # Force production mode after install
-  NODE_ENV = "development"
-  # API URL for production
-  NEXT_PUBLIC_API_URL = "http://localhost:8002/api"
+  NEXT_USE_NETLIFY_EDGE = "true"
 
-# Headers for security and performance
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "no-referrer-when-downgrade"
-
-# Cache control for static assets
-[[headers]]
-  for = "/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/_next/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# Redirects for Next.js routes
 [[redirects]]
-  from = "/_next/static/*"
-  to = "/static/:splat"
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
   status = 200
 
-# Function configuration for Next.js SSR/API routes
-[functions]
-  # Directory containing serverless functions
-  directory = ".netlify/functions/"
-  
-  # Next.js specific function configuration
-  node_bundler = "esbuild"
-  
-  # Include files needed for functions
-  included_files = ["public/**", ".next/**"]
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
 
-# No plugin needed for static export
-
-# Development settings
-[dev]
-  command = "npm run dev"
-  port = 3000
-  targetPort = 3000
-  publish = "out"
-  autoLaunch = true
-
-# Context-specific settings
-[context.production]
-  environment = { NODE_ENV = "production" }
-  
-[context.deploy-preview]
-  environment = { NODE_ENV = "development" }
-  
-[context.branch-deploy]
-  environment = { NODE_ENV = "development" }
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Content-Type = "image/svg+xml"
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -22,7 +22,7 @@ export default function Subscriptions() {
   const [currentSubscription, setCurrentSubscription] = useState<any>(null);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api';
 
   useEffect(() => {
     fetchPlans();
@@ -189,26 +189,39 @@ export default function Subscriptions() {
   const frontendPlans = getPlans(t);
   
   // Map backend plans to frontend format
-  const mappedBackendPlans = backendPlans.map(plan => {
-    // Match by ID instead of name to ensure correct icon mapping
-    const frontendPlan = frontendPlans.find(fp => fp.id.toLowerCase() === plan.id.toLowerCase());
+  const mappedBackendPlans = backendPlans.map((plan, index) => {
+    // Get the corresponding frontend plan by index to ensure correct icon mapping
+    const frontendPlan = frontendPlans[index] || frontendPlans.find(fp => fp.id.toLowerCase() === plan.id.toLowerCase());
+    
+    // Map plan names to get correct icons
+    const iconMap = {
+      '1': '🌱', // Basic
+      '2': '🔥', // Premium
+      '3': '👑', // Enterprise/VIP
+      'basic': '🌱',
+      'premium': '🔥',
+      'enterprise': '👑',
+      'vip': '👑'
+    };
+    
     return {
       id: plan.id,
       backendId: plan.id,
       name: frontendPlan?.name || plan.name,
       type: plan.id,
-      icon: frontendPlan?.icon || '🎯',
+      icon: iconMap[plan.id.toLowerCase()] || frontendPlan?.icon || '🎯',
       price: plan.price,
       period: 'month',
       color: frontendPlan?.color || 'from-gray-400 to-gray-500',
       bgColor: frontendPlan?.bgColor || 'from-gray-50 to-gray-100',
       borderColor: frontendPlan?.borderColor || 'border-gray-200',
-      popular: plan.type === 'Premium',
-      description: frontendPlan?.description || plan.features[0],
+      popular: plan.popular || plan.name === 'Premium',
+      description: frontendPlan?.description || plan.description || plan.features[0],
       features: frontendPlan?.features || plan.features.map(f => ({ text: f, included: true })),
       yearlyDiscount: frontendPlan?.yearlyDiscount || 20,
-      savings: frontendPlan?.savings || `Save with ${plan.type}`,
-      discountPercentage: plan.discount_percentage
+      savings: frontendPlan?.savings || `Save with ${plan.name}`,
+      discountPercentage: plan.discount_percentage,
+      planLevel: index + 1 // Add numeric level for comparison
     };
   });
 
@@ -451,9 +464,19 @@ export default function Subscriptions() {
                       {currentSubscription && currentSubscription.plan_id === plan.id
                         ? (language === 'bg' ? 'Текущ план' : 'Current Plan')
                         : currentSubscription
-                        ? currentSubscription.plan_id > plan.id 
-                          ? (language === 'bg' ? 'Понижаване' : 'Downgrade')
-                          : (language === 'bg' ? 'Надграждане' : 'Upgrade')
+                        ? (() => {
+                            // Get numeric values for comparison
+                            const currentPlanIndex = plans.findIndex(p => p.id === currentSubscription.plan_id);
+                            const targetPlanIndex = plans.findIndex(p => p.id === plan.id);
+                            
+                            if (currentPlanIndex === -1 || targetPlanIndex === -1) {
+                              return (language === 'bg' ? 'Изберете план' : 'Select Plan');
+                            }
+                            
+                            return targetPlanIndex < currentPlanIndex
+                              ? (language === 'bg' ? 'Понижаване' : 'Downgrade')
+                              : (language === 'bg' ? 'Надграждане' : 'Upgrade');
+                          })()
                         : selectedPlan === plan.id 
                           ? (language === 'bg' ? 'Абонирайте се сега' : 'Subscribe Now')
                           : (language === 'bg' ? `Изберете ${plan.name}` : `Choose ${plan.name}`)}

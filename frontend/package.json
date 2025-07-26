@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "npx next dev -p 3002",
+    "prebuild": "node prebuild.js",
     "build": "next build",
+    "build:netlify": "next build --no-lint",
     "start": "next start -p 3002",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -73,7 +75,10 @@
     "swiper": "^11.1.1",
     "uuid": "^9.0.1",
     "yup": "^1.4.0",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "@headlessui/react": "^1.7.19",
+    "qr-code-styling": "^1.6.0-rc.1",
+    "web-vitals": "^3.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.24.4",
@@ -93,8 +98,8 @@
     "@types/lodash": "^4.17.0",
     "@types/node": "^20.12.7",
     "@types/qrcode": "^1.5.5",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
     "@types/react-swipeable-views": "^0.13.5",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
@@ -121,7 +126,7 @@
     "prettier": "^3.2.5",
     "storybook": "^8.0.9",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.4.5"
+    "typescript": "^5.8.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -123,7 +123,7 @@ const featuredPartners = [
 ];
 
 export default function Partners() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,21 +133,32 @@ export default function Partners() {
   const [cities, setCities] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalPartners, setTotalPartners] = useState(0);
   
+  const partnersPerPage = 6; // Show 6 partners per page
   const partnerCategories = getPartnerCategories(t);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api';
 
   // Map backend categories to frontend category IDs
   const categoryMapping: { [key: string]: string } = {
+    'Food & Drink': 'restaurants',
     'Fine Dining': 'restaurants',
     'Restaurants': 'restaurants',
+    'Travel': 'hotels',
     'Hotels & Resorts': 'hotels',
     'Luxury Hotels': 'hotels',
+    'Beauty & Spa': 'spas',
+    'Health & Fitness': 'spas',
     'Spa & Wellness': 'spas',
     'Wellness & Spa': 'spas',
     'Entertainment': 'entertainment',
+    'Shopping': 'entertainment',
+    'Services': 'entertainment',
+    'Education': 'entertainment',
     'Cafes & Bakeries': 'restaurants',
     'Seafood': 'restaurants',
     'Fitness & Sports': 'spas'
@@ -157,11 +168,18 @@ export default function Partners() {
   const categoryEmoji: { [key: string]: string } = {
     'Fine Dining': '🍽️',
     'Restaurants': '🍽️',
+    'Food & Drink': '🍽️',
     'Hotels & Resorts': '🏨',
     'Luxury Hotels': '🏨',
+    'Travel': '🏨',
     'Spa & Wellness': '💆',
     'Wellness & Spa': '💆',
+    'Beauty & Spa': '💆',
+    'Health & Fitness': '🏋️',
     'Entertainment': '🎭',
+    'Shopping': '🛍️',
+    'Services': '🔧',
+    'Education': '📚',
     'Cafes & Bakeries': '☕',
     'Seafood': '🦐',
     'Fitness & Sports': '🏋️'
@@ -173,12 +191,20 @@ export default function Partners() {
     fetchCategories();
     fetchCities();
     fetchFeaturedPartners();
+  }, [selectedCategory, searchTerm, currentPage]);
+  
+  // Reset to page 1 when category or search changes
+  useEffect(() => {
+    setCurrentPage(1);
   }, [selectedCategory, searchTerm]);
 
   const fetchPartners = async () => {
     setLoading(true);
     try {
       let url = `${API_BASE_URL}/partners?`;
+      
+      // Add pagination
+      url += `page=${currentPage}&limit=${partnersPerPage}&`;
       
       // Add category filter if not 'all'
       if (selectedCategory !== 'all') {
@@ -200,6 +226,10 @@ export default function Partners() {
       
       if (response.ok && data.success) {
         setPartners(data.data || []);
+        if (data.pagination) {
+          setTotalPages(data.pagination.totalPages || 1);
+          setTotalPartners(data.pagination.total || 0);
+        }
       } else {
         setError(data.message || 'Failed to fetch partners');
       }
@@ -348,9 +378,9 @@ export default function Partners() {
       </div>
 
       {/* Partner Categories */}
-      <div className="py-24 bg-white">
+      <div className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               {t('partners.categories.title')}
             </h2>
@@ -360,7 +390,7 @@ export default function Partners() {
           </div>
           
           {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
             <button
               onClick={() => setSelectedCategory('all')}
               className={`px-6 py-3 rounded-full text-sm font-semibold transition-all ${
@@ -385,47 +415,12 @@ export default function Partners() {
               </button>
             ))}
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {partnerCategories.map((category, index) => (
-              <div key={index} className={`bg-gradient-to-br ${category.bgColor} rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:-translate-y-2`}>
-                <div className="text-center">
-                  <div className={`w-20 h-20 bg-gradient-to-r ${category.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
-                    <span className="text-4xl">{category.icon}</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{category.name}</h3>
-                  <p className="text-gray-600 mb-4">{category.count} Premium Partners</p>
-                  <p className="text-sm text-gray-500 mb-6">{category.description}</p>
-                  <div className={`text-2xl font-bold bg-gradient-to-r ${category.color} bg-clip-text text-transparent mb-4`}>
-                    {category.discount}
-                  </div>
-                  <button 
-                    onClick={() => setSelectedCategory(category.id)}
-                    className="bg-white/80 hover:bg-white text-gray-800 px-6 py-3 rounded-xl text-sm font-semibold transition-colors shadow-sm w-full">
-                    {t('partners.categories.explorePartners')} →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
-      {/* Featured Partners */}
-      <div className="py-24 bg-gradient-to-b from-gray-50 to-white">
+      {/* Partners Results */}
+      <div className="py-8 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold mb-4">
-              {t('partners.featured.title')}
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              {t('partners.featured.subtitle')}
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {t('partners.featured.description')}
-            </p>
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {loading ? (
               <div className="col-span-full text-center py-12">
@@ -451,7 +446,7 @@ export default function Partners() {
                   discount: partner.discount || `${partner.discount_percentage || 0}% OFF`,
                   description: partner.description,
                   features: partner.features || [],
-                  image: categoryEmoji[partner.category] || partner.logo || partner.image || '🏢',
+                  image: partner.logoUrl || categoryEmoji[partner.category] || partner.logo || partner.image || '🏢',
                   color: partner.color || 'from-orange-400 to-orange-500',
                   slug: partner.slug
                 };
@@ -461,12 +456,23 @@ export default function Partners() {
                   <div className="p-8">
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center">
-                        {mappedPartner.image.startsWith('/') || mappedPartner.image.startsWith('http') ? (
+                        {(mappedPartner.image && (mappedPartner.image.startsWith('/') || mappedPartner.image.startsWith('http'))) ? (
                           <div className="w-16 h-16 mr-4 group-hover:scale-110 transition-transform">
                             <img 
                               src={mappedPartner.image} 
                               alt={mappedPartner.name}
                               className="w-full h-full object-cover rounded-2xl shadow-lg"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement?.parentElement;
+                                if (parent) {
+                                  const iconDiv = document.createElement('div');
+                                  iconDiv.className = `w-16 h-16 bg-gradient-to-r ${mappedPartner.color} rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform shadow-lg`;
+                                  iconDiv.innerHTML = `<span class="text-3xl">${categoryEmoji[partner.category] || '🏢'}</span>`;
+                                  parent.replaceChild(iconDiv, target.parentElement!);
+                                }
+                              }}
                             />
                           </div>
                         ) : (
@@ -523,6 +529,98 @@ export default function Partners() {
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">No partners found</h3>
               <p className="text-gray-600">Try adjusting your search or category filter</p>
+            </div>
+          )}
+          
+          {/* Pagination */}
+          {!loading && totalPages > 1 && (
+            <div className="mt-12 flex items-center justify-center space-x-2">
+              {/* Previous button */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                ← {language === 'bg' ? 'Предишна' : 'Previous'}
+              </button>
+              
+              {/* Page numbers */}
+              <div className="flex items-center space-x-1">
+                {/* Show first page */}
+                {currentPage > 3 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      className="px-3 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    >
+                      1
+                    </button>
+                    {currentPage > 4 && <span className="px-2 text-gray-400">...</span>}
+                  </>
+                )}
+                
+                {/* Show pages around current page */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    return page === currentPage || 
+                           page === currentPage - 1 || 
+                           page === currentPage + 1 ||
+                           (currentPage <= 3 && page <= 5) ||
+                           (currentPage >= totalPages - 2 && page >= totalPages - 4);
+                  })
+                  .map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        page === currentPage
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                
+                {/* Show last page */}
+                {currentPage < totalPages - 2 && (
+                  <>
+                    {currentPage < totalPages - 3 && <span className="px-2 text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="px-3 py-2 rounded-lg text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+              </div>
+              
+              {/* Next button */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {language === 'bg' ? 'Следваща' : 'Next'} →
+              </button>
+            </div>
+          )}
+          
+          {/* Results info */}
+          {!loading && totalPartners > 0 && (
+            <div className="mt-4 text-center text-sm text-gray-600">
+              {language === 'bg' 
+                ? `Показване на ${(currentPage - 1) * partnersPerPage + 1}-${Math.min(currentPage * partnersPerPage, totalPartners)} от ${totalPartners} партньори`
+                : `Showing ${(currentPage - 1) * partnersPerPage + 1}-${Math.min(currentPage * partnersPerPage, totalPartners)} of ${totalPartners} partners`}
             </div>
           )}
         </div>

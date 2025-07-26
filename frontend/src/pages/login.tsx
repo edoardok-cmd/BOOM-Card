@@ -3,13 +3,14 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/authStore';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function Login() {
   const { t } = useLanguage();
-  const { login } = useAuth();
+  const login = useAuthStore(state => state.login);
   const router = useRouter();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -24,8 +25,9 @@ export default function Login() {
 
     try {
       await login(formData.email, formData.password);
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Redirect to returnUrl or dashboard
+      const returnUrl = router.query.returnUrl as string || '/dashboard';
+      router.push(returnUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -71,7 +73,10 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form 
+            onSubmit={handleSubmit}
+            className="space-y-6"
+          >
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 {t('auth.email')}
@@ -122,6 +127,7 @@ export default function Login() {
               {isLoading ? t('auth.loggingIn') || 'Logging in...' : t('auth.loginButton')}
             </button>
           </form>
+
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

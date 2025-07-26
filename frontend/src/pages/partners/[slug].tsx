@@ -41,7 +41,7 @@ export default function PartnerDetail() {
   const [error, setError] = useState<string | null>(null);
   const [showQR, setShowQR] = useState(false);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api';
 
   useEffect(() => {
     if (slug) {
