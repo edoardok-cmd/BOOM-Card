@@ -18,7 +18,7 @@ export default function Profile() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api';
   const [reviewData, setReviewData] = useState({
     rating: 5,
     partner: '',
@@ -888,10 +888,4 @@ export default function Profile() {
       </div>
     </div>
   );
-}
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
 }

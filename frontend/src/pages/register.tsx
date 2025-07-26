@@ -229,9 +229,3 @@ export default function Register() {
     </div>
   );
 }
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
-}

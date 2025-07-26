@@ -187,9 +187,3 @@ export default function HowItWorks() {
     </div>
   );
 }
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
-}

@@ -217,9 +217,3 @@ export default function Contact() {
     </Layout>
   );
 }
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
-}

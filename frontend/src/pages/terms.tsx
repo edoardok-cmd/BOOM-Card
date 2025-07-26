@@ -108,9 +108,3 @@ export default function Terms() {
     </Layout>
   );
 }
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
-}

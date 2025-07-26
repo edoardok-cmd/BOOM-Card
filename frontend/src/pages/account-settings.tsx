@@ -43,7 +43,7 @@ export default function AccountSettings() {
   const [loadingDelete, setLoadingDelete] = useState(false);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api';
 
   // Check authentication
   useEffect(() => {
@@ -730,10 +730,4 @@ export default function AccountSettings() {
       </div>
     </div>
   );
-}
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
 }

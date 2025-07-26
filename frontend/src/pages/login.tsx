@@ -3,13 +3,20 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/authStore';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function Login() {
   const { t } = useLanguage();
-  const { login } = useAuth();
+  const login = useAuthStore(state => state.login);
   const router = useRouter();
+  
+  // Debug: Check if login function exists
+  React.useEffect(() => {
+    console.log('🧪 Login component mounted');
+    console.log('🔍 Auth store login function:', typeof login);
+    console.log('🔍 Auth store state:', useAuthStore.getState());
+  }, []);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,18 +25,25 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('🔥 Login form submitted!', { email: formData.email, hasPassword: !!formData.password });
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
+      console.log('🚀 Starting login process...');
       await login(formData.email, formData.password);
-      // Redirect to dashboard
-      router.push('/dashboard');
+      console.log('✅ Login successful!');
+      // Redirect to returnUrl or dashboard
+      const returnUrl = router.query.returnUrl as string || '/dashboard';
+      console.log('🔄 Redirecting to:', returnUrl);
+      router.push(returnUrl);
     } catch (err) {
+      console.error('❌ Login error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
+      console.log('🏁 Login process finished');
     }
   };
 
@@ -71,7 +85,13 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form 
+            onSubmit={(e) => {
+              console.log('📝 Form onSubmit triggered!');
+              handleSubmit(e);
+            }} 
+            className="space-y-6"
+          >
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 {t('auth.email')}
@@ -117,11 +137,48 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
+              onClick={(e) => {
+                console.log('🖱️ Button clicked!');
+                // Don't prevent default here - let form submission handle it
+              }}
               className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 px-4 rounded-xl transition-all disabled:opacity-50"
             >
               {isLoading ? t('auth.loggingIn') || 'Logging in...' : t('auth.loginButton')}
             </button>
           </form>
+
+          {/* Emergency Direct Login Button for Testing */}
+          <div className="mt-4 p-4 bg-red-100 border-2 border-red-500 rounded-lg">
+            <p className="text-red-800 text-sm mb-2 font-semibold">🚨 DEBUG: Emergency Login Test</p>
+            <button
+              type="button"
+              onClick={async () => {
+                alert('🚨 Emergency button clicked! Check the page for error messages.');
+                console.log('🚨 Emergency login button clicked!');
+                setError('Emergency login test started...');
+                setIsLoading(true);
+                try {
+                  console.log('🚀 Direct login attempt...');
+                  const user = await login('test@example.com', 'Test123!');
+                  console.log('✅ Direct login successful!', user);
+                  setError('Login successful! Redirecting...');
+                  alert('✅ Login successful! Redirecting to dashboard...');
+                  setTimeout(() => router.push('/dashboard'), 1000);
+                } catch (err) {
+                  console.error('❌ Direct login error:', err);
+                  const errorMsg = `FAILED: ${err instanceof Error ? err.message : 'Direct login failed'}`;
+                  setError(errorMsg);
+                  alert(`❌ Login failed: ${errorMsg}`);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              className="w-full bg-red-600 text-white py-4 px-4 rounded-lg text-lg hover:bg-red-700 font-bold border-4 border-red-800 shadow-lg"
+            >
+              🚨 EMERGENCY LOGIN TEST - CLICK ME 🚨
+            </button>
+            <p className="text-red-600 text-xs mt-2">This bypasses the form and tests login directly</p>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
@@ -155,11 +212,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
-
-// Force server-side rendering
-export async function getServerSideProps() {
-  return {
-    props: {},
-  }
 }

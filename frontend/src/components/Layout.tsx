@@ -1,20 +1,22 @@
 import React from 'react';
-import Navigation from './Navigation';
+import { useRouter } from 'next/router';
 import Footer from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
-  showNavigation?: boolean;
 }
 
-export default function Layout({ children, showNavigation = true }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
+  const router = useRouter();
+  // Don't show the default footer on homepage as it has its own custom footer
+  const showFooter = router.pathname !== '/';
+  
   return (
     <div className="min-h-screen flex flex-col">
-      {showNavigation && <Navigation />}
       <main className="flex-grow">
         {children}
       </main>
-      <Footer />
+      {showFooter && <Footer />}
     </div>
   );
 }
