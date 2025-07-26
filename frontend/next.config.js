@@ -4,6 +4,9 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   
+  // Set pages directory explicitly
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
+  
   // Completely disable static optimization
   output: 'standalone',
   
