@@ -58,13 +58,6 @@
 # Plugin to handle Next.js deployment
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  
-  # Plugin configuration
-  [plugins.inputs]
-    # Ensure we're using the right Next.js version
-    appBuildCommand = "npm run build"
-    # Use Next.js runtime
-    functionsDir = ".netlify/functions"
 
 # Development settings
 [dev]
