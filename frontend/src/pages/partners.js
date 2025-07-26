@@ -130,7 +130,7 @@ export default function Partners() {
   const [featuredPartnersData, setFeaturedPartnersData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
   const partnerCategories = getPartnerCategories(t);

@@ -16,7 +16,7 @@ export default function Subscriptions() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [selectedPlan, setSelectedPlan] = useState('premium');
   const [backendPlans, setBackendPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentSubscription, setCurrentSubscription] = useState(null);
 
@@ -31,7 +31,10 @@ export default function Subscriptions() {
   }, [user]);
 
   const fetchPlans = async () => {
-    setLoading(true);
+    // Don't show loading on initial page load
+    if (backendPlans.length === 0) {
+      setLoading(true);
+    }
     try {
       const response = await fetch(`${API_BASE_URL}/subscriptions/plans`);
       const data = await response.json();

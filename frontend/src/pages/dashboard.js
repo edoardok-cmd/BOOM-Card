@@ -21,7 +21,7 @@ export default function Dashboard() {
   
   const [recentActivity, setRecentActivity] = useState([]);
   const [upcomingOffers, setUpcomingOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // API base URL
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';

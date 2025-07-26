@@ -16,7 +16,7 @@ export default function PartnerDetail() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [partner, setPartner] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showQR, setShowQR] = useState(false);
 
