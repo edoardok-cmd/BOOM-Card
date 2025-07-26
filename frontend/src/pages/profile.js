@@ -428,230 +428,473 @@ export default function Profile() {
                         />
                       </div>
 
-                      {t('profile.personal.lastName')}
-                       setUserData({...userData, lastName)}
-                        disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('profile.personal.lastName') || 'Last Name'}
+                        </label>
+                        <input
+                          type="text"
+                          value={userData.lastName}
+                          onChange={(e) => setUserData({...userData, lastName: e.target.value})}
+                          disabled={!isEditing}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
+                        />
+                      </div>
 
-                      {t('profile.personal.email')}
-                       setUserData({...userData, email)}
-                        disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('profile.personal.email') || 'Email'}
+                        </label>
+                        <input
+                          type="email"
+                          value={userData.email}
+                          onChange={(e) => setUserData({...userData, email: e.target.value})}
+                          disabled={!isEditing}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
+                        />
+                      </div>
 
-                      {t('profile.personal.phone')}
-                       setUserData({...userData, phone)}
-                        disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('profile.personal.phone') || 'Phone'}
+                        </label>
+                        <input
+                          type="tel"
+                          value={userData.phone}
+                          onChange={(e) => setUserData({...userData, phone: e.target.value})}
+                          disabled={!isEditing}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
+                        />
+                      </div>
 
-                      {t('profile.personal.birthDate')}
-                       setUserData({...userData, birthDate)}
-                        disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('profile.personal.birthDate') || 'Birth Date'}
+                        </label>
+                        <input
+                          type="date"
+                          value={userData.birthDate}
+                          onChange={(e) => setUserData({...userData, birthDate: e.target.value})}
+                          disabled={!isEditing}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
+                        />
+                      </div>
 
-                      {t('profile.personal.address')}
-                       setUserData({...userData, address)}
-                        disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                      />
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t('profile.personal.address') || 'Address'}
+                        </label>
+                        <input
+                          type="text"
+                          value={userData.address}
+                          onChange={(e) => setUserData({...userData, address: e.target.value})}
+                          disabled={!isEditing}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
+                        />
+                      </div>
 
-                  {isEditing && (
-
-                        {t('profile.personal.saveChanges')}
-                      
-                       setIsEditing(false)}
-                        className="bg-gray-200 hover
-                      >
-                        {t('profile.personal.cancel')}
-
-                  )}
-                
-              )}
+                    </div>
+                    {isEditing && (
+                      <div className="mt-6 flex justify-end space-x-4">
+                        <button
+                          onClick={handleSave}
+                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-all"
+                        >
+                          {t('profile.personal.saveChanges') || 'Save Changes'}
+                        </button>
+                        <button
+                          onClick={() => setIsEditing(false)}
+                          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-semibold transition-all"
+                        >
+                          {t('profile.personal.cancel') || 'Cancel'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* Membership Section */}
               {activeSection === 'membership' && (
-                
-                  {t('profile.membership.title')}
-
-                        {userData.membershipType} {t('profile.membership.membership')}
-                        {t('profile.membership.memberSince')} {userData.memberSince}
-                        
-                          {t('profile.membership.cardNumber')} {userData.cardNumber}
-                          {t('profile.membership.validUntil')} {userData.validUntil}
-
-                        €19.99
-                        {t('profile.membership.perMonth')}
-
-                      €1,847
-                      {t('profile.membership.totalSaved')}
-
-                      52
-                      {t('profile.membership.partnerVisits')}
-
-                      24%
-                      {t('profile.membership.avgDiscount')}
-
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {t('profile.membership.title') || 'Membership Information'}
+                  </h2>
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 rounded-lg">
+                      <h3 className="text-xl font-semibold mb-2">
+                        {userData.membershipType} {t('profile.membership.membership') || 'Membership'}
+                      </h3>
+                      <p className="text-white/80 mb-4">
+                        {t('profile.membership.memberSince') || 'Member since'} {userData.memberSince}
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-white/80">{t('profile.membership.cardNumber') || 'Card Number'}</p>
+                          <p className="font-semibold">{userData.cardNumber}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-white/80">{t('profile.membership.validUntil') || 'Valid Until'}</p>
+                          <p className="font-semibold">{userData.validUntil}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-orange-50 p-4 rounded-lg text-center">
+                        <h4 className="text-2xl font-bold text-orange-600">€19.99</h4>
+                        <p className="text-gray-600">{t('profile.membership.perMonth') || 'Per Month'}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg text-center">
+                        <h4 className="text-2xl font-bold text-green-600">€1,847</h4>
+                        <p className="text-gray-600">{t('profile.membership.totalSaved') || 'Total Saved'}</p>
+                      </div>
+                      <div className="bg-blue-50 p-4 rounded-lg text-center">
+                        <h4 className="text-2xl font-bold text-blue-600">52</h4>
+                        <p className="text-gray-600">{t('profile.membership.partnerVisits') || 'Partner Visits'}</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg text-center">
+                        <h4 className="text-2xl font-bold text-purple-600">24%</h4>
+                        <p className="text-gray-600">{t('profile.membership.avgDiscount') || 'Avg Discount'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Preferences Section */}
               {activeSection === 'preferences' && (
-                
-                  {t('profile.preferences.title')}
-
-                      {t('profile.preferences.notifications')}
-
-                           setPreferences({...preferences, emailNotifications)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {t('profile.preferences.title') || 'Preferences'}
+                  </h2>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t('profile.preferences.notifications') || 'Notifications'}
+                      </h3>
+                      <div className="space-y-3">
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={preferences.emailNotifications}
+                            onChange={(e) => setPreferences({...preferences, emailNotifications: e.target.checked})}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          {t('profile.preferences.emailNotifications')}
-
-                           setPreferences({...preferences, smsNotifications)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus
+                          <span className="ml-2 text-gray-700">
+                            {t('profile.preferences.emailNotifications') || 'Email notifications'}
+                          </span>
+                        </label>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={preferences.smsNotifications}
+                            onChange={(e) => setPreferences({...preferences, smsNotifications: e.target.checked})}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          {t('profile.preferences.smsNotifications')}
-
-                           setPreferences({...preferences, newsletterSubscription)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus
+                          <span className="ml-2 text-gray-700">
+                            {t('profile.preferences.smsNotifications') || 'SMS notifications'}
+                          </span>
+                        </label>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={preferences.newsletterSubscription}
+                            onChange={(e) => setPreferences({...preferences, newsletterSubscription: e.target.checked})}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          {t('profile.preferences.newsletterSubscription')}
-
-                           setPreferences({...preferences, partnerUpdates)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus
+                          <span className="ml-2 text-gray-700">
+                            {t('profile.preferences.newsletterSubscription') || 'Newsletter subscription'}
+                          </span>
+                        </label>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={preferences.partnerUpdates}
+                            onChange={(e) => setPreferences({...preferences, partnerUpdates: e.target.checked})}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          {t('profile.preferences.partnerUpdates')}
-
-                      {t('profile.preferences.regionalSettings')}
-
-                          {t('profile.preferences.language')}
-                          {t('profile.preferences.english')}
-                            {t('profile.preferences.bulgarian')}
-
-                          {t('profile.preferences.currency')}
-                          BGN (лв)
-                            EUR (€)
-
+                          <span className="ml-2 text-gray-700">
+                            {t('profile.preferences.partnerUpdates') || 'Partner updates'}
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t('profile.preferences.regionalSettings') || 'Regional Settings'}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {t('profile.preferences.language') || 'Language'}
+                          </label>
+                          <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                            <option value="en">{t('profile.preferences.english') || 'English'}</option>
+                            <option value="bg">{t('profile.preferences.bulgarian') || 'Bulgarian'}</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {t('profile.preferences.currency') || 'Currency'}
+                          </label>
+                          <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                            <option value="BGN">BGN (лв)</option>
+                            <option value="EUR">EUR (€)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Security Section */}
               {activeSection === 'security' && (
-                
-                  {t('profile.security.title')}
-
-                          {t('profile.security.twoFactorWarning')}
-                        
-                         {
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {t('profile.security.title') || 'Security'}
+                  </h2>
+                  <div className="space-y-6">
+                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2">Two-Factor Authentication</h3>
+                          <p className="text-gray-600">
+                            {t('profile.security.twoFactorWarning') || 'Add an extra layer of security to your account'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
                             console.log('2FA button clicked');
                             handleEnable2FA();
                           }}
-                          className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover
-                          style={{ minWidth
+                          className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-3 rounded-lg font-medium"
+                          style={{ minWidth: '150px' }}
+                        >
                           {t('accountSettings.enable2FA') || 'Enable 2FA'}
-
-                      {t('profile.security.changePassword')}
-
-                          {t('profile.security.currentPassword')}
-
-                          {t('profile.security.newPassword')}
-
-                          {t('profile.security.confirmNewPassword')}
-
-                      {t('profile.security.loginHistory')}
-
-                              Chrome on macOS
-                              Sofia, Bulgaria • 192.168.1.1
-                            
-                            2 hours ago
-
-                              Mobile App on iOS
-                              Sofia, Bulgaria • 192.168.1.2
-                            
-                            Yesterday
-
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t('profile.security.changePassword') || 'Change Password'}
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {t('profile.security.currentPassword') || 'Current Password'}
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {t('profile.security.newPassword') || 'New Password'}
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {t('profile.security.confirmNewPassword') || 'Confirm New Password'}
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t('profile.security.loginHistory') || 'Login History'}
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">Chrome on macOS</p>
+                              <p className="text-sm text-gray-600">Sofia, Bulgaria • 192.168.1.1</p>
+                            </div>
+                            <span className="text-sm text-gray-500">2 hours ago</span>
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">Mobile App on iOS</p>
+                              <p className="text-sm text-gray-600">Sofia, Bulgaria • 192.168.1.2</p>
+                            </div>
+                            <span className="text-sm text-gray-500">Yesterday</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Billing Section */}
               {activeSection === 'billing' && (
-                
-                  {t('profile.billing.title')}
-
-                      {t('profile.billing.paymentMethod')}
-
-                              •••• •••• •••• 4242
-                              {t('profile.billing.expires')} 12/2025
-
-                      {t('profile.billing.billingHistory')}
-                      
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {t('profile.billing.title') || 'Billing'}
+                  </h2>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t('profile.billing.paymentMethod') || 'Payment Method'}
+                      </h3>
+                      <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-8 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
+                            VISA
+                          </div>
+                          <div>
+                            <p className="font-medium">•••• •••• •••• 4242</p>
+                            <p className="text-sm text-gray-600">{t('profile.billing.expires') || 'Expires'} 12/2025</p>
+                          </div>
+                        </div>
+                        <button className="text-blue-600 hover:text-blue-700 font-medium">
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t('profile.billing.billingHistory') || 'Billing History'}
+                      </h3>
+                      <div className="space-y-3">
                         {[
                           { date: '2024-01-01', amount: '€19.99', status: 'paid' },
                           { date: '2023-12-01', amount: '€19.99', status: 'paid' },
-                          { date: '2023-11-01', amount: '€19.99', status: 'paid'
+                          { date: '2023-11-01', amount: '€19.99', status: 'paid' }
                         ].map((invoice, index) => (
-
-                              {invoice.date}
-                              {t('profile.billing.premiumMembership')}
-
-                              {invoice.amount}
-                              {t('profile.billing.paid')}
-
+                          <div key={index} className="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                            <div>
+                              <p className="font-medium">{invoice.date}</p>
+                              <p className="text-sm text-gray-600">{t('profile.billing.premiumMembership') || 'Premium Membership'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">{invoice.amount}</p>
+                              <p className="text-sm text-green-600">{t('profile.billing.paid') || 'Paid'}</p>
+                            </div>
+                          </div>
                         ))}
-
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Reviews Section */}
               {activeSection === 'reviews' && (
-                
-                  {t('profile.reviews.title')}
+                <div>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {t('profile.reviews.title') || 'Reviews'}
+                  </h2>
                   
                   {!showReviewForm ? (
-                    
+                    <div>
                       {/* Your Reviews */}
-
-                          {t('profile.reviews.yourReviews')}
-                           setShowReviewForm(true)}
-                            className="bg-gradient-to-r from-orange-500 to-red-500 hover
-                            {t('profile.reviews.writeReview')}
-
-                        {/* Placeholder for existing reviews */}
-
-                                The Sofia Grand
-                                
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-semibold">
+                          {t('profile.reviews.yourReviews') || 'Your Reviews'}
+                        </h3>
+                        <button
+                          onClick={() => setShowReviewForm(true)}
+                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-lg font-medium"
+                        >
+                          {t('profile.reviews.writeReview') || 'Write Review'}
+                        </button>
+                      </div>
+                      
+                      {/* Placeholder for existing reviews */}
+                      <div className="space-y-4">
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-semibold text-lg">The Sofia Grand</h4>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <div className="flex">
                                   {[1, 2, 3, 4, 5].map((star) => (
-                                    ★
+                                    <span key={star} className="text-yellow-500">★</span>
                                   ))}
-                                  2 weeks ago
-
-                              Excellent dining experience! The 30% discount made this Michelin-starred restaurant affordable. Service was impeccable.
+                                </div>
+                                <span className="text-sm text-gray-500">2 weeks ago</span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-gray-700">
+                            Excellent dining experience! The 30% discount made this Michelin-starred restaurant affordable. Service was impeccable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
                   ) : (
                     /* Review Form */
-
-                        {t('profile.reviews.writeNewReview')}
-                         setShowReviewForm(false)}
-                          className="text-gray-500 hover
-
-                              {t('profile.reviews.selectPartner')}
+                    <div>
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-semibold">
+                          {t('profile.reviews.writeNewReview') || 'Write New Review'}
+                        </h3>
+                        <button
+                          onClick={() => setShowReviewForm(false)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      
+                      <form onSubmit={handleSubmitReview} className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {t('profile.reviews.selectPartner') || 'Select Partner'}
+                          </label>
+                          <select
+                            value={reviewData.partner}
+                            onChange={(e) => setReviewData({...reviewData, partner: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            required
+                          >
+                            <option value="">{t('profile.reviews.choosePlaceholder') || 'Choose a partner...'}</option>
+                            <option value="restaurant-paradise">Restaurant Paradise</option>
+                            <option value="fitness-first">Fitness First Gym</option>
+                            <option value="spa-relaxation">Spa Relaxation Center</option>
+                            <option value="coffee-central">Coffee Central</option>
+                            <option value="emerald-resort">Emerald Resort & Spa</option>
+                            <option value="marina-bay">Marina Bay Restaurant</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('profile.reviews.rating') || 'Rating'}
+                              </label>
+                              <div className="flex space-x-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setReviewData({...reviewData, rating: star})}
+                                    className={`text-3xl ${star <= reviewData.rating ? 'text-yellow-500' : 'text-gray-300'} hover:text-yellow-500 transition-colors`}
+                                  >
+                                    ★
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                             
-                             setReviewData({...reviewData, partner)}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                              required>
-                              {t('profile.reviews.choosePlaceholder')}
-                              Restaurant Paradise
-                              Fitness First Gym
-                              Spa Relaxation Center
-                              Coffee Central
-                              Emerald Resort & Spa
-                              Marina Bay Restaurant
-
-                              {t('profile.reviews.rating')}
-
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                 setReviewData({...reviewData, rating)}
-                                  className={`text-3xl ${star 
-                              ))}
-
+                            <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">
                                 {t('profile.reviews.yourReview') || 'Your Review'}
                               </label>
@@ -682,7 +925,6 @@ export default function Profile() {
                             </div>
                           </form>
                         </div>
-                      </div>
                   )}
                 </div>
               )}

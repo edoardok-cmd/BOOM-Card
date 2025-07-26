@@ -156,7 +156,8 @@ export default function Search() {
                         View Details
                       </button>
                     </div>
-
+                  </div>
+                </div>
               );
             })}
           </div>

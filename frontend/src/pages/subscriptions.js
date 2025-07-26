@@ -284,53 +284,74 @@ export default function Subscriptions() {
       </div>
 
       {/* Pricing Plans */}
-
-              {language === 'bg' ? 'Зареждане на абонаментни планове...' : 'Loading subscription plans...'}
-            
+      <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          {loading ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600">{language === 'bg' ? 'Зареждане на абонаментни планове...' : 'Loading subscription plans...'}</p>
+            </div>
           ) : error ? (
-            
-              {error}
-            
+            <div className="text-center">
+              <p className="text-red-600">{error}</p>
+            </div>
           ) : (
-           {
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {plans.map((plan) => {
               const monthlyPrice = billingCycle === 'yearly' 
                 ? (plan.price * (1 - plan.yearlyDiscount / 100)).toFixed(2)
                 : plan.price.toFixed(2);
               const yearlyPrice = (monthlyPrice * 12).toFixed(2);
               
               return (
-
-                        ✨ {t('plans.mostPopular') || 'Most Popular'}
-
+                <div key={plan.id} className="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-200">
+                  {plan.popular && (
+                    <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 text-center font-semibold">
+                      <span className="mr-2">✨</span>
+                      {t('plans.mostPopular') || 'Most Popular'}
+                    </div>
                   )}
                   
                   {currentSubscription && currentSubscription.plan_id === plan.id && (
-
-                        ✓ {language === 'bg' ? 'Активен' : 'Active'}
+                    <div className="bg-green-100 text-green-800 py-2 px-4 text-center font-semibold">
+                      <span className="mr-2">✓</span>
+                      {language === 'bg' ? 'Активен' : 'Active'}
+                    </div>
 
                   )}
-
-                      {plan.icon}
-
-                    {plan.name}
-                    {plan.description}
-
-                        €{monthlyPrice}
-                        /{language === 'bg' ? 'месец' : plan.period}
-
+                  
+                  <div className="p-8">
+                    <div className="text-center mb-6">
+                      <div className="text-5xl mb-4">{plan.icon || '💳'}</div>
+                      <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                      <p className="text-gray-600">{plan.description}</p>
+                    </div>
+                    
+                    <div className="text-center mb-6">
+                      <div className="text-4xl font-bold">
+                        <span className="text-2xl">€</span>{monthlyPrice}
+                        <span className="text-lg font-normal text-gray-600">/{language === 'bg' ? 'месец' : plan.period}</span>
+                      </div>
                       {billingCycle === 'yearly' && (
-                        
-                          €{plan.price.toFixed(2)}/{language === 'bg' ? 'месец' : 'month'}
-                          {language === 'bg' ? `Спестете ${plan.yearlyDiscount}% годишно` : `Save ${plan.yearlyDiscount}% annually`}
-                          €{yearlyPrice} {language === 'bg' ? 'фактурира се годишно' : 'billed yearly'}
-                        
+                        <div className="mt-2 text-sm text-gray-600">
+                          <div className="line-through">€{plan.price.toFixed(2)}/{language === 'bg' ? 'месец' : 'month'}</div>
+                          <div className="text-green-600 font-semibold">
+                            {language === 'bg' ? `Спестете ${plan.yearlyDiscount}% годишно` : `Save ${plan.yearlyDiscount}% annually`}
+                          </div>
+                          <div className="text-gray-500">€{yearlyPrice} {language === 'bg' ? 'фактурира се годишно' : 'billed yearly'}</div>
+                        </div>
                       )}
-
-                        {plan.savings}
-
+                      {plan.savings && (
+                        <p className="text-sm text-orange-600 font-semibold mt-2">{plan.savings}</p>
+                      )}
+                    </div>
+                    
+                    <ul className="space-y-3 mb-8">
                       {plan.features.map((feature, idx) => (
-
+                        <li key={idx} className="flex items-start">
+                          <span className={`mr-3 ${feature.included ? 'text-green-500' : 'text-gray-400'}`}>
                             {feature.included ? '✓' : '✗'}
+                          </span>
 
                             {feature.text}
 
