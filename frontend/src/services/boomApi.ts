@@ -23,7 +23,7 @@ import {
 import { AppError, parseApiError, logError } from '../utils/errorHandler';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8003/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/mock';
 
 // Create axios instance with base configuration
 const createApiInstance = (): AxiosInstance => {
