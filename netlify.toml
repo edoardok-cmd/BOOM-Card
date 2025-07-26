@@ -14,8 +14,8 @@
 [build.environment]
   # Ensure Next.js optimizations are enabled
   NEXT_TELEMETRY_DISABLED = "1"
-  # Set Node version to LTS
-  NODE_VERSION = "18"
+  # Set Node version to LTS (18.18.0 or higher required by dependencies)
+  NODE_VERSION = "20"
   # Install devDependencies during build
   NODE_ENV = "development"
   # Additional npm flags
