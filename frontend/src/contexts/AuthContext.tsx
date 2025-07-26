@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/router';
 import { mockLogin, mockProfile } from '../utils/mockAuth';
 
 interface User {
@@ -25,7 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     // Check for existing session - only on client side
@@ -136,13 +134,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // Navigate to home page using window.location
+      window.location.href = '/';
     }
     setToken(null);
     setUser(null);
-    // Only push to home if router is ready and on client side
-    if (typeof window !== 'undefined' && router.isReady) {
-      router.push('/');
-    }
   };
 
   return (
