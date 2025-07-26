@@ -77,7 +77,8 @@
     "yup": "^1.4.0",
     "zustand": "^4.5.2",
     "@headlessui/react": "^1.7.19",
-    "qr-code-styling": "^1.6.0-rc.1"
+    "qr-code-styling": "^1.6.0-rc.1",
+    "web-vitals": "^3.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.24.4",
