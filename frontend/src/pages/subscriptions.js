@@ -518,6 +518,7 @@ export default function Subscriptions() {
         </div>
       </div>
       
+        </div>
       </section>
     </div>
   );
