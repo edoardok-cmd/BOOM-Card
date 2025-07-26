@@ -60,10 +60,6 @@
 # Plugin to handle Next.js deployment
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  
-  [plugins.inputs]
-  # Ensure we're using runtime rendering, not static export
-  appBuildCommand = "npm run build:netlify"
 
 # Development settings
 [dev]

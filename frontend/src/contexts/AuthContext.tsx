@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/router';
+import { useSafeRouter, isRouterReady } from '../utils/safeRouter';
 import { mockLogin, mockProfile } from '../utils/mockAuth';
 
 interface User {
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const router = useSafeRouter();
 
   useEffect(() => {
     // Check for existing session - only on client side
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     // Only push to home if router is ready
-    if (router.isReady) {
+    if (isRouterReady(router)) {
       router.push('/');
     }
   };

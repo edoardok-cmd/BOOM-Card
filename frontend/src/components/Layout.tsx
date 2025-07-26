@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useSafeRouter, isRouterReady } from '../utils/safeRouter';
 import Footer from './Footer';
 
 interface LayoutProps {
@@ -8,21 +8,15 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [showFooter, setShowFooter] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const router = useRouter();
-  
-  // Handle client-side mounting
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const router = useSafeRouter();
   
   // Use useEffect to handle router-dependent logic on client side only
   useEffect(() => {
-    if (mounted && router.isReady) {
+    if (isRouterReady(router)) {
       // Don't show the default footer on homepage as it has its own custom footer
       setShowFooter(router.pathname !== '/');
     }
-  }, [mounted, router.isReady, router.pathname]);
+  }, [router]);
   
   return (
     <div className="min-h-screen flex flex-col">
