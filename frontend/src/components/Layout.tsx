@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useSafeRouter, isRouterReady } from '../utils/safeRouter';
+import React from 'react';
 import Footer from './Footer';
 
 interface LayoutProps {
@@ -7,23 +6,14 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const [showFooter, setShowFooter] = useState(true);
-  const router = useSafeRouter();
-  
-  // Use useEffect to handle router-dependent logic on client side only
-  useEffect(() => {
-    if (isRouterReady(router)) {
-      // Don't show the default footer on homepage as it has its own custom footer
-      setShowFooter(router.pathname !== '/');
-    }
-  }, [router]);
-  
+  // Always show footer for now to avoid router issues during SSG
+  // This can be handled on individual pages if needed
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
         {children}
       </main>
-      {showFooter && <Footer />}
+      <Footer />
     </div>
   );
 }
