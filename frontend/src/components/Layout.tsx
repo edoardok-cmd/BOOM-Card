@@ -1,15 +1,16 @@
 import React from 'react';
+import Navigation from './Navigation';
 import Footer from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
+  showNavigation?: boolean;
 }
 
-export default function Layout({ children }: LayoutProps) {
-  // Always show footer for now to avoid router issues during SSG
-  // This can be handled on individual pages if needed
+export default function Layout({ children, showNavigation = true }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
+      {showNavigation && <Navigation />}
       <main className="flex-grow">
         {children}
       </main>
