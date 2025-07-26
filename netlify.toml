@@ -5,7 +5,7 @@
   base = "frontend"
   
   # Build command for Next.js with legacy peer deps and cache clear
-  command = "rm -rf .next node_modules/.cache && npm ci --legacy-peer-deps && NEXT_TELEMETRY_DISABLED=1 npm run build"
+  command = "rm -rf .next node_modules/.cache .swc && npm ci --legacy-peer-deps && NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 npm run build"
   
   # Next.js build output directory
   publish = ".next"

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx next dev -p 3002",
+    "prebuild": "node prebuild.js",
     "build": "next build",
     "build:netlify": "next build --no-lint",
     "start": "next start -p 3002",
