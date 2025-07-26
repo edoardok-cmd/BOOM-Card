@@ -1,105 +1,50 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
-import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
-export default function UserProfileDropdown({ className = '' }: UserProfileDropdownProps) {
-  const { t } = useLanguage();
+export default function UserProfileDropdown() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
 
-  // Get user initials for avatar
-  const getInitials = () => {
-    if (!user) return 'U';
-    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleNavigation = (path) => {
-    setIsOpen(false);
-    router.push(path);
-  };
-
-  const handleLogout = () => {
-    setIsOpen(false);
-    logout();
-  };
-
-  // If user is not logged in, show login button
   if (!user) {
     return (
-       router.push('/login')}
-        className="bg-gradient-to-r from-orange-500 to-red-500 hover
+      <button
+        onClick={() => router.push('/login')}
+        className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium px-6 py-2 rounded-full transition-all duration-200 transform hover:scale-105"
       >
-        {t('auth.login')}
-      
+        {t('auth.login') || 'Login'}
+      </button>
     );
   }
 
   return (
-    
-      {/* User Avatar Button */}
-       setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-2 rounded-full hover
-      >
-        
-          {getInitials()}
-
-      {/* Dropdown Menu */}
-      {isOpen && (
-        
-          {/* User Info Header */}
-
-                {getInitials()}
-
-                {user.firstName} {user.lastName}
-                {user.email}
-
-          {/* Menu Items */}
-          
-             handleNavigation('/profile')}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover
-            >
-
-              {t('nav.profile')}
-
-             handleNavigation('/account-settings')}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover
-            >
-
-              {t('nav.accountSettings')}
-
-             handleNavigation('/dashboard')}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover
-            >
-
-              {t('nav.dashboard')}
-
-             {
-                setIsOpen(false);
-                router.push('/profile#security');
-              }}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover
-            >
-
-              {t('accountSettings.enable2FA') || 'Enable 2FA'}
-
-              {t('auth.logout')}
-
-      )}
-    
+    <div className="relative group">
+      <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
+          {user.firstName?.[0] || 'U'}
+        </div>
+        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
+        <a href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+          {t('nav.profile') || 'Profile'}
+        </a>
+        <a href="/account-settings" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+          {t('nav.account') || 'Account Settings'}
+        </a>
+        <hr className="my-2" />
+        <button
+          onClick={logout}
+          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+        >
+          {t('nav.logout') || 'Logout'}
+        </button>
+      </div>
+    </div>
   );
 }

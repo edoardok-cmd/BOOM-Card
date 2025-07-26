@@ -1,9 +1,13 @@
-import React, { createContext, useContext, useState} from 'react';
+#!/usr/bin/env python3
+import os
+
+# Fix the LanguageContext to handle missing translations properly
+language_context_content = '''import React, { createContext, useContext, useState } from 'react';
 
 const translations = {
   en: {
     // Meta
-    'meta.title': 'Boom Card - Unlock Bulgaria\'s Premium Experiences',
+    'meta.title': 'Boom Card - Unlock Bulgaria\\'s Premium Experiences',
     'meta.description': 'Premium discount card for restaurants, hotels, and entertainment in Bulgaria',
     
     // Navigation
@@ -15,14 +19,13 @@ const translations = {
     'nav.account': 'Account',
     'nav.login': 'Login',
     'nav.logout': 'Logout',
-    'nav.getStarted': 'Get Started',
     
     // Auth
     'auth.login': 'Login',
     
     // Hero section
     'hero.badge': '🎯 Premium Membership Platform',
-    'hero.title1': 'Unlock Bulgaria\'s',
+    'hero.title1': 'Unlock Bulgaria\\'s',
     'hero.title2': 'Premium Experiences',
     'hero.subtitle': 'Access exclusive discounts at 375+ premium venues across Bulgaria',
     'hero.cta.start': 'Start Saving Today',
@@ -41,7 +44,7 @@ const translations = {
     // Categories
     'categories.badge': '🎯 Premium Categories',
     'categories.title': 'Explore Premium Categories',
-    'categories.subtitle': 'Discover exclusive discounts across Bulgaria\'s finest establishments',
+    'categories.subtitle': 'Discover exclusive discounts across Bulgaria\\'s finest establishments',
     'categories.fineDining': 'Fine Dining',
     'categories.luxuryHotels': 'Luxury Hotels',
     'categories.wellness': 'Wellness & Spa',
@@ -52,10 +55,6 @@ const translations = {
     'categories.entertainmentPartners': '50+ Partners',
     'categories.upTo': 'Up to',
     'categories.explore': 'Explore',
-    'categories.restaurantDescription': 'Premium dining experiences with exclusive member discounts',
-    'categories.hotelDescription': 'Luxury accommodations and resort stays across Bulgaria',
-    'categories.spaDescription': 'Wellness and relaxation at premium spa facilities',
-    'categories.entertainmentDescription': 'Cultural events, theaters, and entertainment venues',
     
     // Features
     'features.badge': '⚡ Platform Features',
@@ -90,7 +89,7 @@ const translations = {
     // CTA section
     'cta.title1': 'Ready to Start',
     'cta.title2': 'Saving?',
-    'cta.subtitle': 'Join BOOM Card today and unlock exclusive discounts at Bulgaria\'s finest establishments',
+    'cta.subtitle': 'Join BOOM Card today and unlock exclusive discounts at Bulgaria\\'s finest establishments',
     'cta.choosePlan': 'Choose Your Plan',
     'cta.downloadApp': 'Download App',
     'cta.memberSavings': 'Member Savings',
@@ -99,7 +98,7 @@ const translations = {
     'cta.memberRating': 'Member Rating',
     
     // Footer
-    'footer.description': 'Bulgaria\'s premium discount platform connecting members with exclusive offers at finest venues.',
+    'footer.description': 'Bulgaria\\'s premium discount platform connecting members with exclusive offers at finest venues.',
     'footer.premiumCategories': 'Fine Dining • Luxury Hotels • Wellness & Spa • Entertainment',
     'footer.company': 'Company',
     'footer.getTheApp': 'Get the App',
@@ -120,18 +119,18 @@ const translations = {
     'common.delete': 'Delete',
     'common.off': 'off',
   },
-  es: {
+  bg: {
     // Navigation
-    'nav.home': 'Inicio',
-    'nav.partners': 'Socios',
-    'nav.plans': 'Planes',
-    'nav.dashboard': 'Panel',
-    'nav.profile': 'Perfil',
-    'nav.account': 'Cuenta',
-    'nav.login': 'Iniciar sesión',
-    'nav.logout': 'Cerrar sesión',
+    'nav.home': 'Начало',
+    'nav.partners': 'Партньори',
+    'nav.plans': 'Планове',
+    'nav.dashboard': 'Табло',
+    'nav.profile': 'Профил',
+    'nav.account': 'Акаунт',
+    'nav.login': 'Вход',
+    'nav.logout': 'Изход',
     
-    // Add Spanish translations
+    // Add more Bulgarian translations as needed
   }
 };
 
@@ -146,7 +145,15 @@ export const LanguageProvider = ({ children }) => {
     const translation = currentTranslations[key];
     
     if (!translation) {
-      console.warn(`Translation missing for key: ${key}`);
+      // Return the default English translation if available
+      const defaultTranslation = translations.en[key];
+      if (defaultTranslation) {
+        return defaultTranslation;
+      }
+      // Only warn in development
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Translation missing for key: ${key}`);
+      }
       return key;
     }
     
@@ -167,3 +174,10 @@ export const useLanguage = () => {
   }
   return context;
 };
+'''
+
+with open('src/contexts/LanguageContext.js', 'w') as f:
+    f.write(language_context_content)
+
+print("✅ Fixed LanguageContext.js")
+print("The context now properly handles missing translations and falls back to English")

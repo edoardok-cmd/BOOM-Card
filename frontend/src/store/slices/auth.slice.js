@@ -1,47 +1,16 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice: "createSlice", createAsyncThunk: "createAsyncThunk", PayloadAction: "PayloadAction" } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
 import api from '../../services/api';
 import { RootState } from '../store';
 
 // Types and Interfaces
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  avatar?: string;
-  role: UserRole;
-  isEmailVerified: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  lastLoginAt?: string;
-  preferences?: UserPreferences;
-}
+export 
 
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-  language: string;
-  notifications: NotificationSettings;
-  privacy: PrivacySettings;
-}
+export 
 
-export interface NotificationSettings {
-  email: boolean;
-  push: boolean;
-  sms: boolean;
-  marketing: boolean;
-  updates: boolean;
-  reminders: boolean;
-}
+export 
 
-export interface PrivacySettings {
-  profileVisibility: 'public' | 'private' | 'friends';
-  showEmail: boolean;
-  showPhone: boolean;
-  allowDataCollection: boolean;
-}
+export 
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -51,98 +20,31 @@ export enum UserRole {
   GUEST = 'GUEST'
 }
 
-export interface AuthState {
-  user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  error: AuthError | null;
-  sessionExpiresAt: string | null;
-  lastActivity: string | null;
-  loginAttempts: number;
-  isRefreshing: boolean;
-  mfaRequired: boolean;
-  mfaVerified: boolean;
-}
+export 
 
-export interface AuthError {
-  code: string;
-  message: string;
-  field?: string;
-  details?: Record<string, any>;
-}
+export 
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-  mfaCode?: string;
-}
+export 
 
-export interface RegisterCredentials {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  acceptTerms: boolean;
-  marketingConsent?: boolean;
-}
+export 
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-}
+export 
 
-export interface AuthResponse {
-  user: User;
-  tokens: AuthTokens;
-  sessionId: string;
-  mfaRequired?: boolean;
-}
+export 
 
-export interface ResetPasswordRequest {
-  email: string;
-}
+export 
 
-export interface ResetPasswordConfirm {
-  token: string;
-  password: string;
-  confirmPassword: string;
-}
+export 
 
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
+export 
 
-export interface UpdateProfileRequest {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  avatar?: string;
-  preferences?: Partial<UserPreferences>;
-}
+export 
 
-export interface VerifyEmailRequest {
-  token: string;
-}
+export 
 
-export interface MFASetupResponse {
-  secret: string;
-  qrCode: string;
-  backupCodes: string[];
-}
+export 
 
-export interface MFAVerifyRequest {
-  code: string;
-  trustDevice?: boolean;
-}
+export 
 
 // Constants
 const AUTH_STORAGE_KEY = 'boom_auth_state';
@@ -173,14 +75,14 @@ const AUTH_ENDPOINTS = {
 
 // Initial state
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  refreshToken: null,
+  user,
+  token,
+  refreshToken,
   isAuthenticated: false,
   isLoading: false,
-  error: null,
-  sessionExpiry: null,
-  lastActivity: null,
+  error,
+  sessionExpiry,
+  lastActivity,
   permissions: [],
   roles: [],
   twoFactorRequired: false,
@@ -194,7 +96,7 @@ export const login = createAsyncThunk(
     try {
       const response = await authAPI.login(credentials);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
 );
@@ -203,12 +105,12 @@ export const logout = createAsyncThunk(
   'auth/logout',
   async (_, { getState, rejectWithValue }) => {
     try {
-      const state = getState() as RootState;
+      const state = getState();
       if (state.auth.token) {
         await authAPI.logout(state.auth.token);
       }
       return null;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
     }
 );
@@ -221,17 +123,17 @@ export const refreshToken = createAsyncThunk(
         throw new Error('No refresh token available');
       }
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Token refresh failed');
     }
 );
 
 export const verifyTwoFactor = createAsyncThunk(
   'auth/verifyTwoFactor',
-  async (code: string, { getState, rejectWithValue }) => {
+  async (code, { getState, rejectWithValue }) => {
     try {
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(error.response?.data?.message || '2FA verification failed');
     }
 );
@@ -241,7 +143,7 @@ export const updateProfile = createAsyncThunk(
   async (profileData: UpdateProfileData, { getState, rejectWithValue }) => {
     try {
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Profile update failed');
     }
 );
@@ -250,14 +152,11 @@ export const updateProfile = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    setUser: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
-    },
-    setToken: (state, action: PayloadAction<string>) => {
+  reducers,
+    setToken: (state, action: PayloadAction) => {
       state.token = action.payload;
     },
-    setRefreshToken: (state, action: PayloadAction<string>) => {
+    setRefreshToken: (state, action: PayloadAction) => {
       state.refreshToken = action.payload;
     },
     updateLastActivity: (state) => {
@@ -276,19 +175,19 @@ const authSlice = createSlice({
       state.twoFactorVerified = false;
       state.error = null;
     },
-    setError: (state, action: PayloadAction<string | null>) => {
+    setError: (state, action: PayloadAction) => {
       state.error = action.payload;
     },
     clearError: (state) => {
       state.error = null;
     },
-    setTwoFactorRequired: (state, action: PayloadAction<boolean>) => {
+    setTwoFactorRequired: (state, action: PayloadAction) => {
       state.twoFactorRequired = action.payload;
     },
-    updatePermissions: (state, action: PayloadAction<string[]>) => {
+    updatePermissions: (state, action: PayloadAction) => {
       state.permissions = action.payload;
     },
-    updateRoles: (state, action: PayloadAction<string[]>) => {
+    updateRoles: (state, action: PayloadAction) => {
       state.roles = action.payload;
     },
   },
@@ -314,7 +213,7 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
         state.isAuthenticated = false;
       })
       // Logout
@@ -337,7 +236,7 @@ const authSlice = createSlice({
       })
       .addCase(logout.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
         // Clear auth state even if logout API call fails
         state.user = null;
         state.token = null;
@@ -358,7 +257,7 @@ const authSlice = createSlice({
       })
       .addCase(refreshToken.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
         // Clear auth on refresh failure
         state.user = null;
         state.token = null;
@@ -380,7 +279,7 @@ const authSlice = createSlice({
       })
       .addCase(verifyTwoFactor.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       })
       // Update profile
       .addCase(updateProfile.pending, (state) => {
@@ -394,7 +293,7 @@ const authSlice = createSlice({
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       });
   },
 });
@@ -426,24 +325,24 @@ export const selectTwoFactorVerified = (state: RootState) => state.auth.twoFacto
 export const selectSessionExpiry = (state: RootState) => state.auth.sessionExpiry;
 
 // Permission check selectors
-export const selectHasPermission = (permission: string) => (state: RootState) =>
+export const selectHasPermission = (permission) => (state: RootState) =>
   state.auth.permissions.includes(permission);
 
-export const selectHasAnyPermission = (permissions: string[]) => (state: RootState) =>
+export const selectHasAnyPermission = (permissions[]) => (state: RootState) =>
   permissions.some(permission => state.auth.permissions.includes(permission));
 
-export const selectHasAllPermissions = (permissions: string[]) => (state: RootState) =>
+export const selectHasAllPermissions = (permissions[]) => (state: RootState) =>
   permissions.every(permission => state.auth.permissions.includes(permission));
 
-export const selectHasRole = (role: string) => (state: RootState) =>
+export const selectHasRole = (role) => (state: RootState) =>
   state.auth.roles.includes(role);
 
-export const selectHasAnyRole = (roles: string[]) => (state: RootState) =>
+export const selectHasAnyRole = (roles[]) => (state: RootState) =>
   roles.some(role => state.auth.roles.includes(role));
 
 // Session validity selector
 export const selectIsSessionValid = (state: RootState) => {
-  const { sessionExpiry, lastActivity, isAuthenticated } = state.auth;
+  const { sessionExpiry: "sessionExpiry", lastActivity: "lastActivity", isAuthenticated: "isAuthenticated" } = state.auth;
   if (!isAuthenticated || !sessionExpiry) return false;
   
   const now = Date.now();

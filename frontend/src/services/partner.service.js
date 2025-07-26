@@ -1,71 +1,31 @@
 import { axiosInstance } from './api';
 import { ApiResponse, PaginatedResponse } from './api';
 
-export interface Partner {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  subcategory: string;
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-    city: string;
-    country: string;
-  };
-  contact: {
-    phone?: string;
-    email?: string;
-    website?: string;
-  };
-  hours?: Record<string, string>;
-  images: string[];
-  imageUrl: string;
-  coverImage?: string;
-  logo?: string;
-  discount: number;
-  rating: number;
-  reviewCount: number;
-  tags: string[];
-  features: string[];
-  isActive: boolean;
-  isFeatured: boolean;
-  createdAt: string;
-  updatedAt: string;
+export ;
+  contact;
+  hours?: Record;
+  images[];
+  imageUrl;
+  coverImage?;
+  logo?;
+  discount;
+  rating;
+  reviewCount;
+  tags[];
+  features[];
+  isActive;
+  isFeatured;
+  createdAt;
+  updatedAt;
 }
 
-export interface PartnerReview {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  partnerId: string;
-  rating: number;
-  comment: string;
-  images?: string[];
-  helpful: number;
-  createdAt: string;
-  updatedAt: string;
-}
+export 
 
-export interface PartnerSearchParams {
-  query?: string;
-  category?: string;
-  subcategory?: string;
-  location?: string;
-  minDiscount?: number;
-  maxDistance?: number;
-  rating?: number;
-  tags?: string[];
-  sortBy?: 'relevance' | 'discount' | 'rating' | 'distance' | 'newest';
-  page?: number;
-  pageSize?: number;
-}
+export 
 
 class PartnerService {
-  async getPartners(params?: PartnerSearchParams): Promise<PaginatedResponse<Partner>> {
-    const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Partner>>>('/partners', { params });
+  async getPartners(params?: PartnerSearchParams)> {
+    const response = await axiosInstance.get>>('/partners', { params });
     
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -74,8 +34,8 @@ class PartnerService {
     throw new Error(response.data.error || 'Failed to fetch partners');
   }
 
-  async getPartner(id: string): Promise<Partner> {
-    const response = await axiosInstance.get<ApiResponse<Partner>>(`/partners/${id}`);
+  async getPartner(id) {
+    const response = await axiosInstance.get>(`/partners/${id}`);
     
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -84,8 +44,8 @@ class PartnerService {
     throw new Error(response.data.error || 'Partner not found');
   }
 
-  async getFeaturedPartners(): Promise<Partner[]> {
-    const response = await axiosInstance.get<ApiResponse<Partner[]>>('/partners/featured');
+  async getFeaturedPartners() {
+    const response = await axiosInstance.get>('/partners/featured');
     
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -94,9 +54,9 @@ class PartnerService {
     throw new Error(response.data.error || 'Failed to fetch featured partners');
   }
 
-  async getNearbyPartners(lat: number, lng: number, radius: number = 5000): Promise<Partner[]> {
-    const response = await axiosInstance.get<ApiResponse<Partner[]>>('/partners/nearby', {
-      params: { lat, lng, radius }
+  async getNearbyPartners(lat, lng, radius = 5000) {
+    const response = await axiosInstance.get>('/partners/nearby', {
+      params
     });
     
     if (response.data.success && response.data.data) {
@@ -107,14 +67,10 @@ class PartnerService {
   }
 
   async getPartnerReviews(
-    partnerId: string,
-    params?: {
-      page?: number;
-      pageSize?: number;
-      sortBy?: 'newest' | 'helpful' | 'rating';
-    }
-  ): Promise<PaginatedResponse<PartnerReview>> {
-    const response = await axiosInstance.get<ApiResponse<PaginatedResponse<PartnerReview>>>(
+    partnerId,
+    params?
+  )> {
+    const response = await axiosInstance.get>>(
       `/partners/${partnerId}/reviews`,
       { params }
     );
@@ -127,13 +83,9 @@ class PartnerService {
   }
 
   async submitReview(
-    partnerId: string,
-    review: {
-      rating: number;
-      comment: string;
-      images?: File[];
-    }
-  ): Promise<PartnerReview> {
+    partnerId,
+    review
+  ) {
     const formData = new FormData();
     formData.append('rating', review.rating.toString());
     formData.append('comment', review.comment);
@@ -144,14 +96,11 @@ class PartnerService {
       });
     }
     
-    const response = await axiosInstance.post<ApiResponse<PartnerReview>>(
+    const response = await axiosInstance.post>(
       `/partners/${partnerId}/reviews`,
       formData,
       {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+        headers
     );
     
     if (response.data.success && response.data.data) {
@@ -161,16 +110,16 @@ class PartnerService {
     throw new Error(response.data.error || 'Failed to submit review');
   }
 
-  async markReviewHelpful(reviewId: string): Promise<void> {
-    const response = await axiosInstance.post<ApiResponse<void>>(`/reviews/${reviewId}/helpful`);
+  async markReviewHelpful(reviewId) {
+    const response = await axiosInstance.post>(`/reviews/${reviewId}/helpful`);
     
     if (!response.data.success) {
-      throw new Error(response.data.error || 'Failed to mark review as helpful');
+      throw new Error(response.data.error || 'Failed to mark review');
     }
   }
 
-  async reportReview(reviewId: string, reason: string): Promise<void> {
-    const response = await axiosInstance.post<ApiResponse<void>>(`/reviews/${reviewId}/report`, {
+  async reportReview(reviewId, reason) {
+    const response = await axiosInstance.post>(`/reviews/${reviewId}/report`, {
       reason
     });
     
@@ -179,8 +128,8 @@ class PartnerService {
     }
   }
 
-  async getCategories(): Promise<string[]> {
-    const response = await axiosInstance.get<ApiResponse<string[]>>('/partners/categories');
+  async getCategories() {
+    const response = await axiosInstance.get>('/partners/categories');
     
     if (response.data.success && response.data.data) {
       return response.data.data;
@@ -189,16 +138,8 @@ class PartnerService {
     throw new Error(response.data.error || 'Failed to fetch categories');
   }
 
-  async redeemDiscount(partnerId: string, code?: string): Promise<{
-    qrCode: string;
-    expiresAt: string;
-    discountAmount: number;
-  }> {
-    const response = await axiosInstance.post<ApiResponse<{
-      qrCode: string;
-      expiresAt: string;
-      discountAmount: number;
-    }>>(`/partners/${partnerId}/redeem`, { code });
+  async redeemDiscount(partnerId, code?) {
+    const response = await axiosInstance.post>(`/partners/${partnerId}/redeem`, { code });
     
     if (response.data.success && response.data.data) {
       return response.data.data;

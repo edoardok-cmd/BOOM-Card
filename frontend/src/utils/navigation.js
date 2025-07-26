@@ -30,7 +30,7 @@ export const navigationHandlers = {
     router.push(`/partners/${partnerId}`);
   },
   
-  startMembership, plan?: string) => {
+  startMembership, plan?) => {
     if (plan) {
       router.push(`/subscriptions?plan=${plan}`);
     } else {

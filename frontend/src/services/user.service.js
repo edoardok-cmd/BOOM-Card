@@ -1,49 +1,18 @@
 import { apiService } from './api';
-import { User, Card, PaginatedResponse } from './api';
+import { User: "User", Card: "Card", PaginatedResponse: "PaginatedResponse" } from './api';
 
-export interface UpdateProfileData {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  email?: string;
-  phone?: string;
-  bio?: string;
-  preferences?: UserPreferences;
-}
+export 
 
-export interface UserPreferences {
-  language: string;
-  currency: string;
-  notifications: NotificationSettings;
-  privacy: PrivacySettings;
-}
+export 
 
-export interface NotificationSettings {
-  email: boolean;
-  push: boolean;
-  sms: boolean;
-  marketing: boolean;
-  updates: boolean;
-  reminders: boolean;
-}
+export 
 
-export interface PrivacySettings {
-  profileVisibility: 'public' | 'private' | 'friends';
-  showEmail: boolean;
-  showPhone: boolean;
-  allowMessages: boolean;
-}
+export 
 
-export interface UserStats {
-  totalCards: number;
-  totalSavings: number;
-  totalTransactions: number;
-  memberSince: string;
-  lastActive: string;
-}
+export 
 
 class UserService {
-  async getCurrentUser(): Promise<User> {
+  async getCurrentUser() {
     const response = await apiService.getCurrentUser();
     
     if (response.success && response.data) {
@@ -53,7 +22,7 @@ class UserService {
     throw new Error(response.error || 'Failed to fetch user');
   }
 
-  async updateProfile(data: UpdateProfileData): Promise<User> {
+  async updateProfile(data: UpdateProfileData) {
     
     if (response.success && response.data) {
       return response.data;
@@ -62,7 +31,7 @@ class UserService {
     throw new Error(response.error || 'Failed to update profile');
   }
 
-  async uploadAvatar(file: File): Promise<string> {
+  async uploadAvatar(file: File) {
     
     if (response.success && response.data) {
       return response.data.url;
@@ -71,7 +40,7 @@ class UserService {
     throw new Error(response.error || 'Failed to upload avatar');
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  async changePassword(currentPassword, newPassword) {
       currentPassword,
       newPassword
     });
@@ -80,7 +49,7 @@ class UserService {
       throw new Error(response.error || 'Failed to change password');
     }
 
-  async getUserStats(): Promise<UserStats> {
+  async getUserStats() {
     
     if (response.success && response.data) {
       return response.data;
@@ -89,11 +58,7 @@ class UserService {
     throw new Error(response.error || 'Failed to fetch user stats');
   }
 
-  async getUserCards(params?: {
-    page?: number;
-    pageSize?: number;
-    status?: string;
-  }): Promise<PaginatedResponse<Card>> {
+  async getUserCards(params?)> {
     
     if (response.success && response.data) {
       return response.data;
@@ -102,7 +67,7 @@ class UserService {
     throw new Error(response.error || 'Failed to fetch user cards');
   }
 
-  async getFavoritePartners(): Promise<Partner[]> {
+  async getFavoritePartners() {
     
     if (response.success && response.data) {
       return response.data;
@@ -111,19 +76,19 @@ class UserService {
     throw new Error(response.error || 'Failed to fetch favorite partners');
   }
 
-  async addFavoritePartner(partnerId: string): Promise<void> {
+  async addFavoritePartner(partnerId) {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to add favorite');
     }
 
-  async removeFavoritePartner(partnerId: string): Promise<void> {
+  async removeFavoritePartner(partnerId) {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to remove favorite');
     }
 
-  async getNotificationSettings(): Promise<NotificationSettings> {
+  async getNotificationSettings() {
     
     if (response.success && response.data) {
       return response.data;
@@ -132,24 +97,24 @@ class UserService {
     throw new Error(response.error || 'Failed to fetch notification settings');
   }
 
-  async updateNotificationSettings(settings: Partial<NotificationSettings>): Promise<void> {
+  async updateNotificationSettings(settings: Partial) {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to update notification settings');
     }
 
-  async deleteAccount(password: string): Promise<void> {
+  async deleteAccount(password) {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to delete account');
     }
 
-  async exportUserData(): Promise<Blob> {
+  async exportUserData() {
       responseType: 'blob'
     });
     
     if (response.success && response.data) {
-      return response.data as Blob;
+      return response.data;
     }
     
     throw new Error(response.error || 'Failed to export user data');

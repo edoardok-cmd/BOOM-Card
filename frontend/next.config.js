@@ -7,14 +7,11 @@ const nextConfig = {
   // Basic image configuration - use unoptimized for static export
   images: {
     unoptimized: true,
-    domains: ['localhost', 'api.boomcard.com', 'boom-card.onrender.com'],
   },
 
   // Environment variables
   env: {
-    NEXT_PUBLIC_APP_NAME: 'BOOM Card',
-    NEXT_PUBLIC_APP_VERSION: '1.0.0',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://boom-card.onrender.com/api'
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
   },
 
   // No TypeScript configuration needed

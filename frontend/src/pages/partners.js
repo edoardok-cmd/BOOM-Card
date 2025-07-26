@@ -9,114 +9,114 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { navigationHandlers } from '../utils/navigation';
 
 const getPartnerCategories = (t) => [
-  {
-    id,
-    name),
-    icon,
-    count,
-    discount)} 30% OFF`,
-    color,
-    bgColor,
-    description)
+  { 
+    id: 'restaurants',
+    name: t('categories.fineDining'),
+    icon: '🍽️',
+    count: 125,
+    discount: `${t('categories.upTo')} 30% OFF`,
+    color: 'from-orange-500 to-red-500',
+    bgColor: 'bg-gradient-to-br from-orange-50 to-orange-100',
+    description: t('categories.restaurantDescription')
   },
-  {
-    id,
-    name),
-    icon,
-    count,
-    discount)} 40% OFF`,
-    color,
-    bgColor,
-    description)
+  { 
+    id: 'hotels',
+    name: t('categories.luxuryHotels'),
+    icon: '🏨',
+    count: 85,
+    discount: `${t('categories.upTo')} 40% OFF`,
+    color: 'from-blue-500 to-indigo-500',
+    bgColor: 'bg-gradient-to-br from-blue-50 to-blue-100',
+    description: t('categories.hotelDescription')
   },
-  {
-    id,
-    name),
-    icon,
-    count,
-    discount)} 35% OFF`,
-    color,
-    bgColor,
-    description)
+  { 
+    id: 'spas',
+    name: t('categories.wellness'),
+    icon: '💆',
+    count: 65,
+    discount: `${t('categories.upTo')} 35% OFF`,
+    color: 'from-green-500 to-teal-500',
+    bgColor: 'bg-gradient-to-br from-green-50 to-green-100',
+    description: t('categories.spaDescription')
   },
-  {
-    id,
-    name),
-    icon,
-    count,
-    discount)} 25% OFF`,
-    color,
-    bgColor,
-    description)
+  { 
+    id: 'entertainment',
+    name: t('categories.entertainment'),
+    icon: '🎬',
+    count: 95,
+    discount: `${t('categories.upTo')} 25% OFF`,
+    color: 'from-purple-500 to-pink-500',
+    bgColor: 'bg-gradient-to-br from-purple-50 to-purple-100',
+    description: t('categories.entertainmentDescription')
   }
 ];
 
 const featuredPartners = [
   {
-    name,
-    category,
-    location,
-    rating,
-    discount,
-    image,
-    description,
-    features, 'Wine Pairing', 'Private Dining'],
-    color
+    name: 'The Sofia Grand',
+    category: 'Fine Dining',
+    location: 'Sofia Center',
+    rating: 4.8,
+    discount: '30%',
+    image: '/images/partners/sofia-grand.jpg',
+    description: 'Award-winning restaurant with exquisite Bulgarian and international cuisine.',
+    features: ['Michelin Star', 'Wine Pairing', 'Private Dining'],
+    color: 'from-orange-500 to-red-500'
   },
   {
-    name,
-    category,
-    location,
-    rating,
-    discount,
-    image,
-    description,
-    features, 'Ski Access', 'Full Spa'],
-    color
+    name: 'Mountain Resort Bansko',
+    category: 'Hotels & Resorts',
+    location: 'Bansko',
+    rating: 4.9,
+    discount: '40%',
+    image: '/images/partners/bansko-resort.jpg',
+    description: 'Luxury mountain resort with breathtaking views and world-class amenities.',
+    features: ['Mountain Views', 'Ski Access', 'Full Spa'],
+    color: 'from-blue-500 to-indigo-500'
   },
   {
-    name,
-    category,
-    location,
-    rating,
-    discount,
-    image,
-    description,
-    features, 'Massage Therapy', 'Yoga Classes'],
-    color
+    name: 'Spa Relaxation Center',
+    category: 'Spa & Wellness',
+    location: 'Plovdiv',
+    rating: 4.7,
+    discount: '35%',
+    image: '/images/partners/spa-center.jpg',
+    description: 'Premium wellness center offering therapeutic treatments and relaxation.',
+    features: ['Hot Springs', 'Massage Therapy', 'Yoga Classes'],
+    color: 'from-green-500 to-teal-500'
   },
   {
-    name,
-    category,
-    location,
-    rating,
-    discount,
-    image,
-    description, exhibitions, and workshops.',
-    features, 'Art Gallery', 'Workshops'],
-    color
+    name: 'Cultural Arts Center',
+    category: 'Entertainment',
+    location: 'Varna',
+    rating: 4.6,
+    discount: '25%',
+    image: '/images/partners/arts-center.jpg',
+    description: 'Contemporary arts venue featuring performances, exhibitions, and workshops.',
+    features: ['Live Performances', 'Art Gallery', 'Workshops'],
+    color: 'from-purple-500 to-pink-500'
   },
   {
-    name,
-    category,
-    location,
-    rating,
-    discount,
-    image,
-    description,
-    features, 'Fresh Seafood', 'Wine Selection'],
-    color
+    name: 'Marina Bay Restaurant',
+    category: 'Fine Dining',
+    location: 'Burgas',
+    rating: 4.5,
+    discount: '30%',
+    image: '/images/partners/marina-bay.jpg',
+    description: 'Waterfront dining with spectacular sea views and fresh seafood.',
+    features: ['Ocean Views', 'Fresh Seafood', 'Wine Selection'],
+    color: 'from-orange-500 to-red-500'
   },
   {
-    name,
-    category,
-    location,
-    rating,
-    discount,
-    image,
-    description,
-    features, 'Luxury Suites', 'Concierge'],
-    color
+    name: 'Emerald Resort & Spa',
+    category: 'Hotels & Resorts',
+    location: 'Golden Sands',
+    rating: 4.8,
+    discount: '40%',
+    image: '/images/partners/emerald-resort.jpg',
+    description: 'Beachfront luxury resort with comprehensive wellness facilities.',
+    features: ['Beachfront', 'Luxury Suites', 'Concierge'],
+    color: 'from-blue-500 to-indigo-500'
   }
 ];
 
@@ -135,10 +135,10 @@ export default function Partners() {
   const partnerCategories = getPartnerCategories(t);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
   // Map backend categories to frontend category IDs
-  const categoryMapping= {
+  const categoryMapping = {
     'Fine Dining': 'restaurants',
     'Restaurants': 'restaurants',
     'Hotels & Resorts': 'hotels',
@@ -152,7 +152,7 @@ export default function Partners() {
   };
 
   // Emoji mapping for categories
-  const categoryEmoji= {
+  const categoryEmoji = {
     'Fine Dining': '🍽️',
     'Restaurants': '🍽️',
     'Hotels & Resorts': '🏨',
@@ -202,7 +202,7 @@ export default function Partners() {
         setError(data.message || 'Failed to fetch partners');
       }
     } catch (err) {
-      console.error('Error fetching partners, err);
+      console.error('Error fetching partners', err);
       setError('Failed to fetch partners');
     } finally {
       setLoading(false);
@@ -218,7 +218,7 @@ export default function Partners() {
         setFeaturedPartnersData(data.data || []);
       }
     } catch (err) {
-      console.error('Error fetching featured partners, err);
+      console.error('Error fetching featured partners', err);
     }
   };
 
@@ -231,7 +231,7 @@ export default function Partners() {
         setCategories(data.data || []);
       }
     } catch (err) {
-      console.error('Error fetching categories, err);
+      console.error('Error fetching categories', err);
     }
   };
 
@@ -244,7 +244,7 @@ export default function Partners() {
         setCities(data.data || []);
       }
     } catch (err) {
-      console.error('Error fetching cities, err);
+      console.error('Error fetching cities', err);
     }
   };
 
@@ -268,7 +268,7 @@ export default function Partners() {
       
         {/* Video Background */}
 
-        {/* Gradient overlay - same as original design */}
+        {/* Gradient overlay - same design */}
 
               {t('partners.hero.badge')}
 

@@ -33,43 +33,43 @@ export default function PartnerWithUs() {
       icon
 
       ),
-      title) || 'New Customers',
-      description) || 'Access thousands of BOOM Card members actively looking for premium experiences'
+      title: t("title") 'New Customers',
+      description: t("description") 'Access thousands of BOOM Card members actively looking for premium experiences'
     },
     {
       icon
 
       ),
-      title) || 'Increased Revenue',
-      description) || 'Fill empty tables and rooms during off-peak hours with guaranteed customers'
+      title: t("title") 'Increased Revenue',
+      description: t("description") 'Fill empty tables and rooms during off-peak hours with guaranteed customers'
     },
     {
       icon
 
       ),
-      title) || 'No Upfront Costs',
-      description) || 'Pay only a small commission on actual sales - no setup fees or monthly charges'
+      title: t("title") 'No Upfront Costs',
+      description: t("description") 'Pay only a small commission on actual sales - no setup fees or monthly charges'
     },
     {
       icon
 
       ),
-      title) || 'Free Marketing',
-      description) || 'Featured in our app, website, and promotional materials at no extra cost'
+      title: t("title") 'Free Marketing',
+      description: t("description") 'Featured in our app, website, and promotional materials at no extra cost'
     },
     {
       icon
 
       ),
-      title) || 'Analytics & Insights',
-      description) || 'Track performance and customer behavior with detailed analytics dashboard'
+      title: t("title") 'Analytics & Insights',
+      description: t("description") 'Track performance and customer behavior with detailed analytics dashboard'
     },
     {
       icon
 
       ),
-      title) || 'Flexible Terms',
-      description) || 'Set your own discount levels and availability - you\'re always in control'
+      title: t("title") 'Flexible Terms',
+      description: t("description") 'Set your own discount levels and availability - you\'re always in control'
     }
   ];
 

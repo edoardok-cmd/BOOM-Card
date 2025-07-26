@@ -1,64 +1,20 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice: "createSlice", createAsyncThunk: "createAsyncThunk", PayloadAction: "PayloadAction" } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
 import { api } from '../../services/api';
 import { RootState } from '../store';
 import { showNotification } from './notification.slice';
 
 // User interfaces
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  profileImage?: string;
-  role: UserRole;
-  status: UserStatus;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  twoFactorEnabled: boolean;
-  preferences: UserPreferences;
-  createdAt: string;
-  updatedAt: string;
-  lastLoginAt?: string;
+export 
+
+export 
+
+export ;
+  push;
+  sms;
 }
 
-export interface UserPreferences {
-  language: string;
-  currency: string;
-  timezone: string;
-  notifications: NotificationPreferences;
-  privacy: PrivacySettings;
-  theme: 'light' | 'dark' | 'system';
-}
-
-export interface NotificationPreferences {
-  email: {
-    marketing: boolean;
-    transactions: boolean;
-    security: boolean;
-    updates: boolean;
-  };
-  push: {
-    marketing: boolean;
-    transactions: boolean;
-    security: boolean;
-    updates: boolean;
-  };
-  sms: {
-    marketing: boolean;
-    transactions: boolean;
-    security: boolean;
-  };
-}
-
-export interface PrivacySettings {
-  profileVisibility: 'public' | 'contacts' | 'private';
-  showEmail: boolean;
-  showPhone: boolean;
-  allowContactRequests: boolean;
-}
+export 
 
 export enum UserRole {
   USER = 'USER',
@@ -76,50 +32,19 @@ export enum UserStatus {
   BANNED = 'BANNED'
 }
 
-export interface UserState {
-  currentUser: User | null;
-  isLoading: boolean;
-  isUpdating: boolean;
-  error: string | null;
-  lastFetch: number | null;
-}
+export 
 
-export interface UpdateUserPayload {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  phoneNumber?: string;
-  profileImage?: string;
-}
+export 
 
-export interface UpdatePreferencesPayload {
-  language?: string;
-  currency?: string;
-  timezone?: string;
-  theme?: 'light' | 'dark' | 'system';
-  notifications?: Partial<NotificationPreferences>;
-  privacy?: Partial<PrivacySettings>;
-}
+export 
 
-export interface ChangePasswordPayload {
-  currentPassword: string;
-  newPassword: string;
-}
+export 
 
-export interface Enable2FAPayload {
-  password: string;
-}
+export 
 
-export interface Verify2FAPayload {
-  token: string;
-  code: string;
-}
+export 
 
-export interface ApiError {
-  message: string;
-  code?: string;
-  field?: string;
-}
+export 
 
 // Constants
 const USER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -127,51 +52,37 @@ const USER_STORAGE_KEY = 'boom_user';
 
 // Initial state
 const initialState: UserState = {
-  currentUser: null,
+  currentUser,
   users: [],
-  selectedUser: null,
+  selectedUser,
   permissions: [],
   roles: [],
   loading: false,
-  error: null,
-  lastSync: null,
-  filters: {
-    role: null,
-    status: null,
-    department: null,
-    searchQuery: ''
-  },
-  pagination: {
-    page: 1,
-    pageSize: 20,
-    total: 0
-  };
+  error,
+  lastSync,
+  filters,
+  pagination;
 
 // Slice definition
 const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {
-    // Synchronous actions
-    setCurrentUser: (state, action: PayloadAction<User>) => {
-      state.currentUser = action.payload;
-      state.lastSync = new Date().toISOString();
-    },
+  reducers,
     
     clearCurrentUser: (state) => {
       state.currentUser = null;
     },
     
-    setUsers: (state, action: PayloadAction<User[]>) => {
+    setUsers: (state, action: PayloadAction) => {
       state.users = action.payload;
     },
     
-    addUser: (state, action: PayloadAction<User>) => {
+    addUser: (state, action: PayloadAction) => {
       state.users.push(action.payload);
       state.pagination.total += 1;
     },
     
-    updateUser: (state, action: PayloadAction<{ id: string; updates: Partial<User> }>) => {
+    updateUser: (state, action: PayloadAction }>) => {
       const index = state.users.findIndex(user => user.id === action.payload.id);
       if (index !== -1) {
         state.users[index] = { ...state.users[index], ...action.payload.updates };
@@ -180,32 +91,32 @@ const userSlice = createSlice({
         state.currentUser = { ...state.currentUser, ...action.payload.updates };
       },
     
-    removeUser: (state, action: PayloadAction<string>) => {
+    removeUser: (state, action: PayloadAction) => {
       state.users = state.users.filter(user => user.id !== action.payload);
       state.pagination.total -= 1;
     },
     
-    setSelectedUser: (state, action: PayloadAction<User | null>) => {
+    setSelectedUser: (state, action: PayloadAction) => {
       state.selectedUser = action.payload;
     },
     
-    setPermissions: (state, action: PayloadAction<Permission[]>) => {
+    setPermissions: (state, action: PayloadAction) => {
       state.permissions = action.payload;
     },
     
-    setRoles: (state, action: PayloadAction<Role[]>) => {
+    setRoles: (state, action: PayloadAction) => {
       state.roles = action.payload;
     },
     
-    setLoading: (state, action: PayloadAction<boolean>) => {
+    setLoading: (state, action: PayloadAction) => {
       state.loading = action.payload;
     },
     
-    setError: (state, action: PayloadAction<string | null>) => {
+    setError: (state, action: PayloadAction) => {
       state.error = action.payload;
     },
     
-    setFilters: (state, action: PayloadAction<Partial<UserFilters>>) => {
+    setFilters: (state, action: PayloadAction>) => {
       state.filters = { ...state.filters, ...action.payload };
     },
     
@@ -213,11 +124,11 @@ const userSlice = createSlice({
       state.filters = initialState.filters;
     },
     
-    setPagination: (state, action: PayloadAction<Partial<PaginationState>>) => {
+    setPagination: (state, action: PayloadAction>) => {
       state.pagination = { ...state.pagination, ...action.payload };
     },
     
-    updateUserStatus: (state, action: PayloadAction<{ id: string; status: UserStatus }>) => {
+    updateUserStatus: (state, action: PayloadAction) => {
       const user = state.users.find(u => u.id === action.payload.id);
       if (user) {
         user.status = action.payload.status;
@@ -242,7 +153,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       })
       
       // Fetch users list
@@ -257,7 +168,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       })
       
       // Create user
@@ -272,7 +183,7 @@ const userSlice = createSlice({
       })
       .addCase(createUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       })
       
       // Update user profile
@@ -290,7 +201,7 @@ const userSlice = createSlice({
         })
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       })
       
       // Delete user
@@ -305,7 +216,7 @@ const userSlice = createSlice({
       })
       .addCase(deleteUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload;
       })
       
       // Fetch permissions
@@ -370,8 +281,8 @@ export const selectFilteredUsers = createSelector(
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query) ||
+        user.name.toLowerCase().includes(query: t("query")
+        user.email.toLowerCase().includes(query: t("query")
         user.department?.toLowerCase().includes(query)
       );
     }
@@ -381,12 +292,12 @@ export const selectFilteredUsers = createSelector(
 );
 
 export const selectUserById = createSelector(
-  [selectUsers, (_: RootState, userId: string) => userId],
+  [selectUsers, (_: RootState, userId) => userId],
   (users, userId) => users.find(user => user.id === userId)
 );
 
 export const selectUsersWithRole = createSelector(
-  [selectUsers, (_: RootState, role: string) => role],
+  [selectUsers, (_: RootState, role) => role],
   (users, role) => users.filter(user => user.roles.includes(role))
 );
 
@@ -396,7 +307,7 @@ export const selectActiveUsers = createSelector(
 );
 
 export const selectUserHasPermission = createSelector(
-  [selectCurrentUser, (_: RootState, permission: string) => permission],
+  [selectCurrentUser, (_: RootState, permission) => permission],
   (currentUser, permission) => {
     if (!currentUser) return false;
     return currentUser.permissions.includes(permission);
@@ -404,7 +315,7 @@ export const selectUserHasPermission = createSelector(
 );
 
 export const selectUserHasRole = createSelector(
-  [selectCurrentUser, (_: RootState, role: string) => role],
+  [selectCurrentUser, (_: RootState, role) => role],
   (currentUser, role) => {
     if (!currentUser) return false;
     return currentUser.roles.includes(role);

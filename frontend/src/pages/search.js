@@ -11,17 +11,17 @@ export default function Search() {
   const { t } = useLanguage();
   const router = useRouter();
   const { q } = router.query;
-  const searchQuery = q as string || '';
+  const searchQuery = q || '';
   
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
   // Category emoji mapping
-  const categoryEmoji= {
+  const categoryEmoji = {
     'Fine Dining': '🍽️',
     'Restaurants': '🍽️',
     'Hotels & Resorts': '🏨',
@@ -54,7 +54,7 @@ export default function Search() {
         setError(data.message || 'Failed to search partners');
       }
     } catch (err) {
-      console.error('Search error, err);
+      console.error('Search error', err);
       setError('Failed to search partners');
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ export default function Search() {
                           📍 {partner.city}
 
                           ⭐
-                          {partner.rating?.toFixed(1) || '0.0'}
+                          {partner.rating?.toFixed(1: t("1") '0.0'}
 
                           {partner.discount_percentage}% OFF
 

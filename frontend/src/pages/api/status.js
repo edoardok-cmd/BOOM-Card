@@ -1,26 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-type Data = {
-  status: string;
-  timestamp: string;
-  services: {
-    frontend: string;
-    backend: string;
-    database: string;
-  };
+
+  timestamp;
+  services;
 };
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse
 ) {
   res.status(200).json({
     status: 'operational',
     timestamp: new Date().toISOString(),
-    services: {
-      frontend: 'running',
-      backend: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api',
-      database: 'connected'
-    }
+    services
   });
 }

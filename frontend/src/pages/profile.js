@@ -17,20 +17,20 @@ export default function Profile() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
   const [reviewData, setReviewData] = useState({
-    rating,
-    partner,
-    content
+    rating: 5,
+    partner: '',
+    content: ''
   });
   const [userReviews, setUserReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [userData, setUserData] = useState({
-    firstName,
-    lastName,
-    email,
+    firstName: result.data.firstName || "",
+    lastName: result.data.lastName || "",
+    email: result.data.email || "",
     phone,
     birthDate,
     address,
@@ -52,18 +52,16 @@ export default function Profile() {
   const handleSave = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-        method,
-        headers
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        method: 'POST',
+        headers: {
         },
-        body
-          firstName,
-          lastName,
-          email,
-          phone,
-          birthDate,
-          address,
+        body: JSON.stringify({
+          firstName: userData.firstName || "",
+          lastName: userData.lastName || "",
+          email: userData.email || "",
+          phone: userData.phone,
+          birthDate: userData.birthDate,
+          address: userData.address
         }),
       });
 
@@ -83,7 +81,7 @@ export default function Profile() {
         alert(error.message || 'Failed to update profile');
       }
     } catch (error) {
-      console.error('Failed to update profile, error);
+      console.error('Failed to update profile', error);
       alert('Failed to update profile. Please try again.');
     }
   };
@@ -91,10 +89,8 @@ export default function Profile() {
   const handleEnable2FA = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/2fa/enable`, {
-        method,
-        headers
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        method: 'POST',
+        headers: {
         },
       });
 
@@ -113,7 +109,7 @@ export default function Profile() {
         alert(error.message || (language === 'bg' ? 'Неуспешно активиране на 2FA' : 'Failed to enable 2FA'));
       }
     } catch (error) {
-      console.error('Failed to enable 2FA, error);
+      console.error('Failed to enable 2FA', error);
       alert(language === 'bg' ? 'Неуспешно активиране на 2FA' : 'Failed to enable 2FA');
     }
   };
@@ -130,9 +126,9 @@ export default function Profile() {
     if (user) {
       setUserData(prev => ({
         ...prev,
-        firstName,
-        lastName,
-        email,
+        firstName: result.data.firstName || "",
+        lastName: result.data.lastName || "",
+        email: result.data.email || "",
         membershipType,
       }));
     }
@@ -165,8 +161,7 @@ export default function Profile() {
       }
 
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-        headers
-          'Authorization': `Bearer ${token}`,
+        headers: {
         },
       });
       
@@ -175,16 +170,16 @@ export default function Profile() {
         if (result.data) {
           setUserData(prev => ({
             ...prev,
-            firstName,
-            lastName,
-            email,
+            firstName: result.data.firstName || "",
+            lastName: result.data.lastName || "",
+            email: result.data.email || "",
             phone,
             birthDate)[0] : prev.birthDate,
             address,
             membershipType,
             cardNumber,
-            validUntil).toLocaleDateString('en-US', { year, month).replace(/\//g, '/') : '',
-            memberSince).toLocaleDateString('en-US', { year, month) : prev.memberSince,
+            validUntil).toLocaleDateString('en-US', { year: month.replace(/\//g, '/') : '',
+            memberSince).toLocaleDateString('en-US', { year: month : prev.memberSince,
           }));
         }
         setProfileLoading(false);
@@ -194,7 +189,7 @@ export default function Profile() {
         router.push('/login');
       }
     } catch (error) {
-      console.error('Failed to fetch user profile, error);
+      console.error('Failed to fetch user profile', error);
       setProfileLoading(false);
     }
   };
@@ -204,8 +199,7 @@ export default function Profile() {
     setLoadingReviews(true);
     try {
       const response = await fetch(`${API_BASE_URL}/reviews/my-reviews`, {
-        headers
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        headers: {
         },
       });
       
@@ -214,7 +208,7 @@ export default function Profile() {
         setUserReviews(result.data || []);
       }
     } catch (error) {
-      console.error('Failed to fetch reviews, error);
+      console.error('Failed to fetch reviews', error);
     } finally {
       setLoadingReviews(false);
     }
@@ -256,9 +250,9 @@ export default function Profile() {
         }
       }
     } catch (error) {
-      console.error('Failed to submit review, error);
-      console.error('Review data, reviewData);
-      console.error('API URL, API_BASE_URL);
+      console.error('Failed to submit review', error);
+      console.error('Review data', reviewData);
+      console.error('API URL', API_BASE_URL);
       alert('Failed to submit review. Please check your internet connection and try again.');
     } finally {
       setSubmittingReview(false);

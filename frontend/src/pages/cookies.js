@@ -6,93 +6,52 @@ export default function Cookies() {
   const { t } = useLanguage();
 
   return (
-    
-      {/* Hero Section */}
-
-            {t('cookies.hero.subtitle') || 'Last updated, 2024'}
-
-      {/* Content */}
-
-              {t('cookies.intro') || 
-              'This Cookie Policy explains how BOOM Card ("we", "us", and "our") uses cookies and similar technologies to recognize you when you visit our website and use our mobile applications.'}
-
-              {t('cookies.sections.what.title') || '1. What Are Cookies'}
-
-              {t('cookies.sections.what.content') || 
-              'Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.'}
-
-              {t('cookies.sections.types.title') || '2. Types of Cookies We Use'}
-
-              {t('cookies.sections.types.essential.title') || 'Essential Cookies'}
-
-              {t('cookies.sections.types.essential.content') || 
-              'These cookies are required for the website to function and cannot be switched off. They are usually only set in response to actions made by you such as setting your privacy preferences, logging in, or filling in forms.'}
-
-              {t('cookies.sections.types.performance.title') || 'Performance Cookies'}
-
-              {t('cookies.sections.types.performance.content') || 
-              'These cookies allow us to count visits and traffic sources so we can measure and improve the performance of our site. They help us know which pages are the most and least popular and see how visitors move around the site.'}
-
-              {t('cookies.sections.types.functional.title') || 'Functional Cookies'}
-
-              {t('cookies.sections.types.functional.content') || 
-              'These cookies enable the website to provide enhanced functionality and personalization. They may be set by us or by third party providers whose services we have added to our pages.'}
-
-              {t('cookies.sections.types.targeting.title') || 'Targeting Cookies'}
-
-              {t('cookies.sections.types.targeting.content') || 
-              'These cookies may be set through our site by our advertising partners. They may be used by those companies to build a profile of your interests and show you relevant adverts on other sites.'}
-
-              {t('cookies.sections.specific.title') || '3. Specific Cookies We Use'}
-
-                      {t('cookies.table.name') || 'Cookie Name'}
-
-                      {t('cookies.table.purpose') || 'Purpose'}
-
-                      {t('cookies.table.expiry') || 'Expiry'}
-
-                    boom_session
-                    Authentication and session management
-                    Session
-
-                    boom_lang
-                    Language preference
-                    1 year
-
-                    boom_analytics
-                    Usage analytics
-                    30 days
-
-                    boom_preferences
-                    User preferences
-                    1 year
-
-              {t('cookies.sections.control.title') || '4. How to Control Cookies'}
-
-              {t('cookies.sections.control.content') || 
-              'You can set your browser to refuse all or some browser cookies, or to alert you when websites set or access cookies. If you disable or refuse cookies, please note that some parts of this website may become inaccessible or not function properly.'}
-
-              {t('cookies.sections.control.browsers') || 'Most web browsers allow some control of most cookies through the browser settings
-
-              Chrome
-              Firefox
-              Safari
-              Edge, search, and services → Cookies
-
-              {t('cookies.sections.thirdparty.title') || '5. Third-Party Cookies'}
-
-              {t('cookies.sections.thirdparty.content') || 
-              'In addition to our own cookies, we may also use various third-party cookies to report usage statistics of the service and deliver advertisements on and through the service.'}
-
-              {t('cookies.sections.updates.title') || '6. Updates to This Policy'}
-
-              {t('cookies.sections.updates.content') || 
-              'We may update this Cookie Policy from time to time to reflect changes to the cookies we use or for other operational, legal, or regulatory reasons.'}
-
-              {t('cookies.sections.contact.title') || '7. Contact Us'}
-
-              {t('cookies.sections.contact.content') || 
-              'If you have any questions about our use of cookies or other technologies, please email us at privacy@boomcard.bg.'}
-
+    <Layout>
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-8">{t('cookies.title') || 'Cookie Policy'}</h1>
+        <p className="text-gray-600 mb-6">{t('cookies.subtitle') || 'Last updated: January 2024'}</p>
+        
+        <div className="prose max-w-none space-y-6">
+          <section>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">{t('cookies.whatAre.title') || 'What are cookies?'}</h2>
+            <p>{t('cookies.whatAre.content') || 'Cookies are small text files that are placed on your device when you visit our website. They help us provide you with a better experience and allow certain features to work.'}</p>
+          </section>
+          
+          <section>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">{t('cookies.howWeUse.title') || 'How we use cookies'}</h2>
+            <p>{t('cookies.howWeUse.content') || 'We use cookies to:'}</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>{t('cookies.howWeUse.item1') || 'Remember your preferences and settings'}</li>
+              <li>{t('cookies.howWeUse.item2') || 'Improve your browsing experience'}</li>
+              <li>{t('cookies.howWeUse.item3') || 'Analyze site traffic and usage'}</li>
+              <li>{t('cookies.howWeUse.item4') || 'Personalize content and ads'}</li>
+            </ul>
+          </section>
+          
+          <section>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">{t('cookies.types.title') || 'Types of cookies we use'}</h2>
+            
+            <h3 className="text-xl font-semibold mt-6 mb-3">{t('cookies.types.essential.title') || 'Essential cookies'}</h3>
+            <p>{t('cookies.types.essential.content') || 'These cookies are necessary for the website to function properly. They cannot be switched off in our systems.'}</p>
+            
+            <h3 className="text-xl font-semibold mt-6 mb-3">{t('cookies.types.performance.title') || 'Performance cookies'}</h3>
+            <p>{t('cookies.types.performance.content') || 'These cookies allow us to count visits and traffic sources so we can measure and improve performance.'}</p>
+            
+            <h3 className="text-xl font-semibold mt-6 mb-3">{t('cookies.types.functional.title') || 'Functional cookies'}</h3>
+            <p>{t('cookies.types.functional.content') || 'These cookies enable the website to provide enhanced functionality and personalization.'}</p>
+          </section>
+          
+          <section>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">{t('cookies.managing.title') || 'Managing cookies'}</h2>
+            <p>{t('cookies.managing.content') || 'You can control and manage cookies through your browser settings. Please note that removing or blocking cookies may impact your user experience.'}</p>
+          </section>
+          
+          <section>
+            <h2 className="text-2xl font-semibold mt-8 mb-4">{t('cookies.contact.title') || 'Contact us'}</h2>
+            <p>{t('cookies.contact.content') || 'If you have any questions about our cookie policy, please contact us at privacy@boomcard.com'}</p>
+          </section>
+        </div>
+      </div>
+    </Layout>
   );
 }

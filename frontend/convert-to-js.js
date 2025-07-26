@@ -19,7 +19,7 @@ function convertTsToJs(filePath) {
   content = content.replace(/(\w+):\s*[^,)=\n]+/g, '$1');
   
   // Remove generic type parameters
-  content = content.replace(/<[^>]+>/g, '');
+  content = content.replace(/]+>/g, '');
   
   // Remove return type annotations
   content = content.replace(/\):\s*[^{=\n]+\s*=>/g, ') =>');

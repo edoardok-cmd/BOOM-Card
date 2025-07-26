@@ -6,14 +6,14 @@ class AuthService {
   private readonly REFRESH_TOKEN_KEY = 'refreshToken';
   private readonly USER_KEY = 'user';
 
-  async login(credentials: LoginRequest): Promise<User> {
+  async login(credentials: LoginRequest) {
     const response = await apiService.login(credentials);
     
     if (response.success && response.data) {
-      const { accessToken, refreshToken, user } = response.data;
+      const { accessToken: "accessToken", refreshToken: "refreshToken", user: "user" } = response.data;
       
       // Store tokens
-      this.setTokens({ accessToken, refreshToken } as AuthTokens);
+      this.setTokens({ accessToken, refreshToken });
       
       // Store user data
       this.setUser(user);
@@ -24,7 +24,7 @@ class AuthService {
     throw new Error(response.error || 'Login failed');
   }
 
-  async register(data: RegisterRequest): Promise<User> {
+  async register(data: RegisterRequest) {
     
     if (response.success && response.data) {
       return response.data;
@@ -33,7 +33,7 @@ class AuthService {
     throw new Error(response.error || 'Registration failed');
   }
 
-  async logout(): Promise<void> {
+  async logout() {
     try {
       await apiService.logout();
     } catch (error) {
@@ -42,7 +42,7 @@ class AuthService {
       this.clearAuth();
     }
 
-  async refreshToken(): Promise<void> {
+  async refreshToken() {
     const refreshToken = this.getRefreshToken();
     
     if (!refreshToken) {
@@ -56,61 +56,61 @@ class AuthService {
       throw new Error('Token refresh failed');
     }
 
-  async forgotPassword(email: string): Promise<void> {
+  async forgotPassword(email) {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to send reset email');
     }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
+  async resetPassword(token, newPassword) {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to reset password');
     }
 
   // Token management
-  getAccessToken(): string | null {
+  getAccessToken() | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  getRefreshToken(): string | null {
+  getRefreshToken() | null {
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
-  setTokens(tokens: AuthTokens): void {
+  setTokens(tokens: AuthTokens) {
     localStorage.setItem(this.TOKEN_KEY, tokens.accessToken);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, tokens.refreshToken);
   }
 
   // User management
-  getUser(): User | null {
+  getUser() | null {
     const userStr = localStorage.getItem(this.USER_KEY);
-    return userStr ? JSON.parse(userStr) : null;
+    return userStr ? JSON.parse(userStr);
   }
 
-  setUser(user: User): void {
+  setUser(user: User) {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   // Auth state
-  isAuthenticated(): boolean {
+  isAuthenticated() {
     return !!this.getAccessToken() && !!this.getUser();
   }
 
-  clearAuth(): void {
+  clearAuth() {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
   }
 
   // Utility methods
-  hasRole(role: string): boolean {
+  hasRole(role) {
     const user = this.getUser();
     return user?.role === role;
   }
 
-  hasPermission(permission: string): boolean {
-    return user?.permissions?.includes(permission) || false;
+  hasPermission(permission) {
+    return user?.permissions?.includes(permission: t("permission") false;
   }
 
 // Export singleton instance

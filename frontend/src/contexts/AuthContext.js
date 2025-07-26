@@ -31,20 +31,20 @@ export const AuthProvider= ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
     // Use the actual auth login endpoint
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method,
-      headers
+      method: 'POST',
+      headers: {
         'Content-Type': 'application/json',
       },
-      body, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Login failed, data);
+      console.error('Login failed', data);
       const errorMessage = data.message || data.error || 'Login failed';
       if (data.details && Array.isArray(data.details)) {
         const validationErrors = data.details.map((detail) => detail.msg).join(', ');
@@ -57,11 +57,11 @@ export const AuthProvider= ({ children }) => {
     if (data.data?.note) {
       // Backend is returning placeholder response, create mock user for testing
       const user = {
-        id,
-        email,
-        firstName,
-        lastName,
-        membershipType,
+        id: 'mock-user-id',
+        email: email,
+        firstName: 'Test',
+        lastName: 'User',
+        membershipType: 'basic',
       };
       const token = 'mock-token-for-testing';
       
@@ -83,11 +83,11 @@ export const AuthProvider= ({ children }) => {
     }
     
     const user = {
-      id),
-      email,
-      firstName,
-      lastName,
-      membershipType,
+      id: userData.id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      membershipType: userData.membershipType,
     };
     
     localStorage.setItem('token', token);
@@ -98,19 +98,19 @@ export const AuthProvider= ({ children }) => {
   };
 
   const register = async (firstName, lastName, email, password) => {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method,
-      headers
+      method: 'POST',
+      headers: {
         'Content-Type': 'application/json',
       },
-      body, lastName, email, password }),
+      body: JSON.stringify({ firstName, lastName, email, password }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Registration failed, data);
+      console.error('Registration failed', data);
       const errorMessage = data.message || data.error || 'Registration failed';
       if (data.details && Array.isArray(data.details)) {
         const validationErrors = data.details.map((detail) => detail.msg).join(', ');
@@ -124,11 +124,11 @@ export const AuthProvider= ({ children }) => {
     const token = tokenData.accessToken || tokenData.token;
     const userData = data.data?.user || data.data;
     const user = {
-      id),
-      email,
-      firstName,
-      lastName,
-      membershipType,
+      id: userData.id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      membershipType: userData.membershipType,
     };
     
     localStorage.setItem('token', token);
@@ -166,5 +166,9 @@ export const AuthProvider= ({ children }) => {
     updateUser,
   };
 
-  return {children};
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

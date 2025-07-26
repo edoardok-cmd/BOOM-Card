@@ -13,46 +13,44 @@ export default function HowItWorks() {
 
   const steps = [
     {
-      number,
-      title) || 'Sign Up & Choose Your Plan',
-      description) || 'Create your account and select from our Essential, Premium, or VIP membership plans.',
-      icon,
-      color
+      number: 1,
+      title: t('howItWorks.step1.title') || 'Sign Up',
+      description: t('howItWorks.step1.desc') || 'Create your account and select from our Essential, Premium, or VIP membership plans.',
+      icon: '📝'
     },
     {
-      number,
-      title) || 'Get Your Digital Card',
-      description) || 'Receive your digital BOOM Card instantly in the app with a unique QR code.',
-      icon,
-      color
+      number: 2,
+      title: t('howItWorks.step2.title') || 'Receive Your Card',
+      description: t('howItWorks.step2.desc') || 'Get your digital card instantly or receive your physical card within 3-5 business days.',
+      icon: '💳'
     },
     {
-      number,
-      title) || 'Browse Premium Partners',
-      description) || 'Explore our curated network of 375+ luxury venues across Bulgaria.',
-      icon,
-      color
-    },
-    {
-      number,
-      title) || 'Show Card & Save',
-      description) || 'Present your QR code at checkout and enjoy instant discounts up to 40%.',
-      icon,
-      color
+      number: 3,
+      title: t('howItWorks.step3.title') || 'Start Saving',
+      description: t('howItWorks.step3.desc') || 'Show your card at any partner location to receive exclusive discounts.',
+      icon: '🎉'
     }
   ];
 
   return (
-
-        {t('howItWorks.title') || 'How It Works - BOOM Card'}
+    <div>
+      <Head>
+        <title>{t('howItWorks.title') || 'How It Works - BOOM Card'}</title>
+      </Head>
 
       {/* Navigation */}
-
-                {t('nav.howItWorks') || 'How It Works'}
+      <nav className="bg-white shadow">
+        <div className="container mx-auto px-4 py-4">
+          <h1>{t('nav.howItWorks') || 'How It Works'}</h1>
+        </div>
+      </nav>
 
       {/* Hero Section */}
-
-            {t('howItWorks.hero.subtitle') || 'Start saving at Bulgaria\'s finest establishments in just 4 simple steps'}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <p className="text-lg text-center">{t('howItWorks.hero.subtitle') || 'Start saving at Bulgaria\'s finest establishments in just 4 simple steps'}</p>
+        </div>
+      </section>
 
       {/* Steps Section */}
       
@@ -91,12 +89,17 @@ export default function HowItWorks() {
                 {t('howItWorks.benefits.instant.description') || 'Start saving immediately after signup'}
 
       {/* CTA Section */}
-
-            {t('howItWorks.cta.subtitle') || 'Join thousands of members enjoying exclusive discounts'}
-          
-           router.push('/subscriptions')}
-            className="bg-white hover
+      <section className="py-12 bg-orange-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-lg mb-8">{t('howItWorks.cta.subtitle') || 'Join thousands of members enjoying exclusive discounts'}</p>
+          <button
+            onClick={() => router.push('/subscriptions')}
+            className="bg-white text-orange-600 px-8 py-3 rounded-lg hover:bg-gray-100"
+          >
             {t('howItWorks.cta.button') || 'Get Started Now'}
-
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }

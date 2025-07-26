@@ -21,7 +21,7 @@ export default function Subscriptions() {
   const [currentSubscription, setCurrentSubscription] = useState(null);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
   useEffect(() => {
     fetchPlans();
@@ -42,7 +42,7 @@ export default function Subscriptions() {
         setError(data.message || 'Failed to fetch subscription plans');
       }
     } catch (err) {
-      console.error('Error fetching plans, err);
+      console.error('Error fetching plans', err);
       setError('Failed to fetch subscription plans');
     } finally {
       setLoading(false);
@@ -52,8 +52,7 @@ export default function Subscriptions() {
   const fetchCurrentSubscription = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/subscriptions/me`, {
-        headers
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        headers: {
         },
       });
       
@@ -64,7 +63,7 @@ export default function Subscriptions() {
         }
       }
     } catch (err) {
-      console.error('Error fetching current subscription, err);
+      console.error('Error fetching current subscription', err);
     }
   };
 
@@ -76,15 +75,13 @@ export default function Subscriptions() {
 
     try {
       const response = await fetch(`${API_BASE_URL}/subscriptions`, {
-        method,
-        headers
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        method: 'POST',
+        headers: {
         },
-        body
+        body: JSON.stringify({
           planId,
-          paymentMethod, // Placeholder for now
-          autoRenew
+          paymentMethod: 'card', // Placeholder for now
+          autoRenew: true
         }),
       });
 
@@ -105,86 +102,61 @@ export default function Subscriptions() {
         }
       }
     } catch (err) {
-      console.error('Error creating subscription, err);
+      console.error('Error creating subscription', err);
       alert(language === 'bg' ? 'Неуспешно създаване на абонамент' : 'Failed to create subscription');
     }
   };
   
   const getPlans = (t) => [
-  {
-    id,
-    name),
-    icon,
-    price,
-    period,
-    color,
-    bgColor,
-    borderColor,
-    popular,
-    description),
-    features
-      { text) || 'Access to 100+ verified partners', included,
-      { text) || '10-15% average discount', included,
-      { text) || 'Mobile app with QR codes', included,
-      { text) || 'Basic customer support', included,
-      { text) || 'Restaurant reservations', included,
-      { text) || 'Premium dining venues', included,
-      { text) || 'Luxury hotel access', included,
-      { text) || 'Exclusive VIP events', included
-    ],
-    yearlyDiscount,
-    savings) || '€120+ saved annually'
-  },
-  {
-    id,
-    name),
-    icon,
-    price,
-    period,
-    color,
-    bgColor,
-    borderColor,
-    popular,
-    description),
-    features
-      { text) || 'Access to 250+ premium partners', included,
-      { text) || '15-25% average discount', included,
-      { text) || 'Mobile app with QR codes', included,
-      { text) || 'Priority customer support', included,
-      { text) || 'Restaurant reservations', included,
-      { text) || 'Premium dining venues', included,
-      { text) || '4-star hotel access', included,
-      { text) || 'Exclusive VIP events', included
-    ],
-    yearlyDiscount,
-    savings) || '€600+ saved annually'
-  },
-  {
-    id,
-    name),
-    icon,
-    price,
-    period,
-    color,
-    bgColor,
-    borderColor,
-    popular,
-    description),
-    features
-      { text) || 'Access to all 375+ elite partners', included,
-      { text) || '20-40% average discount', included,
-      { text) || 'Mobile app with QR codes', included,
-      { text) || '24/7 concierge support', included,
-      { text) || 'Priority restaurant reservations', included,
-      { text) || 'All premium dining venues', included,
-      { text) || 'Luxury 5-star hotel access', included,
-      { text) || 'Exclusive VIP events & experiences', included
-    ],
-    yearlyDiscount,
-    savings) || '€1,200+ saved annually'
-  }
-];
-
+    {
+      id: 'basic',
+      name: t('plans.basic.name') || 'Basic',
+      price: 0,
+      period: t('plans.basic.period') || 'month',
+      description: t('plans.basic.description') || 'Essential features for personal use',
+      features: [
+        t('plans.basic.features.0') || 'Virtual debit card',
+        t('plans.basic.features.1') || 'Basic expense tracking', 
+        t('plans.basic.features.2') || 'Monthly spending reports',
+        t('plans.basic.features.3') || 'Standard security features'
+      ],
+      color: 'from-gray-500 to-gray-600',
+      popular: false
+    },
+    {
+      id: 'premium', 
+      name: t('plans.premium.name') || 'Premium',
+      price: 9.99,
+      period: t('plans.premium.period') || 'month',
+      description: t('plans.premium.description') || 'Advanced features for power users',
+      features: [
+        t('plans.premium.features.0') || 'All Basic features',
+        t('plans.premium.features.1') || 'Multiple virtual cards',
+        t('plans.premium.features.2') || 'Advanced analytics',
+        t('plans.premium.features.3') || 'Priority support',
+        t('plans.premium.features.4') || 'Cashback rewards'
+      ],
+      color: 'from-blue-500 to-purple-600',
+      popular: true
+    },
+    {
+      id: 'vip',
+      name: t('plans.vip.name') || 'VIP',
+      price: 29.99,
+      period: t('plans.vip.period') || 'month',
+      description: t('plans.vip.description') || 'Exclusive benefits for VIP members',
+      features: [
+        t('plans.vip.features.0') || 'All Premium features',
+        t('plans.vip.features.1') || 'Unlimited virtual cards',
+        t('plans.vip.features.2') || 'Concierge service',
+        t('plans.vip.features.3') || 'Exclusive partner deals',
+        t('plans.vip.features.4') || 'Custom card designs',
+        t('plans.vip.features.5') || 'Higher cashback rates'
+      ],
+      color: 'from-yellow-400 to-orange-500',
+      popular: false
+    }
+  ];
   const frontendPlans = getPlans(t);
   
   // Map backend plans to frontend format
@@ -219,29 +191,44 @@ export default function Subscriptions() {
   // Use backend plans if available, otherwise use frontend plans
   const plans = mappedBackendPlans.length > 0 ? mappedBackendPlans : frontendPlans;
 
-  const features = [
-    { name), basic, premium, vip,
-    { name), basic, premium, vip,
-    { name), basic, premium, vip,
-    { name), basic) || 'Basic', premium) || 'Priority', vip) || '24/7 Concierge' },
-    { name), basic, premium, vip) || 'Priority' },
-    { name), basic, premium, vip,
-    { name), basic, premium) || '4-Star', vip) || '5-Star' },
-    { name), basic, premium, vip,
-    { name), basic, premium, vip,200+' }
+    const features = [
+    { name: t("features.partners") || "Partner Access", basic: true, premium: true, vip: true },
+    { name: t("features.virtual_cards") || "Virtual Cards", basic: "1", premium: "5", vip: "Unlimited" },
+    { name: t("features.cashback") || "Cashback", basic: "0.5%", premium: "2%", vip: "5%" },
+    { name: t("features.support") || "Support", basic: "Email", premium: "Priority", vip: "24/7 Concierge" },
+    { name: t("features.analytics") || "Analytics", basic: false, premium: true, vip: true },
+    { name: t("features.security") || "Enhanced Security", basic: false, premium: true, vip: true }
   ];
 
   return (
-
-        {t('plans.title')}
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>{t('plans.title')} - BOOM Card</title>
+      </Head>
 
       {/* Navigation */}
-
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Logo />
+            <div className="flex items-center space-x-4">
+              <a href="/subscriptions" className="text-orange-600 font-semibold">
                 {t('plans.nav.plans')}
+              </a>
+              <SearchBar />
+              <LanguageSwitcher />
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
-
-              {t('subscriptions.hero.badge')}
+      <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white py-16">
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <div className="inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+            <span className="text-sm font-semibold">{t('subscriptions.hero.badge')}</span>
+          </div>
 
               {t('subscriptions.hero.title1')}
 
@@ -253,7 +240,7 @@ export default function Subscriptions() {
                 className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
                   billingCycle === 'monthly'
                     ? 'bg-white text-gray-900 shadow-lg'
-                    : 'text-white hover
+                    : 'text-white hover:bg-white/10'
                 }`}
               >
                 {t('subscriptions.billing.monthly')}
@@ -262,7 +249,7 @@ export default function Subscriptions() {
                 className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
                   billingCycle === 'yearly'
                     ? 'bg-white text-gray-900 shadow-lg'
-                    : 'text-white hover
+                    : 'text-white hover:bg-white/10'
                 }`}
               >
                 {t('subscriptions.billing.yearly')}
@@ -334,22 +321,21 @@ export default function Subscriptions() {
                         handleSubscribe(plan.backendId || plan.id);
                       }}
                       disabled={currentSubscription && currentSubscription.plan_id === plan.id}
-                      className={`w-full py-4 px-6 rounded-2xl text-lg font-bold transition-all shadow-lg hover
-                        currentSubscription && currentSubscription.plan_id === plan.id
+                      className={`w-full py-4 px-6 rounded-2xl text-lg font-bold transition-all shadow-lg hover:shadow-xl ${ && currentSubscription.plan_id : selectedPlan === plan.id
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : plan.popular
                           ? `bg-gradient-to-r ${plan.color} text-white hover
                           : `bg-gradient-to-r ${plan.color} text-white hover
                       }`}
                     >
-                      {currentSubscription && currentSubscription.plan_id === plan.id
-                        ? (language === 'bg' ? 'Текущ план' : 'Current Plan')
+                      {currentSubscription && currentSubscription.plan_id : selectedPlan === plan.id
+                          ? (language : (language === 'bg' ? 'Текущ план' : 'Current Plan')
                         : currentSubscription
                         ? currentSubscription.plan_id > plan.id 
-                          ? (language === 'bg' ? 'Понижаване' : 'Downgrade')
-                          === 'bg' ? 'Надграждане' : 'Upgrade')
-                        === plan.id 
-                          ? (language === 'bg' ? 'Абонирайте се сега' : 'Subscribe Now')
+                          ? (language : (language === 'bg' ? 'Понижаване' : 'Downgrade')
+                          : (language === 'bg' ? 'Надграждане' : 'Upgrade')
+                        : selectedPlan === plan.id
+                          ? (language : (language === 'bg' ? 'Абонирайте се сега' : 'Subscribe Now')
                           === 'bg' ? `Изберете ${plan.name}` : `Choose ${plan.name}`)}
 
                     {selectedPlan === plan.id && (
@@ -419,14 +405,16 @@ export default function Subscriptions() {
                 // Scroll to the pricing plans section
                 const plansSection = document.querySelector('.grid.grid-cols-1.lg\\:grid-cols-3');
                 if (plansSection) {
-                  plansSection.scrollIntoView({ behavior);
+                  plansSection.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="bg-white hover
+              className="bg-white hover:bg-gray-50 text-orange-600 px-8 py-4 rounded-xl font-semibold shadow-lg transition-all"
+            >
               {t('plans.cta.startMembership') || 'Start Your Membership'}
             
-             window.open('https, '_blank')}
-              className="border-2 border-white text-white hover
+             window.open('https://boomcard.bg', '_blank')}
+              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 rounded-xl font-semibold transition-all"
+            >
               📱 {t('plans.cta.downloadApp') || 'Download App'}
 
   );

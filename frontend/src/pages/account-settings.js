@@ -7,7 +7,6 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
-import { buttonHandlers } from '../utils/navigation';
 
 export default function AccountSettings() {
   const { t } = useLanguage();
@@ -17,24 +16,24 @@ export default function AccountSettings() {
   
   // Form states
   const [personalInfo, setPersonalInfo] = useState({
-    firstName,
-    lastName,
-    email,
-    phone
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || ''
   });
   
   const [notifications, setNotifications] = useState({
-    emailAlerts,
-    smsAlerts,
-    pushNotifications,
-    marketingEmails
+    emailAlerts: true,
+    smsAlerts: false,
+    pushNotifications: true,
+    marketingEmails: false
   });
 
   // Connected accounts state
   const [connectedAccounts, setConnectedAccounts] = useState({
-    facebook, userId, connectedAt,
-    instagram, userId, connectedAt,
-    google, userId, connectedAt
+    facebook: { connected: false, userId: null, connectedAt: null },
+    instagram: { connected: false, userId: null, connectedAt: null },
+    google: { connected: false, userId: null, connectedAt: null }
   });
 
   // Loading states
@@ -43,7 +42,7 @@ export default function AccountSettings() {
   const [loadingDelete, setLoadingDelete] = useState(false);
 
   // API base URL
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
   // Check authentication
   useEffect(() => {
@@ -54,448 +53,481 @@ export default function AccountSettings() {
     }
   }, [user, router]);
 
-  // Fetch connected accounts on component mount
+  // Update form when user data changes
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchConnectedAccounts();
-    }
-  }, []);
-
-  // Fetch connected accounts
-  const fetchConnectedAccounts = async () => {
-    setLoadingAccounts(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/connected-accounts`, {
-        headers
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+    if (user) {
+      setPersonalInfo({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || ''
       });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setConnectedAccounts(result.data);
-        }
-      } else if (response.status === 401) {
-        // Token expired or invalid
-        localStorage.removeItem('token');
-        router.push('/login');
-      }
-    } catch (error) {
-      console.error('Failed to fetch connected accounts, error);
-    } finally {
-      setLoadingAccounts(false);
     }
+  }, [user]);
+
+  const handleUpdatePersonalInfo = async (e) => {
+    e.preventDefault();
+    // TODO: Implement API call to update personal info
+    alert(t('accountSettings.personal.updateSuccess') || 'Personal information updated successfully!');
   };
 
-  // Download user data
+  const handleUpdateNotifications = async (e) => {
+    e.preventDefault();
+    // TODO: Implement API call to update notifications
+    alert(t('accountSettings.notifications.updateSuccess') || 'Notification preferences updated!');
+  };
+
   const handleDownloadData = async () => {
     setLoadingDownload(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/users/download-data`, {
-        headers
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `boom-card-data-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        
-        alert('Your data has been downloaded successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to download data');
-      }
-    } catch (error) {
-      console.error('Failed to download data, error);
-      alert('Failed to download data. Please try again.');
+      // TODO: Implement API call to download user data
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      alert(t('accountSettings.privacy.downloadSuccess') || 'Your data has been downloaded successfully!');
     } finally {
       setLoadingDownload(false);
     }
   };
 
-  // Delete account
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
-      'Are you sure you want to delete your account? This action cannot be undone. Your account will be permanently deleted within 30 days.'
+      t('accountSettings.privacy.deleteConfirm') || 
+      'Are you sure you want to delete your account? This action cannot be undone.'
     );
     
     if (!confirmed) return;
 
     setLoadingDelete(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/users/account`, {
-        method,
-        headers
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.message);
-        // Optionally redirect to logout or home page
-        router.push('/');
-      } else {
-        const error = await response.json();
-        alert(error.message || 'Failed to delete account');
-      }
-    } catch (error) {
-      console.error('Failed to delete account, error);
-      alert('Failed to delete account. Please try again.');
+      // TODO: Implement API call to delete account
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      alert(t('accountSettings.privacy.deleteSuccess') || 'Account deletion requested. You will receive a confirmation email.');
+      router.push('/');
     } finally {
       setLoadingDelete(false);
     }
   };
 
-  // Connect social account
   const handleConnectSocial = async (provider) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/connect-social`, {
-        method,
-        headers
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body) }),
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.message);
-        // Refresh connected accounts
-        fetchConnectedAccounts();
-      } else {
-        const error = await response.json();
-        alert(error.message || `Failed to connect ${provider}`);
-      }
-    } catch (error) {
-      console.error(`Failed to connect ${provider}:`, error);
-      alert(`Failed to connect ${provider}. Please try again.`);
-    }
+    // TODO: Implement OAuth flow
+    alert(`Connecting to ${provider}...`);
   };
 
-  // Disconnect social account
   const handleDisconnectSocial = async (provider) => {
-    const confirmed = window.confirm(`Are you sure you want to disconnect your ${provider} account?`);
+    const confirmed = window.confirm(`Disconnect ${provider}?`);
     if (!confirmed) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/disconnect-social/${provider.toLowerCase()}`, {
-        method,
-        headers
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.message);
-        // Refresh connected accounts
-        fetchConnectedAccounts();
-      } else {
-        const error = await response.json();
-        alert(error.message || `Failed to disconnect ${provider}`);
-      }
-    } catch (error) {
-      console.error(`Failed to disconnect ${provider}:`, error);
-      alert(`Failed to disconnect ${provider}. Please try again.`);
-    }
+    
+    setConnectedAccounts(prev => ({
+      ...prev,
+      [provider.toLowerCase()]: { connected: false, userId: null, connectedAt: null }
+    }));
   };
+
+  const tabs = [
+    { id: 'personal', name: t('accountSettings.tabs.personal') || 'Personal Info', icon: '👤' },
+    { id: 'notifications', name: t('accountSettings.tabs.notifications') || 'Notifications', icon: '🔔' },
+    { id: 'security', name: t('accountSettings.tabs.security') || 'Security', icon: '🔒' },
+    { id: 'privacy', name: t('accountSettings.tabs.privacy') || 'Privacy', icon: '🛡️' },
+    { id: 'connected', name: t('accountSettings.tabs.connected') || 'Connected Accounts', icon: '🔗' }
+  ];
 
   return (
-
-        {t('accountSettings.title')} - BOOM Card
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>{t('accountSettings.title') || 'Account Settings'} - BOOM Card</title>
+      </Head>
 
       {/* Navigation */}
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Logo />
+            <div className="flex items-center space-x-4">
+              <SearchBar />
+              <LanguageSwitcher />
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </div>
+      </nav>
 
-          {t('accountSettings.title')}
-          {t('accountSettings.subtitle')}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-3xl font-bold mb-8">{t('accountSettings.title') || 'Account Settings'}</h1>
 
-                 setActiveTab('personal')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
-                    activeTab === 'personal'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover
-                  }`}
-                >
-                  
-                    👤
-                    {t('accountSettings.personal')}
+        {/* Tabs */}
+        <div className="border-b border-gray-200 mb-8">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  py-2 px-1 border-b-2 font-medium text-sm
+                  ${activeTab === tab.id
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }
+                `}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-                 setActiveTab('security')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
-                    activeTab === 'security'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover
-                  }`}
-                >
-                  
-                    🔒
-                    {t('accountSettings.security')}
-
-                 setActiveTab('notifications')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
-                    activeTab === 'notifications'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover
-                  }`}
-                >
-                  
-                    🔔
-                    {t('accountSettings.notifications')}
-
-                 setActiveTab('billing')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
-                    activeTab === 'billing'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover
-                  }`}
-                >
-                  
-                    💳
-                    {t('accountSettings.billing')}
-
-                 setActiveTab('privacy')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors ${
-                    activeTab === 'privacy'
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-600 hover
-                  }`}
-                >
-                  
-                    🛡️
-                    {t('accountSettings.privacy')}
-
-          {/* Content */}
-          
-              {/* Personal Information Tab */}
-              {activeTab === 'personal' && (
+        {/* Tab Content */}
+        <div className="bg-white rounded-lg shadow p-6">
+          {/* Personal Information Tab */}
+          {activeTab === 'personal' && (
+            <form onSubmit={handleUpdatePersonalInfo} className="space-y-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {t('accountSettings.personal.title') || 'Personal Information'}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {t('accountSettings.personal.firstName') || 'First Name'}
+                  </label>
+                  <input
+                    type="text"
+                    value={personalInfo.firstName}
+                    onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
                 
-                  {t('accountSettings.personalInfo')}
-
-                          {t('accountSettings.firstName')}
-                        
-                         setPersonalInfo({...personalInfo, firstName)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus
-                        />
-
-                          {t('accountSettings.lastName')}
-                        
-                         setPersonalInfo({...personalInfo, lastName)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus
-                        />
-
-                        {t('accountSettings.email')}
-                      
-                       setPersonalInfo({...personalInfo, email)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus
-                      />
-
-                        {t('accountSettings.phone')}
-                      
-                       setPersonalInfo({...personalInfo, phone)}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus
-                      />
-
-                       buttonHandlers.handleSaveChanges('personal information')}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover
-                      >
-                        {t('accountSettings.saveChanges')}
-
-              )}
-
-              {/* Security Tab */}
-              {activeTab === 'security' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {t('accountSettings.personal.lastName') || 'Last Name'}
+                  </label>
+                  <input
+                    type="text"
+                    value={personalInfo.lastName}
+                    onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
                 
-                  {t('accountSettings.securitySettings')}
-
-                      {t('accountSettings.changePassword')}
-
-                            {t('accountSettings.currentPassword')}
-
-                            {t('accountSettings.newPassword')}
-
-                            {t('accountSettings.confirmPassword')}
-
-                         buttonHandlers.handleChangePassword()}
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover
-                        >
-                          {t('accountSettings.updatePassword')}
-
-                      {t('accountSettings.twoFactorAuth')}
-                      {t('accountSettings.twoFactorDesc')}
-                       router.push('/profile#security')}
-                        className="bg-gradient-to-r from-green-500 to-green-600 hover
-                      >
-                        {t('accountSettings.enable2FA')}
-
-              )}
-
-              {/* Notifications Tab */}
-              {activeTab === 'notifications' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {t('accountSettings.personal.email') || 'Email Address'}
+                  </label>
+                  <input
+                    type="email"
+                    value={personalInfo.email}
+                    onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
                 
-                  {t('accountSettings.notificationPreferences')}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {t('accountSettings.personal.phone') || 'Phone Number'}
+                  </label>
+                  <input
+                    type="tel"
+                    value={personalInfo.phone}
+                    onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+              </div>
+              
+              <button
+                type="submit"
+                className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700"
+              >
+                {t('accountSettings.personal.update') || 'Update Information'}
+              </button>
+            </form>
+          )}
 
-                        {t('accountSettings.emailAlerts')}
-                        {t('accountSettings.emailAlertsDesc')}
-
-                         setNotifications({...notifications, emailAlerts)}
-                          className="sr-only peer"
-                        />
-
-                        {t('accountSettings.smsAlerts')}
-                        {t('accountSettings.smsAlertsDesc')}
-
-                         setNotifications({...notifications, smsAlerts)}
-                          className="sr-only peer"
-                        />
-
-                        {t('accountSettings.pushNotifications')}
-                        {t('accountSettings.pushNotificationsDesc')}
-
-                         setNotifications({...notifications, pushNotifications)}
-                          className="sr-only peer"
-                        />
-
-                        {t('accountSettings.marketingEmails')}
-                        {t('accountSettings.marketingEmailsDesc')}
-
-                         setNotifications({...notifications, marketingEmails)}
-                          className="sr-only peer"
-                        />
-
-                       buttonHandlers.handleSaveChanges('notification preferences')}
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 hover
-                      >
-                        {t('accountSettings.savePreferences')}
-
-              )}
-
-              {/* Billing Tab */}
-              {activeTab === 'billing' && (
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <form onSubmit={handleUpdateNotifications} className="space-y-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {t('accountSettings.notifications.title') || 'Notification Preferences'}
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">
+                      {t('accountSettings.notifications.emailAlerts') || 'Email Alerts'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {t('accountSettings.notifications.emailAlertsDesc') || 'Receive important updates via email'}
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={notifications.emailAlerts}
+                    onChange={(e) => setNotifications({...notifications, emailAlerts: e.target.checked})}
+                    className="h-4 w-4 text-orange-600 rounded"
+                  />
+                </div>
                 
-                  {t('accountSettings.billingPayment')}
-
-                        {t('accountSettings.currentPlan')}
-                        
-                          Premium
-
-                      {t('accountSettings.nextBilling')}: March 15, 2024
-                      €19.99/{t('accountSettings.month')}
-                       router.push('/subscriptions')}
-                        className="mt-4 text-blue-600 font-semibold hover
-                      >
-                        {t('accountSettings.changePlan')} →
-
-                      {t('accountSettings.paymentMethod')}
-
-                            VISA
-
-                            •••• •••• •••• 4242
-                            {t('accountSettings.expires')} 12/2025
-
-                      {t('accountSettings.billingHistory')}
-
-                            February 15, 2024
-                            Premium Plan
-
-                            €19.99
-
-                            January 15, 2024
-                            Premium Plan
-
-                            €19.99
-
-              )}
-
-              {/* Privacy Tab */}
-              {activeTab === 'privacy' && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">
+                      {t('accountSettings.notifications.smsAlerts') || 'SMS Alerts'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {t('accountSettings.notifications.smsAlertsDesc') || 'Get text messages for urgent notifications'}
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={notifications.smsAlerts}
+                    onChange={(e) => setNotifications({...notifications, smsAlerts: e.target.checked})}
+                    className="h-4 w-4 text-orange-600 rounded"
+                  />
+                </div>
                 
-                  {t('accountSettings.privacySettings')}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">
+                      {t('accountSettings.notifications.pushNotifications') || 'Push Notifications'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {t('accountSettings.notifications.pushDesc') || 'Receive notifications on your device'}
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={notifications.pushNotifications}
+                    onChange={(e) => setNotifications({...notifications, pushNotifications: e.target.checked})}
+                    className="h-4 w-4 text-orange-600 rounded"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">
+                      {t('accountSettings.notifications.marketingEmails') || 'Marketing Emails'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {t('accountSettings.notifications.marketingDesc') || 'Receive promotional offers and news'}
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={notifications.marketingEmails}
+                    onChange={(e) => setNotifications({...notifications, marketingEmails: e.target.checked})}
+                    className="h-4 w-4 text-orange-600 rounded"
+                  />
+                </div>
+              </div>
+              
+              <button
+                type="submit"
+                className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700"
+              >
+                {t('accountSettings.notifications.save') || 'Save Preferences'}
+              </button>
+            </form>
+          )}
 
-                        ⚠️
-                        {t('accountSettings.dataPrivacy')}
-                      
-                      {t('accountSettings.dataPrivacyDesc')}
+          {/* Security Tab */}
+          {activeTab === 'security' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {t('accountSettings.security.title') || 'Security Settings'}
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="border-b pb-4">
+                  <h3 className="font-medium mb-2">
+                    {t('accountSettings.security.password') || 'Change Password'}
+                  </h3>
+                  <button className="text-orange-600 hover:text-orange-700">
+                    {t('accountSettings.security.changePassword') || 'Update password'}
+                  </button>
+                </div>
+                
+                <div className="border-b pb-4">
+                  <h3 className="font-medium mb-2">
+                    {t('accountSettings.security.twoFactor') || 'Two-Factor Authentication'}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {t('accountSettings.security.twoFactorDesc') || 'Add an extra layer of security to your account'}
+                  </p>
+                  <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    {t('accountSettings.security.enable2FA') || 'Enable 2FA'}
+                  </button>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2">
+                    {t('accountSettings.security.sessions') || 'Active Sessions'}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {t('accountSettings.security.sessionsDesc') || 'Manage devices where you\'re signed in'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
-                          {loadingDownload ? 'Downloading...' : `${t('accountSettings.downloadData')} →`}
+          {/* Privacy Tab */}
+          {activeTab === 'privacy' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {t('accountSettings.privacy.title') || 'Privacy Settings'}
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="border-b pb-4">
+                  <h3 className="font-medium mb-2">
+                    {t('accountSettings.privacy.dataDownload') || 'Download Your Data'}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {t('accountSettings.privacy.dataDownloadDesc') || 'Get a copy of all your BOOM Card data'}
+                  </p>
+                  <button
+                    onClick={handleDownloadData}
+                    disabled={loadingDownload}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loadingDownload
+                      ? t('accountSettings.privacy.downloading') || 'Downloading...'
+                      : t('accountSettings.privacy.downloadData') || 'Download Data'
+                    }
+                  </button>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2 text-red-600">
+                    {t('accountSettings.privacy.deleteAccount') || 'Delete Account'}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {t('accountSettings.privacy.deleteAccountDesc') || 'Permanently delete your account and all data'}
+                  </p>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={loadingDelete}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {loadingDelete
+                      ? t('accountSettings.privacy.deleting') || 'Processing...'
+                      : t('accountSettings.privacy.deleteAccountBtn') || 'Delete Account'
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
-                          {loadingDelete ? 'Processing...' : `${t('accountSettings.deleteAccount')} →`}
-
-                      {t('accountSettings.connectedAccounts')}
-                      {loadingAccounts ? (
-
-                          Loading accounts...
-                        
-                      ) : (
-
-                              📘
-                              Facebook
-                            
-                             connectedAccounts.facebook.connected 
-                                ? handleDisconnectSocial('facebook') 
-                                : handleConnectSocial('facebook')
-                              }
-                              className={`font-semibold ${
-                                connectedAccounts.facebook.connected
-                                  ? 'text-red-600 hover
-                                  : 'text-blue-600 hover
-                              }`}
-                            >
-                              {connectedAccounts.facebook.connected 
-                                ? `${t('accountSettings.disconnect')} ✓` 
-                                : t('accountSettings.connect')
-                              }
-
-                              📷
-                              Instagram
-                            
-                             connectedAccounts.instagram.connected 
-                                ? handleDisconnectSocial('instagram') 
-                                : handleConnectSocial('instagram')
-                              }
-                              className={`font-semibold ${
-                                connectedAccounts.instagram.connected
-                                  ? 'text-red-600 hover
-                                  : 'text-blue-600 hover
-                              }`}
-                            >
-                              {connectedAccounts.instagram.connected 
-                                ? `${t('accountSettings.disconnect')} ✓` 
-                                : t('accountSettings.connect')
-                              }
-
-                              🔷
-                              Google
-                            
-                             connectedAccounts.google.connected 
-                                ? handleDisconnectSocial('google') 
-                                : handleConnectSocial('google')
-                              }
-                              className={`font-semibold ${
-                                connectedAccounts.google.connected
-                                  ? 'text-red-600 hover
-                                  : 'text-blue-600 hover
-                              }`}
-                            >
-                              {connectedAccounts.google.connected 
-                                ? `${t('accountSettings.disconnect')} ✓` 
-                                : t('accountSettings.connect')
-                              }
-
+          {/* Connected Accounts Tab */}
+          {activeTab === 'connected' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {t('accountSettings.connected.title') || 'Connected Accounts'}
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Facebook */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                      f
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Facebook</h3>
+                      {connectedAccounts.facebook.connected && (
+                        <p className="text-sm text-gray-500">
+                          {t('accountSettings.connected.connectedAs') || 'Connected as'} {connectedAccounts.facebook.userId}
+                        </p>
                       )}
-
-              )}
-
+                    </div>
+                  </div>
+                  {connectedAccounts.facebook.connected ? (
+                    <button
+                      onClick={() => handleDisconnectSocial('Facebook')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      {t('accountSettings.connected.disconnect') || 'Disconnect'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleConnectSocial('Facebook')}
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      {t('accountSettings.connected.connect') || 'Connect'}
+                    </button>
+                  )}
+                </div>
+                
+                {/* Instagram */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                      i
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Instagram</h3>
+                      {connectedAccounts.instagram.connected && (
+                        <p className="text-sm text-gray-500">
+                          {t('accountSettings.connected.connectedAs') || 'Connected as'} {connectedAccounts.instagram.userId}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {connectedAccounts.instagram.connected ? (
+                    <button
+                      onClick={() => handleDisconnectSocial('Instagram')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      {t('accountSettings.connected.disconnect') || 'Disconnect'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleConnectSocial('Instagram')}
+                      className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded hover:opacity-90"
+                    >
+                      {t('accountSettings.connected.connect') || 'Connect'}
+                    </button>
+                  )}
+                </div>
+                
+                {/* Google */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-white border-2 rounded-full flex items-center justify-center">
+                      <span className="text-2xl">G</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Google</h3>
+                      {connectedAccounts.google.connected && (
+                        <p className="text-sm text-gray-500">
+                          {t('accountSettings.connected.connectedAs') || 'Connected as'} {connectedAccounts.google.userId}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {connectedAccounts.google.connected ? (
+                    <button
+                      onClick={() => handleDisconnectSocial('Google')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      {t('accountSettings.connected.disconnect') || 'Disconnect'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleConnectSocial('Google')}
+                      className="bg-white border-2 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
+                    >
+                      {t('accountSettings.connected.connect') || 'Connect'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -2,38 +2,12 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } f
 import { io, Socket } from 'socket.io-client';
 
 // API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  timestamp: string;
-}
+export 
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+export 
 
 // User & Authentication Types
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  avatarUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-  lastLogin?: string;
-  isActive: boolean;
-  emailVerified: boolean;
-  twoFactorEnabled: boolean;
-}
+export 
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -42,52 +16,16 @@ export enum UserRole {
   GUEST = 'GUEST'
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-}
+export 
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
+export 
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-}
+export 
 
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
-}
+export 
 
 // Card Types
-export interface Card {
-  id: string;
-  userId: string;
-  title: string;
-  content: string;
-  category: CardCategory;
-  tags: string[];
-  status: CardStatus;
-  priority: Priority;
-  dueDate?: string;
-  completedAt?: string;
-  attachments: Attachment[];
-  collaborators: string[];
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
+export 
 
 export enum CardCategory {
   PERSONAL = 'PERSONAL',
@@ -113,14 +51,7 @@ export enum Priority {
   URGENT = 'URGENT'
 }
 
-export interface Attachment {
-  id: string;
-  filename: string;
-  url: string;
-  mimeType: string;
-  size: number;
-  uploadedAt: string;
-}
+export 
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
@@ -130,9 +61,7 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:5002';
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers,
 });
 
 // Request interceptor
@@ -153,7 +82,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
-    const originalRequest: any = error.config;
+    const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -184,15 +113,11 @@ axiosInstance.interceptors.response.use(
 // WebSocket connection
 let socket: Socket | null = null;
 
-export const connectWebSocket = (userId: string): Socket => {
+export const connectWebSocket = (userId) => {
   if (!socket) {
     socket = io(WS_URL, {
-      auth: {
-        token: localStorage.getItem('accessToken'),
-      },
-      query: {
-        userId,
-      },
+      auth,
+      query,
     });
     
     socket.on('connect', () => {
@@ -211,7 +136,7 @@ export const connectWebSocket = (userId: string): Socket => {
   return socket;
 };
 
-export const disconnectWebSocket = (): void => {
+export const disconnectWebSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
@@ -221,99 +146,89 @@ export const disconnectWebSocket = (): void => {
 // API Service Class
 class ApiService {
   // Authentication
-  async login(data: LoginRequest): Promise<ApiResponse<AuthTokens & { user: User }>> {
-    const response = await axiosInstance.post<ApiResponse<AuthTokens & { user: User }>>('/auth/login', data);
+  async login(data: LoginRequest)> {
+    const response = await axiosInstance.post>('/auth/login', data);
     return response.data;
   }
   
-  async register(data: RegisterRequest): Promise<ApiResponse<User>> {
-    const response = await axiosInstance.post<ApiResponse<User>>('/auth/register', data);
+  async register(data: RegisterRequest)> {
+    const response = await axiosInstance.post>('/auth/register', data);
     return response.data;
   }
   
-  async logout(): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post<ApiResponse<void>>('/auth/logout');
+  async logout()> {
+    const response = await axiosInstance.post>('/auth/logout');
     return response.data;
   }
   
-  async refreshToken(refreshToken: string): Promise<ApiResponse<AuthTokens>> {
-    const response = await axiosInstance.post<ApiResponse<AuthTokens>>('/auth/refresh', { refreshToken });
+  async refreshToken(refreshToken)> {
+    const response = await axiosInstance.post>('/auth/refresh', { refreshToken });
     return response.data;
   }
   
-  async forgotPassword(email: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post<ApiResponse<void>>('/auth/forgot-password', { email });
+  async forgotPassword(email)> {
+    const response = await axiosInstance.post>('/auth/forgot-password', { email });
     return response.data;
   }
   
-  async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.post<ApiResponse<void>>('/auth/reset-password', data);
+  async resetPassword(data: ResetPasswordRequest)> {
+    const response = await axiosInstance.post>('/auth/reset-password', data);
     return response.data;
   }
   
   // User Management
-  async getCurrentUser(): Promise<ApiResponse<User>> {
-    const response = await axiosInstance.get<ApiResponse<User>>('/users/me');
+  async getCurrentUser()> {
+    const response = await axiosInstance.get>('/users/me');
     return response.data;
   }
   
-  async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
-    const response = await axiosInstance.put<ApiResponse<User>>('/users/me', data);
+  async updateProfile(data: Partial)> {
+    const response = await axiosInstance.put>('/users/me', data);
     return response.data;
   }
   
-  async uploadAvatar(file: File): Promise<ApiResponse<{ url: string }>> {
+  async uploadAvatar(file: File)> {
     const formData = new FormData();
     formData.append('avatar', file);
     
-    const response = await axiosInstance.post<ApiResponse<{ url: string }>>('/users/me/avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const response = await axiosInstance.post>('/users/me/avatar', formData, {
+      headers,
     });
     return response.data;
   }
   
   // Cards
-  async getCards(params?: {
-    page?: number;
-    pageSize?: number;
-    category?: CardCategory;
-    status?: CardStatus;
-    search?: string;
-  }): Promise<ApiResponse<PaginatedResponse<Card>>> {
-    const response = await axiosInstance.get<ApiResponse<PaginatedResponse<Card>>>('/cards', { params });
+  async getCards(params?)>> {
+    const response = await axiosInstance.get>>('/cards', { params });
     return response.data;
   }
   
-  async getCard(id: string): Promise<ApiResponse<Card>> {
-    const response = await axiosInstance.get<ApiResponse<Card>>(`/cards/${id}`);
+  async getCard(id)> {
+    const response = await axiosInstance.get>(`/cards/${id}`);
     return response.data;
   }
   
-  async createCard(data: Partial<Card>): Promise<ApiResponse<Card>> {
-    const response = await axiosInstance.post<ApiResponse<Card>>('/cards', data);
+  async createCard(data: Partial)> {
+    const response = await axiosInstance.post>('/cards', data);
     return response.data;
   }
   
-  async updateCard(id: string, data: Partial<Card>): Promise<ApiResponse<Card>> {
-    const response = await axiosInstance.put<ApiResponse<Card>>(`/cards/${id}`, data);
+  async updateCard(id, data: Partial)> {
+    const response = await axiosInstance.put>(`/cards/${id}`, data);
     return response.data;
   }
   
-  async deleteCard(id: string): Promise<ApiResponse<void>> {
-    const response = await axiosInstance.delete<ApiResponse<void>>(`/cards/${id}`);
+  async deleteCard(id)> {
+    const response = await axiosInstance.delete>(`/cards/${id}`);
     return response.data;
   }
   
-  async uploadAttachment(cardId: string, file: File): Promise<ApiResponse<Attachment>> {
+  async uploadAttachment(cardId, file: File)> {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await axiosInstance.post<ApiResponse<Attachment>>(`/cards/${cardId}/attachments`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const response = await axiosInstance.post>(`/cards/${cardId}/attachments`, formData, {
+      headers,
     });
     return response.data;
   }

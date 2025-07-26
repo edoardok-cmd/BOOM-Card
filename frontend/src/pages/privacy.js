@@ -21,7 +21,7 @@ export default function Privacy() {
               {t('privacy.sections.collection.personal.title') || 'Personal Information'}
 
               {t('privacy.sections.collection.personal.content') || 
-              'We collect information you provide directly to us, such as when you create an account, including, email address, phone number, billing information, and address.'}
+              'We collect information you provide directly to us, such you create an account, including, email address, phone number, billing information, and address.'}
 
               {t('privacy.sections.collection.usage.title') || 'Usage Information'}
 

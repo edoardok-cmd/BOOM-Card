@@ -31,7 +31,7 @@ export default function Terms() {
               {t('terms.sections.payment.title') || '4. Payment Terms'}
 
               {t('terms.sections.payment.content') || 
-              'Membership fees are billed monthly or annually, depending on your selected plan. All fees are non-refundable except as required by law. You may cancel your subscription at any time, and your access will continue until the end of your current billing period.'}
+              'Membership fees are billed monthly or annually, depending on your selected plan. All fees are non-refundable except by law. You may cancel your subscription at any time, and your access will continue until the end of your current billing period.'}
 
               {t('terms.sections.usage.title') || '5. Acceptable Use'}
 

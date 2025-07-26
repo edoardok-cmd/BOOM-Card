@@ -14,55 +14,54 @@ export default function HelpCenter() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const categories = [
-    { id, name) || 'All Topics', icon,
-    { id, name) || 'Account & Login', icon,
-    { id, name) || 'Billing & Payments', icon,
-    { id, name) || 'Using BOOM Card', icon,
-    { id, name) || 'Partners & Offers', icon,
-    { id, name) || 'Technical Issues', icon
+    { id: 'all', name: t('help.categories.all') || 'All Topics', icon: '📚' },
+    { id: 'account', name: t('help.categories.account') || 'Account', icon: '👤' },
+    { id: 'billing', name: t('help.categories.billing') || 'Billing', icon: '💳' },
+    { id: 'partners', name: t('help.categories.partners') || 'Partners', icon: '🤝' },
+    { id: 'technical', name: t('help.categories.technical') || 'Technical', icon: '🔧' }
   ];
 
   const helpArticles = [
     {
-      id,
-      category,
-      title) || 'How to reset your password',
-      content) || 'Go to the login page and click "Forgot Password". Enter your email address and we\'ll send you a reset link.',
+      id: 1,
+      category: 'account',
+      title: t("help.articles.resetPassword.title") || 'How to reset your password',
+      content: t("help.articles.resetPassword.content") || 'Go to the login page and click "Forgot Password". Enter your email address and we\'ll send you a reset link.',
       popular
     },
     {
       id,
       category,
-      title) || 'How to change your subscription plan',
-      content) || 'Navigate to Account Settings > Billing and click "Change Plan". Select your new plan and confirm the change.',
+      title: t("title") 'How to change your subscription plan',
+      content: t("content") 'Navigate to Account Settings > Billing and click "Change Plan". Select your new plan and confirm the change.',
       popular
     },
     {
       id,
       category,
-      title) || 'How to use your QR code',
-      content) || 'Open the BOOM Card app, tap on "My Card" to display your QR code. Show it to the merchant at checkout.',
+      title: t("title") 'How to use your QR code',
+      content: t("content") 'Open the BOOM Card app, tap on "My Card" to display your QR code. Show it to the merchant at checkout.',
       popular
     },
     {
       id,
       category,
-      title) || 'Finding partner locations near you',
-      content) || 'Use the search bar or browse by category. Enable location services for personalized recommendations.',
+      title: t("title") 'Finding partner locations near you',
+      content: t("content") 'Use the search bar or browse by category. Enable location services for personalized recommendations.',
       popular
     },
     {
       id,
       category,
-      title) || 'App not working properly',
-      content) || 'Try clearing your browser cache or updating to the latest version. If issues persist, contact support.',
+      title: t("title") 'App not working properly',
+      content: t("content") 'Try clearing your browser cache or updating to the latest version. If issues persist, contact support.',
       popular
     },
     {
       id,
       category,
-      title) || 'How to cancel your subscription',
-      content) || 'Go to Account Settings > Billing and click "Cancel Subscription". Your access will continue until the end of the billing period.',
+      title: t("title") 'How to cancel your subscription',
+      content: t("content") 'Go to Account Settings > Billing and click "Cancel Subscription". Your access will continue until the end of the billing period.',
       popular
     }
   ];
