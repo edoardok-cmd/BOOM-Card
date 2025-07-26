@@ -1,0 +1,3 @@
+# Local Netlify config to override root config if needed
+[build]
+  publish = ".next"
