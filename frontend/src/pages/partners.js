@@ -6,7 +6,6 @@ import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import Logo from '../components/Logo';
-import MobileMenu from '../components/MobileMenu';
 import { useLanguage } from '../contexts/LanguageContext';
 import { navigationHandlers } from '../utils/navigation';
 
@@ -285,7 +284,6 @@ export default function Partners() {
             {/* Mobile Navigation */}
             <div className="flex lg:hidden items-center space-x-2">
               <LanguageSwitcher />
-              <MobileMenu />
             </div>
           </div>
         </div>

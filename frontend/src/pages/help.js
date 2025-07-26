@@ -5,7 +5,6 @@ import Logo from '../components/Logo';
 import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserProfileDropdown from '../components/UserProfileDropdown';
-import MobileMenu from '../components/MobileMenu';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function HelpCenter() {
@@ -106,7 +105,6 @@ export default function HelpCenter() {
             {/* Mobile Navigation */}
             <div className="flex lg:hidden items-center space-x-2">
               <LanguageSwitcher />
-              <MobileMenu />
             </div>
           </div>
         </div>
