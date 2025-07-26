@@ -229,14 +229,15 @@ export default function Subscriptions() {
           <div className="inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
             <span className="text-sm font-semibold">{t('subscriptions.hero.badge')}</span>
           </div>
-
-              {t('subscriptions.hero.title1')}
-
-              {t('subscriptions.hero.title2')}
-
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            {t('subscriptions.hero.title1') || 'Choose Your'}
+            <span className="block">{t('subscriptions.hero.title2') || 'BOOM Card Plan'}</span>
+          </h1>
+          
           {/* Billing Toggle */}
-
-               setBillingCycle('monthly')}
+          <div className="flex items-center justify-center space-x-4 my-8">
+            <button
+              onClick={() => setBillingCycle('monthly')}
                 className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
                   billingCycle === 'monthly'
                     ? 'bg-white text-gray-900 shadow-lg'
@@ -244,8 +245,9 @@ export default function Subscriptions() {
                 }`}
               >
                 {t('subscriptions.billing.monthly')}
-              
-               setBillingCycle('yearly')}
+            </button>
+            <button
+              onClick={() => setBillingCycle('yearly')}
                 className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
                   billingCycle === 'yearly'
                     ? 'bg-white text-gray-900 shadow-lg'
@@ -253,15 +255,33 @@ export default function Subscriptions() {
                 }`}
               >
                 {t('subscriptions.billing.yearly')}
-                {t('subscriptions.billing.save25')}
-
+              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full ml-2">{t('subscriptions.billing.save25') || 'Save 25%'}</span>
+            </button>
+          </div>
+          
           {/* Trust indicators */}
-
-              {t('subscriptions.trust.moneyBack')}
-
-              {t('subscriptions.trust.cancelAnytime')}
-
-              {t('subscriptions.trust.instantActivation')}
+          <div className="flex items-center justify-center space-x-8 text-sm opacity-90">
+            <span className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              {t('subscriptions.trust.moneyBack') || '30-Day Money Back'}
+            </span>
+            <span className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              {t('subscriptions.trust.cancelAnytime') || 'Cancel Anytime'}
+            </span>
+            <span className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              {t('subscriptions.trust.instantActivation') || 'Instant Activation'}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Pricing Plans */}
 

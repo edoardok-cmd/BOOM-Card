@@ -93,7 +93,6 @@ export default function Search() {
           <h1 className="text-3xl font-bold mb-6">
             Search Results
           </h1>
-          </h1>
           {searchQuery && (
             <p className="text-gray-600">
               {loading ? 'Searching for' : `${partners.length} results found for`} "{searchQuery}"
@@ -110,16 +109,17 @@ export default function Search() {
             <p className="text-red-600">{error}</p>
           </div>
         ) : partners.length === 0 ? (
-          
-            🔍
-            No results found
-            Try searching with different keywords
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No results found</h2>
+            <p className="text-gray-600 mb-6">Try searching with different keywords</p>
             <button
               onClick={() => router.push('/partners')}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-all mt-4"
             >
               Browse All Partners
             </button>
+          </div>
 
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
