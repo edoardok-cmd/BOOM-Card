@@ -13,6 +13,7 @@ import SimpleQRCode, { MiniSimpleQRCode } from '../components/SimpleQRCode'
 import AdvancedSearch from '../components/AdvancedSearch'
 import OptimizedImage from '../components/OptimizedImage'
 import NotificationContainer from '../components/NotificationContainer'
+import Header from '../components/Header'
 import { formatCurrency, formatDate } from '../utils/format'
 
 const DashboardCompletePage: React.FC = () => {
@@ -146,7 +147,10 @@ const DashboardCompletePage: React.FC = () => {
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
+        {/* Navigation Header */}
+        <Header />
+        
+        {/* Welcome Section */}
         <div className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -245,7 +249,7 @@ const DashboardCompletePage: React.FC = () => {
                     >
                       <div className="p-4 flex items-center space-x-4">
                         <OptimizedImage
-                          src={partner.logoUrl || '/images/partner-placeholder.png'}
+                          src={partner.logoUrl || '/images/partner-placeholder.svg'}
                           alt={partner.name}
                           width={60}
                           height={60}
