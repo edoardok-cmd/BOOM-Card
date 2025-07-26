@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import SearchBar from '../components/SearchBar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -285,67 +286,133 @@ export default function Profile() {
   // Show loading state while checking authentication
   if (profileLoading) {
     return (
-
-          Loading profile...
-
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-
-        {t('profile.title')}
-
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>{t('profile.title') || 'My Profile - BOOM Card'}</title>
+      </Head>
+      
       {/* Navigation */}
-
-                {t('profile.nav.profile')}
-
+      <nav className="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Logo size="md" showText={true} />
+              </div>
+            </div>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-center space-x-1">
+                <Link href="/">
+                  <a className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+                    {t('nav.home') || 'Home'}
+                  </a>
+                </Link>
+                <Link href="/profile">
+                  <a className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-semibold">
+                    {t('nav.profile') || 'Profile'}
+                  </a>
+                </Link>
+                <div className="pl-4 ml-4 border-l border-gray-200 flex items-center space-x-3">
+                  <SearchBar />
+                  <LanguageSwitcher />
+                  <UserProfileDropdown />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
       {/* Hero Section */}
-
-                AS
-
-                  {userData.firstName} {userData.lastName}
-                
-                {t('profile.hero.premiumMember')} {userData.memberSince}
-
-                    {userData.membershipType} {t('profile.hero.member')}
-                  
-                  ID
-
-             setIsEditing(!isEditing)}
-              className="bg-white/20 backdrop-blur-sm hover
+      <section className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
+                  {userData.firstName?.charAt(0) || 'A'}{userData.lastName?.charAt(0) || 'S'}
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold">
+                    {userData.firstName} {userData.lastName}
+                  </h1>
+                  <p className="text-white/80">
+                    {t('profile.hero.premiumMember') || 'Premium Member since'} {userData.memberSince}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div>
+                  <p className="text-sm text-white/80">{t('profile.hero.membership') || 'Membership'}</p>
+                  <p className="text-xl font-semibold">
+                    {userData.membershipType} {t('profile.hero.member') || 'Member'}
+                  </p>
+                <div>
+                  <p className="text-sm text-white/80">{t('profile.hero.cardNumber') || 'Card Number'}</p>
+                  <p className="text-xl font-semibold">{userData.cardNumber || 'XXXX-XXXX-XXXX'}</p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-6 py-3 rounded-lg font-semibold transition-all"
             >
-              {isEditing ? t('profile.hero.saveChanges') : t('profile.hero.editProfile')}
+              {isEditing ? t('profile.hero.saveChanges') || 'Save Changes' : t('profile.hero.editProfile') || 'Edit Profile'}
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Profile Sections */}
-      
-          {/* Sidebar */}
-
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-sm p-4">
                 {[
                   { id: 'personal', nameKey: 'profile.sidebar.personal', icon: '👤' },
                   { id: 'membership', nameKey: 'profile.sidebar.membership', icon: '💳' },
                   { id: 'preferences', nameKey: 'profile.sidebar.preferences', icon: '⚙️' },
                   { id: 'security', nameKey: 'profile.sidebar.security', icon: '🔒' },
                   { id: 'billing', nameKey: 'profile.sidebar.billing', icon: '💰' },
-                  { id: 'reviews', nameKey: 'profile.sidebar.reviews', icon: '⭐'
+                  { id: 'reviews', nameKey: 'profile.sidebar.reviews', icon: '⭐' }
                 ].map((section) => (
-                   setActiveSection(section.id)}
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
                     className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
                       activeSection === section.id
                         ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-600 hover
+                        : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    {section.icon}
-                    {t(section.nameKey)}
-                  
+                    <span className="mr-2">{section.icon}</span>
+                    {t(section.nameKey) || section.id}
+                  </button>
                 ))}
+              </div>
+            </div>
 
-          {/* Main Content */}
-
-              {/* Personal Information */}
-              {activeSection === 'personal' && (
-                
-                  {t('profile.personal.title')}
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-lg shadow-sm p-8">
+                {/* Personal Information */}
+                {activeSection === 'personal' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">
+                      {t('profile.personal.title') || 'Personal Information'}
+                    </h2>
 
                       {t('profile.personal.firstName')}
                        setUserData({...userData, firstName)}
@@ -577,22 +644,45 @@ export default function Profile() {
                                   className={`text-3xl ${star 
                               ))}
 
-                              {t('profile.reviews.yourReview')}
-                            
-                             setReviewData({...reviewData, content)}
-                              rows={4}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus
-                              placeholder={t('profile.reviews.reviewPlaceholder')}
-                              required
-                            />
-
-                             setShowReviewForm(false)}
-                              className="bg-gray-200 hover
-                              {t('profile.reviews.cancel')}
-
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {t('profile.reviews.yourReview') || 'Your Review'}
+                              </label>
+                              <textarea
+                                value={reviewData.content}
+                                onChange={(e) => setReviewData({...reviewData, content: e.target.value})}
+                                rows={4}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                placeholder={t('profile.reviews.reviewPlaceholder') || 'Share your experience...'}
+                                required
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-4">
+                              <button
+                                type="button"
+                                onClick={() => setShowReviewForm(false)}
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-medium transition-colors"
+                              >
+                                {t('profile.reviews.cancel') || 'Cancel'}
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={submittingReview}
+                                className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                              >
+                                {submittingReview ? t('profile.reviews.submitting') || 'Submitting...' : t('profile.reviews.submit') || 'Submit Review'}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
                   )}
-                
+                </div>
               )}
-
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

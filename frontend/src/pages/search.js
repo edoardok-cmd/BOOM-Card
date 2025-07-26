@@ -93,21 +93,22 @@ export default function Search() {
           <h1 className="text-3xl font-bold mb-6">
             Search Results
           </h1>
-          
+          </h1>
           {searchQuery && (
-            
+            <p className="text-gray-600">
               {loading ? 'Searching for' : `${partners.length} results found for`} "{searchQuery}"
-            
+            </p>
           )}
 
         {loading ? (
-
-            Searching...
-          
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Searching...</p>
+          </div>
         ) : error ? (
-          
-            {error}
-          
+          <div className="text-center py-12">
+            <p className="text-red-600">{error}</p>
+          </div>
         ) : partners.length === 0 ? (
           
             🔍
