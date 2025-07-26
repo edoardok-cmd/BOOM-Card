@@ -9,9 +9,11 @@ import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    // Initialize extension handler to filter out extension errors
-    const extensionHandler = ExtensionHandler.getInstance();
-    extensionHandler.notifyUserAboutExtensions();
+    // Only initialize extension handler on client side
+    if (typeof window !== 'undefined') {
+      const extensionHandler = ExtensionHandler.getInstance();
+      extensionHandler.notifyUserAboutExtensions();
+    }
   }, []);
 
   return (
