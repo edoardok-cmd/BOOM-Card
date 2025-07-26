@@ -15,8 +15,8 @@
   NODE_VERSION = "18"
   # Don't skip devDependencies
   NPM_FLAGS = "--legacy-peer-deps"
-  # Force production mode after install
-  NODE_ENV = "development"
+  # Set to production for build
+  NODE_ENV = "production"
   # API URL for production
   NEXT_PUBLIC_API_URL = "http://localhost:8002/api"
 
@@ -60,6 +60,10 @@
 # Plugin to handle Next.js deployment
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  
+  [plugins.inputs]
+  # Ensure we're using runtime rendering, not static export
+  appBuildCommand = "npm run build:netlify"
 
 # Development settings
 [dev]
