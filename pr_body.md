@@ -34,6 +34,14 @@
 - Checked PWA manifest loads without icon warnings
 - Confirmed application runs on port 3003 as configured
 
+## Known Issues
+- The project has pre-existing build errors related to Next.js static generation (see BUILD_ISSUES.md)
+- These errors are unrelated to the browser console fixes in this PR
+- The build failures are due to components using `useRouter` during static generation
+
+## Note
+This PR focuses specifically on fixing browser console errors. The build issues require a separate fix that would involve refactoring multiple components throughout the codebase.
+
 🤖 Generated with [Claude Code](https://claude.ai/code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
