@@ -238,3 +238,9 @@ export default function HelpCenter() {
     </div>
   );
 }
+// Force server-side rendering
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+}

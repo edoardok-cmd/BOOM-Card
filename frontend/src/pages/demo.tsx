@@ -271,3 +271,9 @@ export default function Demo() {
     </div>
   );
 }
+// Force server-side rendering
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+}

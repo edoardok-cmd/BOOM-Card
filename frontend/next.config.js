@@ -4,17 +4,13 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   
-  // Force dynamic rendering
-  experimental: {
-    runtime: 'nodejs',
-    serverComponents: false,
-  },
+  // Completely disable static optimization
+  output: 'standalone',
   
   // Basic image configuration
   images: {
     unoptimized: true,
   },
-
 
   // Environment variables
   env: {

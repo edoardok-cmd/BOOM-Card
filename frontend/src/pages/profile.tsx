@@ -889,3 +889,9 @@ export default function Profile() {
     </div>
   );
 }
+// Force server-side rendering
+export async function getServerSideProps() {
+  return {
+    props: {},
+  }
+}
