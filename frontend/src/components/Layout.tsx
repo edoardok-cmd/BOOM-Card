@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Footer from './Footer';
 
@@ -7,9 +7,14 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const [showFooter, setShowFooter] = useState(true);
   const router = useRouter();
-  // Don't show the default footer on homepage as it has its own custom footer
-  const showFooter = router.pathname !== '/';
+  
+  // Use useEffect to handle router-dependent logic on client side only
+  useEffect(() => {
+    // Don't show the default footer on homepage as it has its own custom footer
+    setShowFooter(router.pathname !== '/');
+  }, [router.pathname]);
   
   return (
     <div className="min-h-screen flex flex-col">

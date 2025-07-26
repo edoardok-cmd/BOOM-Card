@@ -28,19 +28,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for existing session
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    // Check for existing session - only on client side
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      if (storedToken && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setToken(storedToken);
+          setUser(parsedUser);
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
     }
 
@@ -131,8 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
     setToken(null);
     setUser(null);
     router.push('/');
