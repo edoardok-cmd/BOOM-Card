@@ -7,8 +7,8 @@
   # Build command for Next.js with legacy peer deps and devDependencies  
   command = "npm install --legacy-peer-deps && npm run build"
   
-  # Next.js build output - let's be explicit about the directory
-  publish = "."
+  # Next.js outputs to .next directory
+  publish = ".next"
 
 # Environment variables needed for build
 [build.environment]
