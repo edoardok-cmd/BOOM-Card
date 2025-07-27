@@ -2,9 +2,20 @@ import React from 'react';
 
 export default function VideoBackground() {
   return (
-    <div className="absolute inset-0 w-full h-full">
-      {/* Fallback gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-red-600 to-purple-700"></div>
+    <div className="absolute inset-0 w-full h-full overflow-hidden">
+      {/* Video background */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+      >
+        <source src="/videos/dvoretsa.mp4" type="video/mp4" />
+      </video>
+      
+      {/* Fallback gradient background for when video doesn't load */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-red-600 to-purple-700 -z-10"></div>
       
       {/* Animated gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
