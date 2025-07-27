@@ -14,6 +14,25 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Remove any loading spinners immediately
+            (function() {
+              var loader = document.querySelector('.app-loading');
+              if (loader) {
+                loader.style.display = 'none';
+              }
+              // Also remove by ID in case it exists
+              var rootLoader = document.getElementById('root');
+              if (rootLoader) {
+                var appLoading = rootLoader.querySelector('.app-loading');
+                if (appLoading) {
+                  appLoading.remove();
+                }
+              }
+            })();
+          `
+        }} />
       </body>
     </Html>
   )

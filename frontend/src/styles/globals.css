@@ -5,6 +5,19 @@
   box-sizing: border-box;
 }
 
+/* Force hide initial loading spinners */
+.app-loading,
+#root .app-loading,
+#root > .app-loading {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+.app-loading .loading-spinner {
+  display: none !important;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.6;
