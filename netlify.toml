@@ -7,8 +7,8 @@
   # Build command for Next.js with legacy peer deps and devDependencies
   command = "npm install --legacy-peer-deps && npm run build"
   
-  # Let the Netlify Next.js plugin handle the publish directory
-  # publish = ".next"
+  # The @netlify/plugin-nextjs will handle the publish directory automatically
+  # Do not set publish directory for Next.js apps
 
 # Environment variables needed for build
 [build.environment]
@@ -45,12 +45,15 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[plugins.inputs]
+  # Ensure the plugin handles the Next.js build correctly
+  enable = true
+
 # Development settings
 [dev]
   command = "npm run dev"
   port = 3000
   targetPort = 3000
-  publish = ".next"
   autoLaunch = true
 
 # Context-specific settings
