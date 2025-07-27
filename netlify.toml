@@ -4,11 +4,11 @@
   # Base directory for the frontend
   base = "frontend"
   
-  # Build command for Next.js with legacy peer deps and devDependencies
+  # Build command for Next.js with legacy peer deps and devDependencies  
   command = "npm install --legacy-peer-deps && npm run build"
   
-  # The @netlify/plugin-nextjs will handle the publish directory automatically
-  # Do not set publish directory for Next.js apps
+  # Next.js build output - let's be explicit about the directory
+  publish = "."
 
 # Environment variables needed for build
 [build.environment]
