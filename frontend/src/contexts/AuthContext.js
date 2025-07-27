@@ -19,12 +19,19 @@ export const AuthProvider= ({ children }) => {
 
   // Check for existing token on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    // Only access localStorage on client side
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error('Error parsing stored user:', e);
+        }
+      }
     }
 
     setIsLoading(false);
@@ -65,8 +72,10 @@ export const AuthProvider= ({ children }) => {
       };
       const token = 'mock-token-for-testing';
       
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       
       setToken(token);
       setUser(user);
@@ -90,8 +99,10 @@ export const AuthProvider= ({ children }) => {
       membershipType: userData.membershipType,
     };
     
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    }
     
     setToken(token);
     setUser(user);
@@ -131,8 +142,10 @@ export const AuthProvider= ({ children }) => {
       membershipType: userData.membershipType,
     };
     
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    }
     
     setToken(token);
     setUser(user);
@@ -140,8 +153,10 @@ export const AuthProvider= ({ children }) => {
 
   const logout = () => {
     // Clear local storage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
     
     // Clear state
     setToken(null);
@@ -153,7 +168,9 @@ export const AuthProvider= ({ children }) => {
 
   const updateUser = (updatedUser) => {
     setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
   };
 
   const value = {
