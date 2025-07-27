@@ -45,10 +45,6 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-[plugins.inputs]
-  # Ensure the plugin handles the Next.js build correctly
-  enable = true
-
 # Development settings
 [dev]
   command = "npm run dev"
